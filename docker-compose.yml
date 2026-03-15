@@ -1,0 +1,161 @@
+# ============================================================
+# PulmoLink INO — Docker Compose
+# Instituto Neumológico del Oriente
+# Uso: docker compose up -d
+# ============================================================
+
+services:
+
+  # ── API BACKEND ────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    container_name: pulmolink-api
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - pulmolink-net
+    volumes:
+      - ./logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # ── POSTGRESQL ─────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: pulmolink-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: pulmolink
+      POSTGRES_USER: pulmolink_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # Cifrado en reposo: habilitar en producción con pgcrypto
+      POSTGRES_INITDB_ARGS: "--data-checksums"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/backup:/backup
+    ports:
+      - "127.0.0.1:5432:5432"   # Solo accesible localmente
+    networks:
+      - pulmolink-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pulmolink_user -d pulmolink"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: >
+      postgres
+        -c max_connections=100
+        -c shared_buffers=256MB
+        -c log_min_duration_statement=500
+        -c log_connections=on
+
+  # ── REDIS ──────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: pulmolink-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+        --maxmemory 128mb
+        --maxmemory-policy allkeys-lru
+        --requirepass ${REDIS_PASSWORD:-pulmolink_redis_pass}
+        --loglevel notice
+    volumes:
+      - redis-data:/data
+    ports:
+      - "127.0.0.1:6379:6379"   # Solo accesible localmente
+    networks:
+      - pulmolink-net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── NGINX (reverse proxy + SSL) ────────────────────────────
+  nginx:
+    image: nginx:alpine
+    container_name: pulmolink-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./frontend/paciente:/usr/share/nginx/html/paciente:ro
+      - ./frontend/dashboard:/usr/share/nginx/html/dashboard:ro
+      - nginx-logs:/var/log/nginx
+    depends_on:
+      - api
+    networks:
+      - pulmolink-net
+    healthcheck:
+      test: ["CMD", "nginx", "-t"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── BACKUP AUTOMÁTICO ──────────────────────────────────────
+  backup:
+    image: postgres:16-alpine
+    container_name: pulmolink-backup
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    volumes:
+      - ./db/backup:/backup
+      - ./scripts/backup.sh:/backup.sh:ro
+    entrypoint: >
+      sh -c "
+        echo '0 2 * * * /backup.sh' | crontab - &&
+        crond -f
+      "
+    depends_on:
+      - postgres
+    networks:
+      - pulmolink-net
+
+# ── VOLÚMENES PERSISTENTES ─────────────────────────────────
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+  nginx-logs:
+    driver: local
+
+# ── RED INTERNA ────────────────────────────────────────────
+networks:
+  pulmolink-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+
+---
+# ============================================================
+# docker-compose.dev.yml — Override para desarrollo local
+# Uso: docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# ============================================================
+# (guarda esto en un archivo separado docker-compose.dev.yml)
