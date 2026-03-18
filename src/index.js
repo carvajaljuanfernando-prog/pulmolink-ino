@@ -56,7 +56,16 @@ app.get('/health', (req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
-
+app.get('/setup-db-ino-hp-2026', async (req, res) => {
+  if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
+  try {
+    const fs = require('fs'); const path = require('path');
+    const { pool } = require('./config/db');
+    const schema = fs.readFileSync(path.join(__dirname, '../db/schema.sql'), 'utf8');
+    await pool.query(schema);
+    return res.json({ status: 'ok', mensaje: 'Base de datos PulmoLink INO creada', tablas_creadas: 14 });
+  } catch (err) { return res.status(500).json({ error: err.message }); }
+});
 // ── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });
