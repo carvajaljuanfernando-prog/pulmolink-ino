@@ -12,6 +12,7 @@ COPY package.json ./
 RUN npm install --only=production && npm cache clean --force
 
 COPY --chown=pulmolink:pulmolink src/ ./src/
+COPY --chown=pulmolink:pulmolink db/ ./db/
 
 RUN mkdir -p /app/logs && chown pulmolink:pulmolink /app/logs
 
@@ -23,3 +24,8 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 CMD ["node", "src/index.js"]
+```
+
+La diferencia es la línea nueva:
+```
+COPY --chown=pulmolink:pulmolink db/ ./db/
