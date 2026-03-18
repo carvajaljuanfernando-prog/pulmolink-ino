@@ -24,8 +24,4 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 CMD ["node", "src/index.js"]
-```
-
-La diferencia es la línea nueva:
-```
 COPY --chown=pulmolink:pulmolink db/ ./db/
