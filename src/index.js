@@ -92,7 +92,6 @@ app.get('/setup-db-ino-hp-2026', async (req, res) => {
     return res.json({ status: errores.length === 0 ? 'ok' : 'parcial', tablas_creadas: resultados.filter(r=>r.ok).length, errores, detalle: resultados });
   } catch (err) { return res.status(500).json({ error: err.message }); }
 });
-});
 // ── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });
