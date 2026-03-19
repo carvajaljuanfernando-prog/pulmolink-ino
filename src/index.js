@@ -79,7 +79,19 @@ app.get('/setup-db-ino-hp-2026', async (req, res) => {
     return res.json({ status: errores.length === 0 ? 'ok' : 'parcial', tablas_creadas: resultados.filter(r=>r.ok).length, errores });
   } catch (err) { return res.status(500).json({ error: err.message }); }
 });
+app.get('/verificar-login-ino', async (req, res) => {
+  if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
+  try {
+    const { loginPaso1 } = require('./services/authService');
+    const resultado = await loginPaso1(req.query.email, req.query.password);
+    return res.json({ ok: true, token_temporal: resultado.tokenTemporal });
+  } catch (err) { return res.status(500).json({ error: err.message }); }
+});
+```
 
+Commit → espera redeploy → abre:
+```
+https://pulmolink-ino-production.up.railway.app/verificar-login-ino?key=pulmolink-ino-setup&email=carvajaljuanfernando@gmail.com&password=TuClave2026!
 // ENDPOINT TEMPORAL: crear primer administrador
 app.get('/crear-admin-ino-2026', async (req, res) => {
   if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
