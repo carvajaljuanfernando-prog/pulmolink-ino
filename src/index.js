@@ -44,6 +44,9 @@ app.get('/registro', (req, res) => {
 });
   res.sendFile(path.join(__dirname, '../frontend/registro.html'));
 });
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
 
 // ENDPOINT TEMPORAL: migración base de datos
 app.get('/setup-db-ino-hp-2026', async (req, res) => {
