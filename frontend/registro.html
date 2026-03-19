@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Registro del equipo</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:   #00425A;
+  --teal:   #006B8F;
+  --sky:    #00A3C4;
+  --ice:    #E0F5FB;
+  --white:  #FFFFFF;
+  --bg:     #F2F7FA;
+  --border: rgba(0,107,143,0.15);
+  --text-1: #0A2330;
+  --text-2: #3A5566;
+  --text-3: #7A9AAA;
+  --red:    #D63E3E;
+  --green:  #1A7A4A;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text-1);min-height:100vh;display:flex;flex-direction:column}
+
+/* HEADER */
+.header{background:var(--navy);padding:18px 32px;display:flex;align-items:center;gap:14px}
+.logo-box{background:var(--sky);border-radius:8px;width:38px;height:38px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--navy);letter-spacing:-0.5px}
+.header-text strong{display:block;color:white;font-size:15px;font-weight:700}
+.header-text span{color:rgba(255,255,255,0.5);font-size:11px;font-weight:300}
+
+/* MAIN */
+.main{flex:1;display:flex;align-items:flex-start;justify-content:center;padding:40px 16px 60px}
+.card{background:var(--white);border-radius:16px;box-shadow:0 4px 24px rgba(0,66,90,0.10);width:100%;max-width:560px;overflow:hidden}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border)}
+.tab{flex:1;padding:16px;text-align:center;font-size:13px;font-weight:600;color:var(--text-3);cursor:pointer;transition:all 0.2s;border-bottom:3px solid transparent}
+.tab.active{color:var(--teal);border-bottom-color:var(--teal);background:var(--ice)}
+.tab:hover:not(.active){color:var(--text-2);background:var(--bg)}
+
+/* FORMULARIOS */
+.form-section{display:none;padding:28px}
+.form-section.active{display:block}
+.form-title{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.form-sub{font-size:13px;color:var(--text-3);margin-bottom:24px}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px;letter-spacing:0.3px}
+.field input,.field select{width:100%;padding:11px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Nunito',sans-serif;font-size:14px;color:var(--text-1);background:var(--bg);outline:none;transition:border-color 0.15s}
+.field input:focus,.field select:focus{border-color:var(--sky);background:white}
+.field input::placeholder{color:var(--text-3)}
+.field select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237A9AAA' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 14px center;padding-right:36px}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+.btn{width:100%;padding:14px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.18s;margin-top:8px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:var(--navy);transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,107,143,0.25)}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+/* MENSAJES */
+.msg{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-top:16px;display:none;line-height:1.5}
+.msg.ok{background:#E8F7EF;color:var(--green);border:1px solid rgba(26,122,74,0.2)}
+.msg.error{background:#FDF0F0;color:var(--red);border:1px solid rgba(214,62,62,0.2)}
+.msg.show{display:block}
+
+/* INFO BOX */
+.info-box{background:var(--ice);border:1px solid rgba(0,163,196,0.25);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal);line-height:1.6;margin-bottom:20px}
+.info-box strong{color:var(--navy)}
+
+/* RESULTADO EXITOSO */
+.resultado{display:none;padding:28px;text-align:center}
+.resultado.show{display:block}
+.check-circle{width:64px;height:64px;background:#E8F7EF;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px}
+.resultado h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.resultado p{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:20px}
+.credencial{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;text-align:left;margin-bottom:12px}
+.credencial label{font-size:10px;font-weight:700;color:var(--text-3);letter-spacing:0.8px;text-transform:uppercase;display:block;margin-bottom:4px}
+.credencial span{font-size:14px;font-weight:600;color:var(--navy);font-family:'Courier New',monospace}
+.btn-nuevo{background:var(--ice);color:var(--teal);border:1px solid rgba(0,107,143,0.2);width:100%;padding:12px;border-radius:10px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;margin-top:8px}
+.btn-nuevo:hover{background:var(--teal);color:white}
+
+/* SPINNER */
+.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo-box">INO</div>
+  <div class="header-text">
+    <strong>PulmoLink INO</strong>
+    <span>Registro del equipo — Programa HP</span>
+  </div>
+</div>
+
+<div class="main">
+  <div class="card">
+
+    <div class="tabs">
+      <div class="tab active" onclick="cambiarTab('profesional')">Profesional INO</div>
+      <div class="tab" onclick="cambiarTab('paciente')">Paciente HP</div>
+    </div>
+
+    <!-- ══ FORM PROFESIONAL ══ -->
+    <div class="form-section active" id="tab-profesional">
+      <div class="form-title">Registrar profesional INO</div>
+      <div class="form-sub">Para médicos, enfermería y equipo del Programa HP</div>
+
+      <div class="info-box">
+        <strong>Importante:</strong> después de registrarte, recibirás un código QR para configurar la autenticación de dos factores (MFA). Es obligatorio para el equipo clínico.
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Nombre</label>
+          <input type="text" id="p-nombre" placeholder="Juan Fernando">
+        </div>
+        <div class="field">
+          <label>Apellido</label>
+          <input type="text" id="p-apellido" placeholder="Carvajal">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Correo electrónico institucional</label>
+        <input type="email" id="p-email" placeholder="jcarvajal@ino.com.co">
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Especialidad</label>
+          <input type="text" id="p-especialidad" placeholder="Cardiología">
+        </div>
+        <div class="field">
+          <label>Rol en el programa HP</label>
+          <select id="p-rol">
+            <option value="">Seleccionar...</option>
+            <option value="cardiólogo">Cardiólogo</option>
+            <option value="neumólogo">Neumólogo</option>
+            <option value="enfermería">Enfermería / Gestora HP</option>
+            <option value="fisioterapia">Fisioterapia / Rehabilitación</option>
+            <option value="nutrición">Nutrición</option>
+            <option value="psicología">Psicología</option>
+            <option value="terapia_resp">Terapia respiratoria</option>
+            <option value="medicina_gral">Medicina general</option>
+            <option value="administrativo">Administrativo</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Sede INO</label>
+        <select id="p-sede">
+          <option value="principal">Sede Principal — Cll 53 #31-30</option>
+          <option value="machado">Sede Machado — Cll 52a #31-137</option>
+          <option value="cabecera">Sede Cabecera — Cra 31 #52b-30</option>
+        </select>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Contraseña</label>
+          <input type="password" id="p-pass" placeholder="Mínimo 10 caracteres">
+        </div>
+        <div class="field">
+          <label>Confirmar contraseña</label>
+          <input type="password" id="p-pass2" placeholder="Repetir contraseña">
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--text-3);margin-top:-8px;margin-bottom:16px">
+        Debe tener mínimo 10 caracteres, una mayúscula, un número y un símbolo (!@#$%^&*)
+      </div>
+
+      <button class="btn" onclick="registrarProfesional()" id="btn-prof">
+        Registrar profesional
+      </button>
+      <div class="msg" id="msg-prof"></div>
+    </div>
+
+    <!-- RESULTADO PROFESIONAL -->
+    <div class="resultado" id="resultado-prof">
+      <div class="check-circle">✓</div>
+      <h3>¡Profesional registrado!</h3>
+      <p>Guarda estas credenciales. El código MFA se configura la primera vez que inicies sesión.</p>
+      <div class="credencial">
+        <label>Email de acceso</label>
+        <span id="res-email-prof"></span>
+      </div>
+      <div class="credencial">
+        <label>Rol asignado</label>
+        <span id="res-rol-prof"></span>
+      </div>
+      <div class="credencial" style="background:#FEF3DC;border-color:rgba(192,122,0,0.2)">
+        <label style="color:#854F0B">Próximo paso — configurar MFA</label>
+        <span style="color:#633806;font-size:12px;font-family:'Nunito',sans-serif;font-weight:500">
+          Descarga Google Authenticator o Authy en tu celular y escanea el QR que recibirás al iniciar sesión.
+        </span>
+      </div>
+      <button class="btn-nuevo" onclick="nuevoRegistro('profesional')">Registrar otro profesional</button>
+    </div>
+
+    <!-- ══ FORM PACIENTE ══ -->
+    <div class="form-section" id="tab-paciente">
+      <div class="form-title">Registrar paciente HP</div>
+      <div class="form-sub">Ingreso al Programa Integral de Hipertensión Pulmonar del INO</div>
+
+      <div class="info-box">
+        <strong>Requisitos de ingreso INO:</strong> orden médica, autorización y historia clínica. Los niños y adultos mayores deben venir con acompañante.
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Primer nombre</label>
+          <input type="text" id="pac-nombre" placeholder="Rosa Elena">
+        </div>
+        <div class="field">
+          <label>Primer apellido</label>
+          <input type="text" id="pac-apellido" placeholder="Vargas">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Correo electrónico</label>
+        <input type="email" id="pac-email" placeholder="paciente@correo.com">
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Fecha de nacimiento</label>
+          <input type="date" id="pac-fnac">
+        </div>
+        <div class="field">
+          <label>Sexo</label>
+          <select id="pac-sexo">
+            <option value="">Seleccionar...</option>
+            <option value="femenino">Femenino</option>
+            <option value="masculino">Masculino</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Tipo de documento</label>
+          <select id="pac-doctype">
+            <option value="CC">Cédula de ciudadanía</option>
+            <option value="TI">Tarjeta de identidad</option>
+            <option value="CE">Cédula de extranjería</option>
+            <option value="pasaporte">Pasaporte</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Número de documento</label>
+          <input type="text" id="pac-docnum" placeholder="1098765432">
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>EPS</label>
+          <input type="text" id="pac-eps" placeholder="Ej: Sanitas, Sura...">
+        </div>
+        <div class="field">
+          <label>Ciudad de residencia</label>
+          <input type="text" id="pac-ciudad" placeholder="Bucaramanga">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Diagnóstico HP</label>
+        <select id="pac-diagnostico">
+          <option value="">Seleccionar...</option>
+          <option value="HAP idiopática — Grupo 1">HAP idiopática — Grupo 1</option>
+          <option value="HAP hereditaria — Grupo 1">HAP hereditaria — Grupo 1</option>
+          <option value="HAP asociada a cardiopatía congénita — Grupo 1">HAP asociada a cardiopatía congénita</option>
+          <option value="HAP asociada a conectivopatía — Grupo 1">HAP asociada a conectivopatía</option>
+          <option value="HP asociada a cardiopatía izquierda — Grupo 2">HP asociada a cardiopatía izquierda — Grupo 2</option>
+          <option value="HP asociada a EPOC — Grupo 3">HP asociada a EPOC — Grupo 3</option>
+          <option value="HP tromboembólica crónica — Grupo 4">HP tromboembólica crónica — Grupo 4</option>
+          <option value="HP de mecanismo no claro — Grupo 5">HP de mecanismo no claro — Grupo 5</option>
+        </select>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Clase funcional OMS inicial</label>
+          <select id="pac-clase">
+            <option value="">Seleccionar...</option>
+            <option value="1">Clase I — Sin limitación</option>
+            <option value="2">Clase II — Limitación leve</option>
+            <option value="3">Clase III — Limitación marcada</option>
+            <option value="4">Clase IV — Síntomas en reposo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Canal de contacto preferido</label>
+          <select id="pac-canal">
+            <option value="app">App PulmoLink</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="sms">SMS</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="field">
+          <label>Contraseña</label>
+          <input type="password" id="pac-pass" placeholder="Mínimo 8 caracteres">
+        </div>
+        <div class="field">
+          <label>Confirmar contraseña</label>
+          <input type="password" id="pac-pass2" placeholder="Repetir">
+        </div>
+      </div>
+
+      <button class="btn" onclick="registrarPaciente()" id="btn-pac">
+        Registrar paciente
+      </button>
+      <div class="msg" id="msg-pac"></div>
+    </div>
+
+    <!-- RESULTADO PACIENTE -->
+    <div class="resultado" id="resultado-pac">
+      <div class="check-circle">✓</div>
+      <h3>¡Paciente registrado en el programa HP!</h3>
+      <p>El paciente ya puede acceder a PulmoLink desde su celular o computador.</p>
+      <div class="credencial">
+        <label>Nombre del paciente</label>
+        <span id="res-nombre-pac"></span>
+      </div>
+      <div class="credencial">
+        <label>Email de acceso a PulmoLink</label>
+        <span id="res-email-pac"></span>
+      </div>
+      <div class="credencial">
+        <label>Diagnóstico registrado</label>
+        <span id="res-diag-pac"></span>
+      </div>
+      <div class="credencial" style="background:#E8F7EF;border-color:rgba(26,122,74,0.2)">
+        <label style="color:#27500A">URL de acceso para el paciente</label>
+        <span id="res-url-pac" style="color:#085041;font-size:12px;word-break:break-all"></span>
+      </div>
+      <button class="btn-nuevo" onclick="nuevoRegistro('paciente')">Registrar otro paciente</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+
+function cambiarTab(tab) {
+  document.querySelectorAll('.tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='profesional') || (i===1 && tab==='paciente'));
+  });
+  document.getElementById('tab-profesional').classList.toggle('active', tab==='profesional');
+  document.getElementById('tab-paciente').classList.toggle('active', tab==='paciente');
+  document.getElementById('resultado-prof').classList.remove('show');
+  document.getElementById('resultado-pac').classList.remove('show');
+}
+
+function mostrarMsg(id, texto, tipo) {
+  const el = document.getElementById(id);
+  el.textContent = texto;
+  el.className = 'msg ' + tipo + ' show';
+}
+
+function setLoading(btnId, loading) {
+  const btn = document.getElementById(btnId);
+  if (loading) {
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner"></div> Registrando...';
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = btnId === 'btn-prof' ? 'Registrar profesional' : 'Registrar paciente';
+  }
+}
+
+async function registrarProfesional() {
+  const nombre      = document.getElementById('p-nombre').value.trim();
+  const apellido    = document.getElementById('p-apellido').value.trim();
+  const email       = document.getElementById('p-email').value.trim();
+  const especialidad= document.getElementById('p-especialidad').value.trim();
+  const rol         = document.getElementById('p-rol').value;
+  const sede_ino    = document.getElementById('p-sede').value;
+  const password    = document.getElementById('p-pass').value;
+  const password2   = document.getElementById('p-pass2').value;
+
+  if (!nombre || !apellido || !email || !especialidad || !rol || !password) {
+    return mostrarMsg('msg-prof', 'Por favor completa todos los campos.', 'error');
+  }
+  if (password !== password2) {
+    return mostrarMsg('msg-prof', 'Las contraseñas no coinciden.', 'error');
+  }
+  if (password.length < 10) {
+    return mostrarMsg('msg-prof', 'La contraseña debe tener mínimo 10 caracteres.', 'error');
+  }
+  if (!/[A-Z]/.test(password) || !/[0-9]/.test(password) || !/[!@#$%^&*]/.test(password)) {
+    return mostrarMsg('msg-prof', 'La contraseña debe tener una mayúscula, un número y un símbolo (!@#$%^&*).', 'error');
+  }
+
+  setLoading('btn-prof', true);
+  document.getElementById('msg-prof').className = 'msg';
+
+  try {
+    // Para el piloto: usamos el endpoint de paciente con token de admin
+    // En producción real el admin registra profesionales con su token JWT
+    const resp = await fetch(`${API}/api/v1/auth/registro/profesional`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json',
+                 'Authorization': 'Bearer PILOTO-TEMPORAL' },
+      body: JSON.stringify({ nombre, apellido, email, password, especialidad, rol, sede_ino })
+    });
+    const data = await resp.json();
+
+    if (resp.ok) {
+      document.getElementById('tab-profesional').style.display = 'none';
+      document.getElementById('res-email-prof').textContent = email;
+      document.getElementById('res-rol-prof').textContent = rol + ' — Sede ' + sede_ino;
+      document.getElementById('resultado-prof').classList.add('show');
+    } else {
+      mostrarMsg('msg-prof', data.error || 'Error al registrar. Intenta de nuevo.', 'error');
+    }
+  } catch(e) {
+    mostrarMsg('msg-prof', 'No se pudo conectar con el servidor PulmoLink. Verifica tu conexión.', 'error');
+  }
+  setLoading('btn-prof', false);
+}
+
+async function registrarPaciente() {
+  const nombre          = document.getElementById('pac-nombre').value.trim();
+  const apellido        = document.getElementById('pac-apellido').value.trim();
+  const email           = document.getElementById('pac-email').value.trim();
+  const fecha_nacimiento= document.getElementById('pac-fnac').value;
+  const sexo            = document.getElementById('pac-sexo').value;
+  const documento_tipo  = document.getElementById('pac-doctype').value;
+  const documento_numero= document.getElementById('pac-docnum').value.trim();
+  const eps             = document.getElementById('pac-eps').value.trim();
+  const ciudad_residencia = document.getElementById('pac-ciudad').value.trim();
+  const diagnostico_hp  = document.getElementById('pac-diagnostico').value;
+  const clase_funcional_oms = parseInt(document.getElementById('pac-clase').value) || null;
+  const canal_preferido = document.getElementById('pac-canal').value;
+  const password        = document.getElementById('pac-pass').value;
+  const password2       = document.getElementById('pac-pass2').value;
+
+  if (!nombre || !apellido || !email || !fecha_nacimiento || !password) {
+    return mostrarMsg('msg-pac', 'Por favor completa los campos obligatorios.', 'error');
+  }
+  if (password !== password2) {
+    return mostrarMsg('msg-pac', 'Las contraseñas no coinciden.', 'error');
+  }
+  if (password.length < 8) {
+    return mostrarMsg('msg-pac', 'La contraseña debe tener mínimo 8 caracteres.', 'error');
+  }
+
+  setLoading('btn-pac', true);
+  document.getElementById('msg-pac').className = 'msg';
+
+  try {
+    const resp = await fetch(`${API}/api/v1/auth/registro/paciente`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre, apellido, email, password,
+        fecha_nacimiento, sexo: sexo||null,
+        documento_tipo, documento_numero: documento_numero||null,
+        eps: eps||null, ciudad_residencia: ciudad_residencia||null,
+        diagnostico_hp: diagnostico_hp||null,
+        clase_funcional_oms,
+        canal_preferido,
+      })
+    });
+    const data = await resp.json();
+
+    if (resp.ok) {
+      document.getElementById('tab-paciente').style.display = 'none';
+      document.getElementById('res-nombre-pac').textContent = nombre + ' ' + apellido;
+      document.getElementById('res-email-pac').textContent = email;
+      document.getElementById('res-diag-pac').textContent = diagnostico_hp || 'Por definir';
+      document.getElementById('res-url-pac').textContent = window.location.origin + '/app-paciente';
+      document.getElementById('resultado-pac').classList.add('show');
+    } else {
+      mostrarMsg('msg-pac', data.error || JSON.stringify(data.detalle || data), 'error');
+    }
+  } catch(e) {
+    mostrarMsg('msg-pac', 'No se pudo conectar con el servidor PulmoLink. Verifica tu conexión.', 'error');
+  }
+  setLoading('btn-pac', false);
+}
+
+function nuevoRegistro(tipo) {
+  if (tipo === 'profesional') {
+    document.getElementById('resultado-prof').classList.remove('show');
+    document.getElementById('tab-profesional').style.display = 'block';
+    ['p-nombre','p-apellido','p-email','p-especialidad','p-pass','p-pass2']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('p-rol').value = '';
+  } else {
+    document.getElementById('resultado-pac').classList.remove('show');
+    document.getElementById('tab-paciente').style.display = 'block';
+    ['pac-nombre','pac-apellido','pac-email','pac-fnac','pac-docnum',
+     'pac-eps','pac-ciudad','pac-pass','pac-pass2']
+      .forEach(id => document.getElementById(id).value = '');
+    document.getElementById('pac-sexo').value = '';
+    document.getElementById('pac-diagnostico').value = '';
+    document.getElementById('pac-clase').value = '';
+  }
+}
+</script>
+</body>
+</html>
