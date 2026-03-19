@@ -217,7 +217,7 @@ async function loginPaso2() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${tokenTemporal}`
       },
-      body: JSON.stringify({ codigo })
+      body: JSON.stringify({ codigo_totp: codigo, token_mfa: tokenTemporal })
     });
     const data = await resp.json();
 
