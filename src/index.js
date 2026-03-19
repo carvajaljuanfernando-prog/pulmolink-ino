@@ -97,13 +97,27 @@ app.get('/setup-db-ino-hp-2026', async (req, res) => {
     return res.json({ status: errores.length === 0 ? 'ok' : 'parcial', tablas_creadas: resultados.filter(r=>r.ok).length, errores, detalle: resultados });
   } catch (err) { return res.status(500).json({ error: err.message }); }
 });
-app.post('/bootstrap-admin-ino-2026', async (req, res) => {
+app.get('/crear-admin-ino-2026', async (req, res) => {
   if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
   try {
     const { registrarProfesional } = require('./services/authService');
-    const resultado = await registrarProfesional(req.body);
-    return res.json({ ok: true, profesional: resultado.profesional, mfa: resultado.mfa });
+    const resultado = await registrarProfesional({
+      nombre:       req.query.nombre      || 'Juan Fernando',
+      apellido:     req.query.apellido    || 'Carvajal',
+      email:        req.query.email       || 'jcarvajal@ino.com.co',
+      password:     req.query.password    || 'PulmoLink2026!',
+      especialidad: req.query.especialidad|| 'Cardiología',
+      rol:          req.query.rol         || 'cardiólogo',
+      sede_ino:     'principal',
+    });
+    return res.json({ ok: true, profesional: resultado.profesional, mfa_secret: resultado.mfa });
   } catch (err) { return res.status(500).json({ error: err.message }); }
+});
+```
+
+Commit → espera redeploy → abre esta URL con tus datos reales:
+```
+https://pulmolink-ino-production.up.railway.app/crear-admin-ino-2026?key=pulmolink-ino-setup&nombre=Juan Fernando&apellido=Carvajal&email=tucorreo@ino.com.co&password=TuClave2026!&especialidad=Cardiología&rol=cardiólogo
 });
 // ── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
