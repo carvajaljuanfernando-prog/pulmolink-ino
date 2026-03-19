@@ -221,8 +221,8 @@ async function loginPaso2() {
     });
     const data = await resp.json();
 
-    if (resp.ok && data.token) {
-      localStorage.setItem('pulmolink_token', data.token);
+    if (resp.ok && (data.token || data.access_token)) {
+      localStorage.setItem('pulmolink_token', data.token || data.access_token);
       localStorage.setItem('pulmolink_usuario', JSON.stringify(data.usuario));
 
       document.getElementById('nombre-bienvenida').textContent =
