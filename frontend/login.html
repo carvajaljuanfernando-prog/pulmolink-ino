@@ -228,7 +228,7 @@ async function loginPaso2() {
       document.getElementById('nombre-bienvenida').textContent =
         data.usuario?.nombre || 'Doctor';
       document.getElementById('token-display').textContent =
-        data.token.substring(0, 60) + '...';
+        (data.token || data.access_token).substring(0, 60) + '...';
 
       document.getElementById('step-2').classList.remove('active');
       document.getElementById('step-ok').classList.add('active');
