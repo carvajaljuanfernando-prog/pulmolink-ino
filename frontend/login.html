@@ -215,7 +215,7 @@ async function loginPaso2() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${tokenTemporal}`
+    
       },
       body: JSON.stringify({ codigo_totp: codigo, token_mfa: tokenTemporal })
     });
