@@ -13,6 +13,7 @@ RUN npm install --only=production && npm cache clean --force
 
 COPY --chown=pulmolink:pulmolink src/ ./src/
 COPY --chown=pulmolink:pulmolink db/ ./db/
+COPY --chown=pulmolink:pulmolink frontend/ ./frontend/
 
 RUN mkdir -p /app/logs && chown pulmolink:pulmolink /app/logs
 
@@ -24,4 +25,3 @@ ENV NODE_ENV=production
 ENV PORT=3000
 
 CMD ["node", "src/index.js"]
-COPY --chown=pulmolink:pulmolink db/ ./db/
