@@ -186,8 +186,8 @@ async function loginPaso1() {
     });
     const data = await resp.json();
 
-    if (resp.ok && data.tokenTemporal) {
-      tokenTemporal = data.tokenTemporal;
+    if (resp.ok && (data.tokenTemporal || data.token_mfa)) {
+      tokenTemporal = data.tokenTemporal || data.token_mfa;
       document.getElementById('step-1').classList.remove('active');
       document.getElementById('step-2').classList.add('active');
       setTimeout(() => document.getElementById('mfa-code').focus(), 100);
