@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Acceso</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:#00425A; --teal:#006B8F; --sky:#00A3C4;
+  --ice:#E0F5FB; --bg:#F2F7FA; --white:#FFFFFF;
+  --border:rgba(0,107,143,0.15); --text-1:#0A2330;
+  --text-2:#3A5566; --text-3:#7A9AAA;
+  --red:#D63E3E; --green:#1A7A4A;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text-1);min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+
+.card{background:var(--white);border-radius:16px;box-shadow:0 4px 24px rgba(0,66,90,0.10);width:100%;max-width:420px;overflow:hidden}
+
+.card-header{background:var(--navy);padding:24px 28px;display:flex;align-items:center;gap:14px}
+.logo{background:var(--sky);border-radius:8px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:var(--navy)}
+.header-text strong{display:block;color:white;font-size:16px;font-weight:700}
+.header-text span{color:rgba(255,255,255,0.5);font-size:11px}
+
+.step{display:none;padding:28px}
+.step.active{display:block}
+.step-title{font-size:17px;font-weight:700;color:var(--navy);margin-bottom:4px}
+.step-sub{font-size:13px;color:var(--text-3);margin-bottom:24px}
+
+.field{margin-bottom:16px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:6px}
+.field input{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:'Nunito',sans-serif;font-size:14px;color:var(--text-1);background:var(--bg);outline:none;transition:border-color 0.15s}
+.field input:focus{border-color:var(--sky);background:white}
+.field input::placeholder{color:var(--text-3)}
+
+.mfa-input{text-align:center;font-size:28px;font-weight:700;letter-spacing:8px;color:var(--navy);font-family:'Courier New',monospace}
+
+.btn{width:100%;padding:14px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.18s;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:hover{background:var(--navy);transform:translateY(-1px)}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none}
+
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;font-weight:500;margin-top:12px;display:none}
+.msg.error{background:#FDF0F0;color:var(--red);border:1px solid rgba(214,62,62,0.2);display:block}
+.msg.ok{background:#E8F7EF;color:var(--green);border:1px solid rgba(26,122,74,0.2);display:block}
+
+.info-box{background:var(--ice);border:1px solid rgba(0,163,196,0.2);border-radius:10px;padding:12px 14px;font-size:12px;color:var(--teal);line-height:1.6;margin-bottom:20px}
+.info-box strong{color:var(--navy)}
+
+.success-screen{padding:32px 28px;text-align:center}
+.check{width:64px;height:64px;background:#E8F7EF;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px}
+.success-screen h3{font-size:18px;font-weight:700;color:var(--navy);margin-bottom:8px}
+.success-screen p{font-size:13px;color:var(--text-2);line-height:1.6;margin-bottom:20px}
+.token-box{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:11px;color:var(--text-3);word-break:break-all;text-align:left;margin-bottom:16px;font-family:monospace}
+.btn-dash{background:var(--teal);color:white;border:none;border-radius:10px;padding:13px 24px;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;cursor:pointer;width:100%;transition:all 0.15s}
+.btn-dash:hover{background:var(--navy)}
+
+.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.step-indicator{display:flex;align-items:center;gap:6px;margin-bottom:20px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--border);transition:background 0.2s}
+.dot.active{background:var(--teal)}
+.dot.done{background:var(--green)}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-header">
+    <div class="logo">INO</div>
+    <div class="header-text">
+      <strong>PulmoLink INO</strong>
+      <span>Programa Integral de Hipertensión Pulmonar</span>
+    </div>
+  </div>
+
+  <!-- PASO 1: EMAIL + CONTRASEÑA -->
+  <div class="step active" id="step-1">
+    <div class="step-indicator">
+      <div class="dot active" id="d1"></div>
+      <div class="dot" id="d2"></div>
+    </div>
+    <div class="step-title">Iniciar sesión</div>
+    <div class="step-sub">Acceso para el equipo clínico del INO</div>
+
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input type="email" id="email" placeholder="tucorreo@ino.com.co" autocomplete="email">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" id="password" placeholder="Tu contraseña" autocomplete="current-password"
+             onkeydown="if(event.key==='Enter') loginPaso1()">
+    </div>
+
+    <button class="btn" onclick="loginPaso1()" id="btn-1">
+      Continuar
+    </button>
+    <div class="msg" id="msg-1"></div>
+  </div>
+
+  <!-- PASO 2: CÓDIGO MFA -->
+  <div class="step" id="step-2">
+    <div class="step-indicator">
+      <div class="dot done" id="d1b"></div>
+      <div class="dot active" id="d2b"></div>
+    </div>
+    <div class="step-title">Código de verificación</div>
+    <div class="step-sub">Ingresa el código de 6 dígitos de Google Authenticator</div>
+
+    <div class="info-box">
+      <strong>Abre Google Authenticator</strong> en tu celular y busca <strong>PulmoLink INO</strong>. El código cambia cada 30 segundos.
+    </div>
+
+    <div class="field">
+      <label>Código MFA</label>
+      <input type="text" id="mfa-code" class="mfa-input" placeholder="000000"
+             maxlength="6" inputmode="numeric" autocomplete="one-time-code"
+             oninput="this.value=this.value.replace(/\D/g,'')"
+             onkeydown="if(event.key==='Enter') loginPaso2()">
+    </div>
+
+    <button class="btn" onclick="loginPaso2()" id="btn-2">
+      Verificar y entrar
+    </button>
+    <div class="msg" id="msg-2"></div>
+
+    <div style="text-align:center;margin-top:14px">
+      <button onclick="volverPaso1()" style="background:none;border:none;color:var(--text-3);font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif">
+        ← Volver
+      </button>
+    </div>
+  </div>
+
+  <!-- ÉXITO -->
+  <div class="step" id="step-ok">
+    <div class="success-screen">
+      <div class="check">✓</div>
+      <h3>¡Bienvenido, <span id="nombre-bienvenida"></span>!</h3>
+      <p>Acceso verificado al sistema PulmoLink INO.<br>Tu sesión está activa.</p>
+      <div class="token-box" id="token-display"></div>
+      <button class="btn-dash" onclick="irAlDashboard()">
+        Ir al dashboard →
+      </button>
+      <div style="margin-top:12px;font-size:11px;color:var(--text-3)">
+        Guarda el token de arriba si necesitas acceder a la API directamente.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+let tokenTemporal = '';
+
+function setLoading(btnId, loading, texto) {
+  const btn = document.getElementById(btnId);
+  btn.disabled = loading;
+  btn.innerHTML = loading ? '<div class="spinner"></div> Verificando...' : texto;
+}
+
+function mostrarMsg(id, texto, tipo) {
+  const el = document.getElementById(id);
+  el.textContent = texto;
+  el.className = 'msg ' + tipo;
+}
+
+async function loginPaso1() {
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  if (!email || !password) {
+    return mostrarMsg('msg-1', 'Por favor ingresa tu email y contraseña.', 'error');
+  }
+
+  setLoading('btn-1', true, 'Continuar');
+  document.getElementById('msg-1').className = 'msg';
+
+  try {
+    const resp = await fetch(`${API}/api/v1/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await resp.json();
+
+    if (resp.ok && data.tokenTemporal) {
+      tokenTemporal = data.tokenTemporal;
+      document.getElementById('step-1').classList.remove('active');
+      document.getElementById('step-2').classList.add('active');
+      setTimeout(() => document.getElementById('mfa-code').focus(), 100);
+    } else {
+      mostrarMsg('msg-1', data.error || 'Email o contraseña incorrectos.', 'error');
+    }
+  } catch(e) {
+    mostrarMsg('msg-1', 'No se pudo conectar con el servidor. Verifica tu conexión.', 'error');
+  }
+  setLoading('btn-1', false, 'Continuar');
+}
+
+async function loginPaso2() {
+  const codigo = document.getElementById('mfa-code').value.trim();
+
+  if (codigo.length !== 6) {
+    return mostrarMsg('msg-2', 'El código debe tener exactamente 6 dígitos.', 'error');
+  }
+
+  setLoading('btn-2', true, 'Verificar y entrar');
+  document.getElementById('msg-2').className = 'msg';
+
+  try {
+    const resp = await fetch(`${API}/api/v1/auth/login/mfa`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${tokenTemporal}`
+      },
+      body: JSON.stringify({ codigo })
+    });
+    const data = await resp.json();
+
+    if (resp.ok && data.token) {
+      localStorage.setItem('pulmolink_token', data.token);
+      localStorage.setItem('pulmolink_usuario', JSON.stringify(data.usuario));
+
+      document.getElementById('nombre-bienvenida').textContent =
+        data.usuario?.nombre || 'Doctor';
+      document.getElementById('token-display').textContent =
+        data.token.substring(0, 60) + '...';
+
+      document.getElementById('step-2').classList.remove('active');
+      document.getElementById('step-ok').classList.add('active');
+    } else {
+      mostrarMsg('msg-2', data.error || 'Código incorrecto. Verifica Google Authenticator.', 'error');
+    }
+  } catch(e) {
+    mostrarMsg('msg-2', 'No se pudo conectar con el servidor.', 'error');
+  }
+  setLoading('btn-2', false, 'Verificar y entrar');
+}
+
+function volverPaso1() {
+  tokenTemporal = '';
+  document.getElementById('mfa-code').value = '';
+  document.getElementById('msg-2').className = 'msg';
+  document.getElementById('step-2').classList.remove('active');
+  document.getElementById('step-1').classList.add('active');
+}
+
+function irAlDashboard() {
+  window.location.href = '/dashboard/index.html';
+}
+</script>
+</body>
+</html>
