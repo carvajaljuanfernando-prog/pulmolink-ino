@@ -39,6 +39,9 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/registro', (req, res) => {
+  app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/login.html'));
+});
   res.sendFile(path.join(__dirname, '../frontend/registro.html'));
 });
 
