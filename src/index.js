@@ -1,11 +1,9 @@
-// src/index.js
-// Servidor principal — PulmoLink INO API
-
 require('dotenv').config();
 const express      = require('express');
 const helmet       = require('helmet');
 const cors         = require('cors');
 const rateLimit    = require('express-rate-limit');
+const path         = require('path');
 
 const alertasRouter      = require('./routes/alertas');
 const authRouter         = require('./routes/auth');
@@ -15,52 +13,36 @@ const examenesRouter     = require('./routes/examenes');
 const app  = express();
 const PORT = process.env.PORT || 3000;
 
-// ── Seguridad ────────────────────────────────────────────────
-app.use(helmet());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN?.split(',') || ['http://localhost:3001'],
-  credentials: true,
-}));
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({ origin: '*', credentials: true }));
 
-// Rate limiting global: 100 req/min por IP
 app.use(rateLimit({
   windowMs: 60 * 1000,
-  max: 100,
+  max: 200,
   standardHeaders: true,
   message: { error: 'Demasiadas solicitudes. Intenta en un momento.' },
 }));
 
-// Rate limiting estricto para reportes de síntomas: 30 req/min
-const limiteReportes = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  message: { error: 'Límite de reportes alcanzado. Espera un momento.' },
-});
-
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ── Rutas ────────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname, '../frontend')));
+
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1', alertasRouter);
 app.use('/api/v1/evaluaciones', evaluacionesRouter);
 app.use('/api/v1/pacientes', evaluacionesRouter);
 app.use('/api/v1/examenes', examenesRouter);
-app.use('/api/v1', limiteReportes, alertasRouter);
 
-// ── Health check ─────────────────────────────────────────────
-const path2 = require('path');
-app.get('/registro', (req, res) => {
-  res.sendFile(path2.join(__dirname, '../frontend/registro.html'));
-});
-app.use(express.static(path2.join(__dirname, '../frontend')));
 app.get('/health', (req, res) => {
-  res.json({
-    status: 'ok',
-    sistema: 'PulmoLink INO',
-    version: '0.1.0',
-    timestamp: new Date().toISOString(),
-  });
+  res.json({ status: 'ok', sistema: 'PulmoLink INO', version: '0.1.0', timestamp: new Date().toISOString() });
 });
+
+app.get('/registro', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/registro.html'));
+});
+
+// ENDPOINT TEMPORAL: migración base de datos
 app.get('/setup-db-ino-hp-2026', async (req, res) => {
   if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
   try {
@@ -87,44 +69,39 @@ app.get('/setup-db-ino-hp-2026', async (req, res) => {
     for (const sql of tablas) {
       try {
         await pool.query(sql);
-        const nombre = sql.includes('CREATE TABLE') ? sql.match(/CREATE TABLE IF NOT EXISTS (\w+)/)?.[1] : sql.match(/CREATE EXTENSION.*"(\w+)"/)?.[1];
+        const nombre = sql.match(/CREATE TABLE IF NOT EXISTS (\w+)/)?.[1] || sql.match(/CREATE EXTENSION.*?"(\w+)"/)?.[1];
         resultados.push({ ok: true, tabla: nombre });
       } catch(e) {
         resultados.push({ ok: false, tabla: sql.substring(0,60), error: e.message });
       }
     }
     const errores = resultados.filter(r => !r.ok);
-    return res.json({ status: errores.length === 0 ? 'ok' : 'parcial', tablas_creadas: resultados.filter(r=>r.ok).length, errores, detalle: resultados });
+    return res.json({ status: errores.length === 0 ? 'ok' : 'parcial', tablas_creadas: resultados.filter(r=>r.ok).length, errores });
   } catch (err) { return res.status(500).json({ error: err.message }); }
 });
+
+// ENDPOINT TEMPORAL: crear primer administrador
 app.get('/crear-admin-ino-2026', async (req, res) => {
   if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
   try {
     const { registrarProfesional } = require('./services/authService');
     const resultado = await registrarProfesional({
-      nombre:       req.query.nombre      || 'Juan Fernando',
-      apellido:     req.query.apellido    || 'Carvajal',
-      email:        req.query.email       || 'jcarvajal@ino.com.co',
-      password:     req.query.password    || 'PulmoLink2026!',
-      especialidad: req.query.especialidad|| 'Cardiología',
-      rol:          req.query.rol         || 'cardiólogo',
-      sede_ino:     'principal',
+      nombre:        req.query.nombre       || 'Juan Fernando',
+      apellido:      req.query.apellido     || 'Carvajal',
+      email:         req.query.email        || 'admin@ino.com.co',
+      password:      req.query.password     || 'PulmoLink2026!',
+      especialidad:  req.query.especialidad || 'Cardiología',
+      rol:           req.query.rol          || 'cardiólogo',
+      sede_ino:      'principal',
     });
-    return res.json({ ok: true, profesional: resultado.profesional, mfa_secret: resultado.mfa });
+    return res.json({ ok: true, profesional: resultado.profesional, mfa: resultado.mfa });
   } catch (err) { return res.status(500).json({ error: err.message }); }
 });
-```
 
-Commit → espera redeploy → abre esta URL con tus datos reales:
-```
-https://pulmolink-ino-production.up.railway.app/crear-admin-ino-2026?key=pulmolink-ino-setup&nombre=Juan Fernando&apellido=Carvajal&email=tucorreo@ino.com.co&password=TuClave2026!&especialidad=Cardiología&rol=cardiólogo
-});
-// ── 404 ──────────────────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: 'Ruta no encontrada' });
 });
 
-// ── Error handler global ─────────────────────────────────────
 app.use((err, req, res, next) => {
   console.error('[ERROR]', err.message);
   res.status(500).json({ error: 'Error interno del servidor' });
@@ -138,7 +115,6 @@ app.listen(PORT, () => {
 ║   Instituto Neumológico del Oriente               ║
 ╠══════════════════════════════════════════════════╣
 ║   Puerto: ${PORT}                                      ║
-║   Entorno: ${(process.env.NODE_ENV || 'development').padEnd(38)}║
 ╚══════════════════════════════════════════════════╝
   `);
 });
