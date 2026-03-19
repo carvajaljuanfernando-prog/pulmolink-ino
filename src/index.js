@@ -48,6 +48,11 @@ app.use('/api/v1/examenes', examenesRouter);
 app.use('/api/v1', limiteReportes, alertasRouter);
 
 // ── Health check ─────────────────────────────────────────────
+const path2 = require('path');
+app.get('/registro', (req, res) => {
+  res.sendFile(path2.join(__dirname, '../frontend/registro.html'));
+});
+app.use(express.static(path2.join(__dirname, '../frontend')));
 app.get('/health', (req, res) => {
   res.json({
     status: 'ok',
