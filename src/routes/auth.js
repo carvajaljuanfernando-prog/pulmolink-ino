@@ -40,7 +40,15 @@ const esquemaPaciente = Joi.object({
   canal_preferido:    Joi.string().valid('app','sms','whatsapp','email').default('app'),
   cuidador_id:        Joi.string().uuid().allow(null),
   profesional_id:     Joi.string().uuid().allow(null),
-  fecha_ingreso_prog: Joi.date().allow(null),
+  fecha_ingreso_prog:   Joi.date().allow(null),
+  sexo:                 Joi.string().valid('masculino','femenino','otro').allow(null),
+  eps:                  Joi.string().max(120).allow(null, ''),
+  ciudad_residencia:    Joi.string().max(100).allow(null, ''),
+  segundo_nombre:       Joi.string().max(80).allow(null, ''),
+  segundo_apellido:     Joi.string().max(80).allow(null, ''),
+  estrato_socioeconomico: Joi.number().integer().min(1).max(6).allow(null),
+  estado_civil:         Joi.string().valid('soltero','casado','union_libre','separado','viudo','otro').allow(null),
+  ocupacion:            Joi.string().max(100).allow(null, ''),
 });
 
 const esquemaProfesional = Joi.object({
