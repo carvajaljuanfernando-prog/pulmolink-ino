@@ -294,9 +294,9 @@ async function hacerLogin(){
   try{
     const resp=await fetch(`${API}/api/v1/auth/login`,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password:pass,tipo:"paciente"})});
     const data=await resp.json();
-    if(resp.ok&&data.token){
-      estado.token=data.token;estado.usuario=data.usuario;
-      localStorage.setItem("pulmolink_pac_token",data.token);
+    if(resp.ok&&(data.token||data.access_token)){
+      estado.token=data.token||data.access_token;estado.usuario=data.usuario;
+localStorage.setItem("pulmolink_pac_token",data.token||data.access_token);
       localStorage.setItem("pulmolink_pac_usuario",JSON.stringify(data.usuario));
       mostrarHome();
     }else{mostrarMsg("msg-login",data.error||"Email o contraseña incorrectos.","error");}
