@@ -33,7 +33,39 @@ app.get('/health', (req, res) => {
 app.get('/registro', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/registro.html'));
 });
+app.get('/fix-tabla-pacientes', async (req, res) => {
+  if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
+  try {
+    const { pool } = require('./config/db');
+    const fixes = [
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS telefono VARCHAR(30)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS sexo VARCHAR(10)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS eps VARCHAR(120)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS ciudad_residencia VARCHAR(100)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS segundo_nombre VARCHAR(120)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS segundo_apellido VARCHAR(120)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS estrato_socioeconomico SMALLINT`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS estado_civil VARCHAR(30)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS ocupacion VARCHAR(100)`,
+      `ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS diagnostico_hp VARCHAR(200)`,
+    ];
+    const resultados = [];
+    for (const sql of fixes) {
+      try {
+        await pool.query(sql);
+        resultados.push({ ok: true, sql: sql.substring(30, 70) });
+      } catch(e) {
+        resultados.push({ ok: false, sql: sql.substring(30, 70), error: e.message });
+      }
+    }
+    return res.json({ status: 'ok', resultados });
+  } catch(err) { return res.status(500).json({ error: err.message }); }
+});
+```
 
+Commit → espera redeploy → abre:
+```
+https://pulmolink-ino-production.up.railway.app/fix-tabla-pacientes?key=pulmolink-ino-setup
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
