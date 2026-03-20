@@ -12,6 +12,9 @@ const { autenticar, requiereRol } = require('../middleware/auth');
 
 // ── Validación del reporte de síntomas ──────────────────────
 const esquemaReporte = Joi.object({
+  const esquemaReporte = Joi.object({
+  paciente_id:         Joi.string().uuid().allow(null),
+  disnea_escala:       Joi.number().integer().min(0).max(10),
   disnea_escala:       Joi.number().integer().min(0).max(10),
   edema:               Joi.string().valid('ninguno','leve','moderado','severo'),
   sincope:             Joi.boolean(),
