@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Dashboard Clínico</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --navy:     #00425A;
+  --teal:     #006B8F;
+  --teal-mid: #007A9A;
+  --sky:      #00A3C4;
+  --sky-lt:   #B8E8F3;
+  --ice:      #E0F5FB;
+  --white:    #FFFFFF;
+  --bg:       #F2F7FA;
+  --surface:  #FFFFFF;
+  --border:   #D0E8F0;
+  --text-1:   #0A2330;
+  --text-2:   #3A5566;
+  --text-3:   #7A9AAA;
+  --red:      #D63E3E;
+  --red-lt:   #FDEAEA;
+  --amber:    #C07A00;
+  --amber-lt: #FEF3DC;
+  --green:    #1A7A4A;
+  --green-lt: #E2F5EC;
+  --radius:   10px;
+  --shadow:   0 2px 12px rgba(0,66,90,0.08);
+  --shadow-lg:0 8px 32px rgba(0,66,90,0.13);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text-1);
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ── SIDEBAR ───────────────────────────────── */
+.sidebar {
+  width: 220px;
+  min-height: 100vh;
+  background: var(--navy);
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.logo-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 36px; height: 36px;
+  background: var(--sky);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Mono', monospace;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--navy);
+  letter-spacing: -0.5px;
+}
+
+.logo-text { display: flex; flex-direction: column; }
+.logo-text strong {
+  font-size: 14px; font-weight: 600;
+  color: var(--white); letter-spacing: 0.2px;
+}
+.logo-text span {
+  font-size: 10px; color: rgba(255,255,255,0.5);
+  font-weight: 300; letter-spacing: 0.3px;
+}
+
+.sidebar-section {
+  padding: 16px 12px 8px;
+}
+.sidebar-section-label {
+  font-size: 10px; font-weight: 500;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 1.2px; text-transform: uppercase;
+  padding: 0 8px; margin-bottom: 4px;
+}
+
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.65);
+  font-size: 13px; font-weight: 400;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+  text-decoration: none;
+}
+.nav-item:hover { background: rgba(255,255,255,0.08); color: var(--white); }
+.nav-item.active {
+  background: rgba(0,163,196,0.2);
+  color: var(--sky);
+  font-weight: 500;
+}
+.nav-item svg { flex-shrink: 0; opacity: 0.7; }
+.nav-item.active svg { opacity: 1; }
+
+.nav-badge {
+  margin-left: auto;
+  background: var(--red);
+  color: white; font-size: 10px; font-weight: 600;
+  padding: 1px 6px; border-radius: 10px;
+}
+.nav-badge.amber { background: var(--amber); }
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.user-card {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.user-card:hover { background: rgba(255,255,255,0.07); }
+.user-avatar {
+  width: 32px; height: 32px;
+  background: linear-gradient(135deg, var(--sky) 0%, var(--teal) 100%);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: white; flex-shrink: 0;
+}
+.user-info strong { display: block; font-size: 12px; color: white; font-weight: 500; }
+.user-info span { font-size: 10px; color: rgba(255,255,255,0.45); }
+
+/* ── MAIN ──────────────────────────────────── */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+/* ── TOPBAR ────────────────────────────────── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 28px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 10;
+}
+
+.topbar-left { display: flex; flex-direction: column; }
+.topbar-title { font-size: 16px; font-weight: 600; color: var(--navy); }
+.topbar-sub { font-size: 11px; color: var(--text-3); font-weight: 300; }
+
+.topbar-right { display: flex; align-items: center; gap: 12px; }
+
+.btn-icon {
+  width: 36px; height: 36px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2);
+  transition: all 0.15s; position: relative;
+}
+.btn-icon:hover { background: var(--ice); border-color: var(--sky); color: var(--teal); }
+
+.notif-dot {
+  position: absolute; top: 7px; right: 7px;
+  width: 7px; height: 7px;
+  background: var(--red); border-radius: 50%;
+  border: 1.5px solid white;
+}
+
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 5px 10px; border-radius: 20px;
+  font-size: 11px; font-weight: 500;
+  background: var(--ice); color: var(--teal-mid);
+  border: 1px solid var(--sky-lt);
+}
+.chip .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+
+/* ── CONTENT ───────────────────────────────── */
+.content {
+  padding: 24px 28px;
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── STATS ROW ─────────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.stat-card:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
+
+.stat-card.critical { border-left: 3px solid var(--red); }
+.stat-card.high     { border-left: 3px solid var(--amber); }
+.stat-card.stable   { border-left: 3px solid var(--green); }
+.stat-card.total    { border-left: 3px solid var(--sky); }
+
+.stat-info {}
+.stat-value {
+  font-size: 28px; font-weight: 600;
+  line-height: 1; margin-bottom: 4px;
+}
+.stat-card.critical .stat-value { color: var(--red); }
+.stat-card.high     .stat-value { color: var(--amber); }
+.stat-card.stable   .stat-value { color: var(--green); }
+.stat-card.total    .stat-value { color: var(--teal); }
+
+.stat-label { font-size: 12px; color: var(--text-2); font-weight: 400; }
+.stat-sub { font-size: 10px; color: var(--text-3); margin-top: 2px; }
+
+.stat-icon {
+  width: 38px; height: 38px; border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+}
+.stat-card.critical .stat-icon { background: var(--red-lt); color: var(--red); }
+.stat-card.high     .stat-icon { background: var(--amber-lt); color: var(--amber); }
+.stat-card.stable   .stat-icon { background: var(--green-lt); color: var(--green); }
+.stat-card.total    .stat-icon { background: var(--ice); color: var(--teal); }
+
+/* ── GRID ──────────────────────────────────── */
+.grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+/* ── PANEL ─────────────────────────────────── */
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.panel-head {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.panel-title {
+  font-size: 13px; font-weight: 600; color: var(--navy);
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-actions { display: flex; gap: 6px; }
+
+.btn-sm {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 500;
+  border: 1px solid var(--border);
+  background: var(--bg); color: var(--text-2);
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-sm:hover { background: var(--ice); border-color: var(--sky); color: var(--teal); }
+.btn-sm.primary {
+  background: var(--teal); color: white; border-color: var(--teal);
+}
+.btn-sm.primary:hover { background: var(--navy); border-color: var(--navy); }
+
+/* ── FILTER TABS ───────────────────────────── */
+.filter-tabs {
+  display: flex; gap: 4px;
+  padding: 10px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.ftab {
+  padding: 5px 12px; border-radius: 6px;
+  font-size: 11px; font-weight: 500;
+  color: var(--text-2); cursor: pointer;
+  transition: all 0.15s; border: 1px solid transparent;
+  display: flex; align-items: center; gap: 5px;
+}
+.ftab:hover { background: var(--ice); color: var(--teal); }
+.ftab.active { background: var(--surface); border-color: var(--border); color: var(--navy); font-weight: 600; }
+.ftab .count {
+  font-size: 10px; padding: 1px 5px;
+  border-radius: 8px; font-weight: 600;
+}
+.ftab.all     .count { background: var(--ice); color: var(--teal); }
+.ftab.crit    .count { background: var(--red-lt); color: var(--red); }
+.ftab.high    .count { background: var(--amber-lt); color: var(--amber); }
+.ftab.med     .count { background: var(--green-lt); color: var(--green); }
+
+/* ── ALERTA ROW ────────────────────────────── */
+.alert-list { }
+
+.alert-row {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--border);
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  gap: 12px;
+  align-items: start;
+  cursor: pointer;
+  transition: background 0.12s;
+  animation: fadeIn 0.3s ease both;
+}
+.alert-row:hover { background: var(--ice); }
+.alert-row:last-child { border-bottom: none; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.alert-indicator {
+  width: 8px; height: 8px; border-radius: 50%;
+  margin-top: 5px; flex-shrink: 0;
+}
+.lvl-critica .alert-indicator { background: var(--red); box-shadow: 0 0 0 3px rgba(214,62,62,0.15); }
+.lvl-alta    .alert-indicator { background: var(--amber); box-shadow: 0 0 0 3px rgba(192,122,0,0.15); }
+.lvl-media   .alert-indicator { background: #1A7A4A; box-shadow: 0 0 0 3px rgba(26,122,74,0.12); }
+
+.alert-body {}
+.alert-patient {
+  font-size: 13px; font-weight: 600; color: var(--navy);
+  margin-bottom: 2px;
+  display: flex; align-items: center; gap: 7px;
+}
+.alert-tag {
+  font-size: 9px; font-weight: 600; letter-spacing: 0.5px;
+  padding: 2px 6px; border-radius: 4px;
+  text-transform: uppercase;
+}
+.lvl-critica .alert-tag { background: var(--red-lt); color: var(--red); }
+.lvl-alta    .alert-tag { background: var(--amber-lt); color: var(--amber); }
+.lvl-media   .alert-tag { background: var(--green-lt); color: var(--green); }
+
+.alert-motivo { font-size: 12px; color: var(--text-2); margin-bottom: 4px; line-height: 1.4; }
+.alert-meta {
+  display: flex; gap: 12px;
+  font-size: 11px; color: var(--text-3);
+}
+.alert-meta span { display: flex; align-items: center; gap: 3px; }
+
+.alert-action {
+  display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+}
+.alert-time {
+  font-size: 11px; color: var(--text-3);
+  font-family: 'DM Mono', monospace;
+}
+.badge-estado {
+  font-size: 10px; font-weight: 500; padding: 3px 8px;
+  border-radius: 5px;
+}
+.est-pendiente { background: var(--red-lt); color: var(--red); }
+.est-vista { background: var(--amber-lt); color: var(--amber); }
+.est-proceso { background: var(--ice); color: var(--teal); }
+
+/* ── PANEL LATERAL ─────────────────────────── */
+.side-panel { display: flex; flex-direction: column; gap: 16px; }
+
+/* ── QUICK STATS ───────────────────────────── */
+.mini-stat {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 11px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.mini-stat:last-child { border-bottom: none; }
+.mini-stat-label { font-size: 12px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+.mini-stat-val { font-size: 13px; font-weight: 600; color: var(--navy); font-family: 'DM Mono', monospace; }
+.mini-bar {
+  width: 60px; height: 4px; background: var(--border);
+  border-radius: 2px; overflow: hidden; margin-top: 3px;
+}
+.mini-bar-fill { height: 100%; border-radius: 2px; background: var(--sky); }
+
+/* ── PACIENTES CRÍTICOS ────────────────────── */
+.pac-item {
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: background 0.12s;
+}
+.pac-item:hover { background: var(--ice); }
+.pac-item:last-child { border-bottom: none; }
+
+.pac-avatar {
+  width: 34px; height: 34px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; color: white;
+}
+.pac-info { flex: 1; min-width: 0; }
+.pac-name { font-size: 12px; font-weight: 600; color: var(--navy); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pac-detail { font-size: 11px; color: var(--text-3); }
+.pac-status { flex-shrink: 0; }
+
+.status-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block;
+}
+.s-red    { background: var(--red); }
+.s-amber  { background: var(--amber); }
+.s-green  { background: var(--green); }
+.s-blue   { background: var(--sky); }
+
+/* ── MODAL ─────────────────────────────────── */
+.modal-backdrop {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,30,45,0.5);
+  z-index: 100; align-items: center; justify-content: center;
+  backdrop-filter: blur(2px);
+}
+.modal-backdrop.open { display: flex; }
+
+.modal {
+  background: var(--surface);
+  border-radius: 14px;
+  width: 540px; max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 80px rgba(0,30,45,0.25);
+  animation: slideUp 0.22s ease;
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: flex-start; justify-content: space-between;
+}
+.modal-title { font-size: 16px; font-weight: 600; color: var(--navy); }
+.modal-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+
+.btn-close {
+  width: 28px; height: 28px; border-radius: 6px;
+  border: 1px solid var(--border); background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; color: var(--text-2); flex-shrink: 0;
+  transition: all 0.15s;
+}
+.btn-close:hover { background: var(--red-lt); color: var(--red); border-color: var(--red); }
+
+.modal-body { padding: 20px 24px; }
+.modal-section { margin-bottom: 20px; }
+.modal-section-title {
+  font-size: 10px; font-weight: 600; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text-3);
+  margin-bottom: 10px;
+}
+
+.info-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.info-item {}
+.info-item label { font-size: 10px; color: var(--text-3); display: block; margin-bottom: 2px; }
+.info-item strong { font-size: 13px; color: var(--navy); font-weight: 500; }
+
+.sintomas-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.sintoma-chip {
+  padding: 8px 10px; border-radius: 8px;
+  text-align: center; border: 1px solid var(--border);
+}
+.sintoma-chip.active { background: var(--red-lt); border-color: var(--red); }
+.sintoma-chip.normal { background: var(--green-lt); border-color: #9ECFB8; }
+.sintoma-label { font-size: 10px; color: var(--text-3); margin-bottom: 3px; }
+.sintoma-val { font-size: 13px; font-weight: 600; }
+.sintoma-chip.active .sintoma-val { color: var(--red); }
+.sintoma-chip.normal .sintoma-val { color: var(--green); }
+
+.textarea-resolucion {
+  width: 100%; padding: 10px 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px;
+  color: var(--text-1); resize: vertical; min-height: 80px;
+  background: var(--bg); outline: none;
+  transition: border-color 0.15s;
+}
+.textarea-resolucion:focus { border-color: var(--sky); background: var(--surface); }
+
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px; justify-content: flex-end;
+}
+
+.btn-primary {
+  padding: 9px 20px; border-radius: 8px;
+  background: var(--teal); color: white;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  border: none; cursor: pointer; transition: all 0.15s;
+}
+.btn-primary:hover { background: var(--navy); }
+
+.btn-secondary {
+  padding: 9px 16px; border-radius: 8px;
+  background: var(--bg); color: var(--text-2);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  border: 1px solid var(--border); cursor: pointer; transition: all 0.15s;
+}
+.btn-secondary:hover { background: var(--ice); border-color: var(--sky); }
+
+.btn-danger {
+  padding: 9px 16px; border-radius: 8px;
+  background: var(--red-lt); color: var(--red);
+  font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+  border: 1px solid rgba(214,62,62,0.2); cursor: pointer; transition: all 0.15s;
+}
+.btn-danger:hover { background: var(--red); color: white; }
+
+/* ── NIVEL BADGE grande ─────────────────────── */
+.nivel-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 20px;
+  font-size: 12px; font-weight: 600;
+}
+.nb-critica { background: var(--red-lt); color: var(--red); border: 1px solid rgba(214,62,62,0.25); }
+.nb-alta    { background: var(--amber-lt); color: var(--amber); border: 1px solid rgba(192,122,0,0.25); }
+.nb-media   { background: var(--green-lt); color: var(--green); border: 1px solid rgba(26,122,74,0.2); }
+.nb-dot { width: 6px; height: 6px; border-radius: 50%; }
+.nb-critica .nb-dot { background: var(--red); }
+.nb-alta    .nb-dot { background: var(--amber); }
+.nb-media   .nb-dot { background: var(--green); }
+
+/* ── TOAST ──────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--navy); color: white;
+  padding: 12px 18px; border-radius: 10px;
+  font-size: 13px; font-weight: 400;
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  transform: translateY(80px); opacity: 0;
+  transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+  display: flex; align-items: center; gap: 8px;
+  max-width: 320px;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast-icon { flex-shrink: 0; }
+
+/* ── SCROLLBAR ──────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--sky-lt); }
+
+/* ── EMPTY STATE ────────────────────────────── */
+.empty-state {
+  padding: 40px 20px; text-align: center;
+  color: var(--text-3);
+}
+.empty-state svg { margin-bottom: 10px; opacity: 0.4; }
+.empty-state p { font-size: 13px; }
+
+/* ── PULSO animado para críticas ─────────────── */
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(214,62,62,0.15); }
+  50% { box-shadow: 0 0 0 6px rgba(214,62,62,0.05); }
+}
+.lvl-critica .alert-indicator { animation: pulse 2s ease infinite; }
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-badge">
+      <div class="logo-mark">INO</div>
+      <div class="logo-text">
+        <strong>PulmoLink</strong>
+        <span>Programa HP · INO</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Clínico</div>
+    <a class="nav-item active" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      Dashboard
+      <span class="nav-badge" id="nav-criticas">3</span>
+    </a>
+    <a class="nav-item" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+      Alertas
+      <span class="nav-badge amber" id="nav-alertas">7</span>
+    </a>
+    <a class="nav-item" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Pacientes
+    </a>
+    <a class="nav-item" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Evaluaciones
+    </a>
+    <a class="nav-item" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      Reportes
+    </a>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-section-label">Programa</div>
+    <a class="nav-item" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      Educación
+    </a>
+    <a class="nav-item" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+      Rehabilitación
+    </a>
+    <a class="nav-item" onclick="return false;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Mensajes
+    </a>
+  </div>
+
+  <div class="sidebar-footer">
+    <div class="user-card">
+      <div class="user-avatar">FB</div>
+      <div class="user-info">
+        <strong>Dr. Fabio Bolívar</strong>
+        <span>Neumólogo · Director</span>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ═════════════════════════════════════════════ -->
+<div class="main">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title">Panel de Control — HP</span>
+      <span class="topbar-sub">Instituto Neumológico del Oriente · Sede Principal · Bucaramanga</span>
+    </div>
+    <div class="topbar-right">
+      <div class="chip"><span class="dot"></span>Sistema activo</div>
+      <button class="btn-icon" title="Notificaciones" onclick="showToast('Sin nuevas notificaciones', '✓')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <span class="notif-dot"></span>
+      </button>
+      <button class="btn-icon" title="Actualizar" onclick="refreshData()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-card critical" onclick="filterAlerts('critica')">
+        <div class="stat-info">
+          <div class="stat-value" id="stat-criticas">3</div>
+          <div class="stat-label">Alertas críticas</div>
+          <div class="stat-sub">Requieren atención inmediata</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        </div>
+      </div>
+      <div class="stat-card high" onclick="filterAlerts('alta')">
+        <div class="stat-info">
+          <div class="stat-value" id="stat-altas">4</div>
+          <div class="stat-label">Alertas altas</div>
+          <div class="stat-sub">Respuesta en &lt; 2 horas</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+      </div>
+      <div class="stat-card stable" onclick="filterAlerts('all')">
+        <div class="stat-info">
+          <div class="stat-value" id="stat-estables">18</div>
+          <div class="stat-label">Pacientes estables</div>
+          <div class="stat-sub">Sin alertas activas</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+      </div>
+      <div class="stat-card total" onclick="return false;">
+        <div class="stat-info">
+          <div class="stat-value">25</div>
+          <div class="stat-label">Total pacientes HP</div>
+          <div class="stat-sub">Programa activo INO</div>
+        </div>
+        <div class="stat-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="grid-2">
+
+      <!-- PANEL ALERTAS -->
+      <div class="panel">
+        <div class="panel-head">
+          <span class="panel-title">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+            Alertas activas
+          </span>
+          <div class="panel-actions">
+            <button class="btn-sm" onclick="showToast('Exportando reporte PDF…', '📄')">Exportar</button>
+            <button class="btn-sm primary" onclick="showToast('Vista actualizada', '✓')">Actualizar</button>
+          </div>
+        </div>
+
+        <div class="filter-tabs">
+          <div class="ftab all active" onclick="filterAlerts('all', this)">Todas <span class="count">7</span></div>
+          <div class="ftab crit" onclick="filterAlerts('critica', this)">Críticas <span class="count">3</span></div>
+          <div class="ftab high" onclick="filterAlerts('alta', this)">Altas <span class="count">4</span></div>
+          <div class="ftab med" onclick="filterAlerts('media', this)">Medias <span class="count">0</span></div>
+        </div>
+
+        <div class="alert-list" id="alert-list"></div>
+      </div>
+
+      <!-- PANEL LATERAL -->
+      <div class="side-panel">
+
+        <!-- RESUMEN PROGRAMA -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              Resumen del programa
+            </span>
+          </div>
+          <div>
+            <div class="mini-stat">
+              <span class="mini-stat-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                Adherencia Morisky
+              </span>
+              <div>
+                <div class="mini-stat-val">76%</div>
+                <div class="mini-bar"><div class="mini-bar-fill" style="width:76%"></div></div>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-stat-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/></svg>
+                Módulos educativos
+              </span>
+              <div>
+                <div class="mini-stat-val">63%</div>
+                <div class="mini-bar"><div class="mini-bar-fill" style="width:63%; background:var(--teal-mid)"></div></div>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-stat-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+                Rehab. completada
+              </span>
+              <div>
+                <div class="mini-stat-val">81%</div>
+                <div class="mini-bar"><div class="mini-bar-fill" style="width:81%; background:var(--green)"></div></div>
+              </div>
+            </div>
+            <div class="mini-stat">
+              <span class="mini-stat-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                SF-12 promedio
+              </span>
+              <div>
+                <div class="mini-stat-val">48.3</div>
+                <div class="mini-bar"><div class="mini-bar-fill" style="width:48%; background:var(--sky)"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- PACIENTES CRÍTICOS -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+              Pacientes en vigilancia
+            </span>
+          </div>
+          <div id="watchlist"></div>
+        </div>
+
+        <!-- DISTRIBUCIÓN CLASE OMS -->
+        <div class="panel">
+          <div class="panel-head">
+            <span class="panel-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+              Distribución clase OMS
+            </span>
+          </div>
+          <div style="padding: 16px 20px;">
+            <div id="oms-bars"></div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MODAL DETALLE ALERTA ════════════════════════════ -->
+<div class="modal-backdrop" id="modal-alerta" onclick="handleBackdropClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Detalle de alerta</div>
+        <div class="modal-sub" id="modal-sub">Paciente · Programa HP INO</div>
+      </div>
+      <button class="btn-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+    <div class="modal-footer">
+      <button class="btn-secondary" onclick="showToast('Videollamada iniciada', '📹'); closeModal()">Videollamada</button>
+      <button class="btn-secondary" onclick="showToast('Chat abierto con el paciente', '💬'); closeModal()">Chat</button>
+      <button class="btn-primary" onclick="resolverAlerta()">Marcar resuelta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOAST ════════════════════════════════════════════ -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toast-icon">✓</span>
+  <span id="toast-msg">Acción completada</span>
+</div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+
+// ═══════════════════════════════════════════════════════
+// ESTADO
+// ═══════════════════════════════════════════════════════
+let ALERTAS = [];
+let filtroActivo = 'all';
+let alertaSeleccionada = null;
+let token = localStorage.getItem('pulmolink_token');
+
+// ═══════════════════════════════════════════════════════
+// INIT — verificar sesión y cargar datos
+// ═══════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  if (!token) {
+    window.location.href = '/login';
+    return;
+  }
+  await cargarDatos();
+  // Refrescar alertas cada 60 segundos automáticamente
+  setInterval(cargarAlertas, 60000);
+});
+
+// ═══════════════════════════════════════════════════════
+// CARGA DE DATOS DESDE EL API
+// ═══════════════════════════════════════════════════════
+async function cargarDatos() {
+  await Promise.all([cargarAlertas(), cargarPacientesWatchlist()]);
+  renderOMS();
+}
+
+async function cargarAlertas() {
+  try {
+    const resp = await fetch(`${API}/api/v1/alertas?estado=todas&limite=50`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (resp.status === 401) { window.location.href = '/login'; return; }
+    const data = await resp.json();
+
+    // Convertir formato API → formato del dashboard
+    ALERTAS = (data.alertas || []).map(a => ({
+      id:          a.id,
+      nivel:       a.nivel,
+      estado:      a.estado,
+      paciente:    a.paciente_nombre || 'Paciente',
+      edad:        calcularEdad(a.fecha_nacimiento),
+      grupo:       a.grupo_etario || 'adulto',
+      clase_oms:   a.clase_funcional_oms || null,
+      diagnostico: a.diagnostico_hp || 'HP — Programa INO',
+      motivo:      a.motivo,
+      tiempo:      tiempoRelativo(a.created_at),
+      sintomas: {
+        disnea:     a.disnea_escala,
+        spo2:       a.spo2,
+        edema:      a.edema || 'ninguno',
+        sincope:    a.sincope || false,
+        hemoptisis: a.hemoptisis || false,
+        dolor:      false,
+      },
+      profesional: 'Equipo INO',
+      notas:       a.notas || '',
+    }));
+
+    updateCounts();
+    renderAlertas(filtroActivo);
+    renderWatchlist();
+  } catch(e) {
+    console.error('[cargarAlertas]', e);
+    showToast('Error al cargar alertas', '⚠');
+  }
+}
+
+async function cargarPacientesWatchlist() {
+  // Los pacientes en vigilancia son los que tienen alertas críticas o altas activas
+  // Ya los tenemos de las alertas — se renderizan en renderWatchlist()
+}
+
+// ═══════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════
+function renderAlertas(filtro = 'all') {
+  const lista = document.getElementById('alert-list');
+  const datos = filtro === 'all' ? ALERTAS : ALERTAS.filter(a => a.nivel === filtro);
+
+  if (datos.length === 0) {
+    lista.innerHTML = `<div class="empty-state">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="20 6 9 17 4 12"/></svg>
+      <p>Sin alertas en este nivel</p>
+    </div>`;
+    return;
+  }
+
+  lista.innerHTML = datos.map((a, i) => `
+    <div class="alert-row lvl-${a.nivel}" onclick="openModal('${a.id}')"
+         style="animation-delay:${i * 0.05}s">
+      <div class="alert-indicator"></div>
+      <div class="alert-body">
+        <div class="alert-patient">
+          ${a.paciente}
+          <span class="alert-tag">${a.nivel.toUpperCase()}</span>
+        </div>
+        <div class="alert-motivo">${a.motivo}</div>
+        <div class="alert-meta">
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+            ${a.grupo ? etarioLabel(a.grupo) : 'Adulto'}
+          </span>
+          ${a.clase_oms ? `<span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>OMS ${numToRoman(a.clase_oms)}</span>` : ''}
+          <span>
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            ${a.tiempo}
+          </span>
+        </div>
+      </div>
+      <div class="alert-action">
+        <span class="alert-time">${a.tiempo.replace('hace ','')}</span>
+        <span class="badge-estado est-${a.estado}">${estadoLabel(a.estado)}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderWatchlist() {
+  // Mostrar pacientes con alertas críticas o altas pendientes
+  const enVigilancia = ALERTAS
+    .filter(a => (a.nivel === 'critica' || a.nivel === 'alta') && a.estado !== 'resuelta')
+    .slice(0, 5);
+
+  if (enVigilancia.length === 0) {
+    document.getElementById('watchlist').innerHTML = `
+      <div style="padding:16px;text-align:center;font-size:13px;color:var(--text-3)">
+        Sin pacientes en vigilancia activa
+      </div>`;
+    return;
+  }
+
+  const colores = { critica: '#D63E3E', alta: '#C07A00', media: '#007A9A' };
+  const statusDot = { critica: 's-red', alta: 's-amber', media: 's-teal' };
+
+  document.getElementById('watchlist').innerHTML = enVigilancia.map(a => {
+    const ini = a.paciente.split(' ').slice(0,2).map(n => n[0]).join('');
+    const detalle = [
+      a.sintomas.spo2 ? `SpO₂ ${a.sintomas.spo2}%` : null,
+      a.sintomas.sincope ? 'Síncope' : null,
+      a.sintomas.hemoptisis ? 'Hemoptisis' : null,
+      a.clase_oms ? `Clase OMS ${numToRoman(a.clase_oms)}` : null,
+    ].filter(Boolean).slice(0,2).join(' · ') || a.nivel;
+
+    return `
+      <div class="pac-item" onclick="openModal('${a.id}')">
+        <div class="pac-avatar" style="background:${colores[a.nivel]}">${ini}</div>
+        <div class="pac-info">
+          <div class="pac-name">${a.paciente}</div>
+          <div class="pac-detail">${detalle}</div>
+        </div>
+        <div class="pac-status">
+          <span class="status-dot ${statusDot[a.nivel]}"></span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function renderOMS() {
+  // Distribución basada en alertas reales (simplificada)
+  // En producción vendría de un endpoint de estadísticas
+  const clases = [
+    { clase: 'Clase I',   n: 0, color: '#1A7A4A', pct: 0 },
+    { clase: 'Clase II',  n: 0, color: '#007A9A', pct: 0 },
+    { clase: 'Clase III', n: 0, color: '#C07A00', pct: 0 },
+    { clase: 'Clase IV',  n: 0, color: '#D63E3E', pct: 0 },
+  ];
+
+  ALERTAS.forEach(a => {
+    if (a.clase_oms >= 1 && a.clase_oms <= 4) clases[a.clase_oms - 1].n++;
+  });
+
+  const total = clases.reduce((s, c) => s + c.n, 0) || 1;
+  clases.forEach(c => c.pct = Math.round((c.n / total) * 100));
+
+  document.getElementById('oms-bars').innerHTML = clases.map(d => `
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text-2);font-weight:500">${d.clase}</span>
+        <span style="font-size:12px;color:var(--text-2);font-family:'DM Mono',monospace">${d.n} pac.</span>
+      </div>
+      <div style="height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+        <div style="height:100%;width:${d.pct}%;background:${d.color};border-radius:3px;transition:width 0.8s cubic-bezier(.4,0,.2,1)"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// MODAL
+// ═══════════════════════════════════════════════════════
+function openModal(id) {
+  alertaSeleccionada = ALERTAS.find(a => a.id === id);
+  if (!alertaSeleccionada) return;
+  const a = alertaSeleccionada;
+
+  document.getElementById('modal-title').textContent = a.paciente;
+  document.getElementById('modal-sub').textContent = `${a.diagnostico} · Alerta ${a.nivel} · ${a.tiempo}`;
+
+  const s = a.sintomas;
+  document.getElementById('modal-body').innerHTML = `
+    <div class="modal-section">
+      <div class="modal-section-title">Nivel de alerta</div>
+      <span class="nivel-badge nb-${a.nivel}">
+        <span class="nb-dot"></span>
+        ${a.nivel.charAt(0).toUpperCase() + a.nivel.slice(1)} — ${a.motivo}
+      </span>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Datos del paciente</div>
+      <div class="info-grid">
+        <div class="info-item"><label>Grupo etario</label><strong>${etarioLabel(a.grupo)}</strong></div>
+        ${a.clase_oms ? `<div class="info-item"><label>Clase funcional OMS</label><strong>${numToRoman(a.clase_oms)}</strong></div>` : ''}
+        <div class="info-item"><label>Diagnóstico</label><strong>${a.diagnostico}</strong></div>
+        <div class="info-item"><label>Estado alerta</label><strong>${estadoLabel(a.estado)}</strong></div>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">Síntomas reportados</div>
+      <div class="sintomas-grid">
+        <div class="sintoma-chip ${s.disnea >= 7 ? 'active' : 'normal'}">
+          <div class="sintoma-label">Disnea</div>
+          <div class="sintoma-val">${s.disnea != null ? s.disnea + '/10' : 'N/D'}</div>
+        </div>
+        <div class="sintoma-chip ${s.spo2 && s.spo2 < 91 ? 'active' : 'normal'}">
+          <div class="sintoma-label">SpO₂</div>
+          <div class="sintoma-val">${s.spo2 ? s.spo2 + '%' : 'N/D'}</div>
+        </div>
+        <div class="sintoma-chip ${s.edema !== 'ninguno' && s.edema !== 'leve' ? 'active' : 'normal'}">
+          <div class="sintoma-label">Edema</div>
+          <div class="sintoma-val">${s.edema || 'ninguno'}</div>
+        </div>
+        <div class="sintoma-chip ${s.sincope ? 'active' : 'normal'}">
+          <div class="sintoma-label">Síncope</div>
+          <div class="sintoma-val">${s.sincope ? 'Sí' : 'No'}</div>
+        </div>
+        <div class="sintoma-chip ${s.hemoptisis ? 'active' : 'normal'}">
+          <div class="sintoma-label">Hemoptisis</div>
+          <div class="sintoma-val">${s.hemoptisis ? 'Sí' : 'No'}</div>
+        </div>
+        <div class="sintoma-chip ${s.dolor ? 'active' : 'normal'}">
+          <div class="sintoma-label">Dolor torácico</div>
+          <div class="sintoma-val">${s.dolor ? 'Sí' : 'No'}</div>
+        </div>
+      </div>
+    </div>
+
+    ${a.notas ? `
+    <div class="modal-section">
+      <div class="modal-section-title">Notas del paciente</div>
+      <p style="font-size:13px;color:var(--text-2);background:var(--bg);padding:10px 12px;border-radius:8px;border:1px solid var(--border);line-height:1.6">${a.notas}</p>
+    </div>` : ''}
+
+    <div class="modal-section">
+      <div class="modal-section-title">Resolución / Acción tomada</div>
+      <textarea class="textarea-resolucion" id="resolucion-txt"
+        placeholder="Describe la acción clínica tomada: llamada al paciente, ajuste de medicamento, orden de examen, ingreso a urgencias…"></textarea>
+    </div>
+  `;
+
+  document.getElementById('modal-alerta').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal-alerta').classList.remove('open');
+  alertaSeleccionada = null;
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('modal-alerta')) closeModal();
+}
+
+async function resolverAlerta() {
+  const txt = document.getElementById('resolucion-txt')?.value;
+  if (!txt || txt.trim().length < 10) {
+    showToast('Describe la acción tomada antes de resolver', '⚠');
+    return;
+  }
+
+  if (!alertaSeleccionada) return;
+
+  try {
+    const resp = await fetch(`${API}/api/v1/alertas/${alertaSeleccionada.id}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ estado: 'resuelta', resolucion: txt })
+    });
+
+    if (resp.ok) {
+      closeModal();
+      showToast('Alerta resuelta y registrada en auditoría', '✓');
+      await cargarAlertas(); // Recargar desde el API
+    } else {
+      const d = await resp.json();
+      showToast(d.error || 'Error al resolver la alerta', '⚠');
+    }
+  } catch(e) {
+    showToast('Error de conexión', '⚠');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// FILTROS Y CONTADORES
+// ═══════════════════════════════════════════════════════
+function filterAlerts(nivel, el) {
+  filtroActivo = nivel;
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  else {
+    const map = { all: 0, critica: 1, alta: 2, media: 3 };
+    document.querySelectorAll('.ftab')[map[nivel] ?? 0]?.classList.add('active');
+  }
+  renderAlertas(nivel);
+}
+
+function updateCounts() {
+  const criticas  = ALERTAS.filter(a => a.nivel === 'critica').length;
+  const altas     = ALERTAS.filter(a => a.nivel === 'alta').length;
+  const medias    = ALERTAS.filter(a => a.nivel === 'media').length;
+  const pendientes = ALERTAS.filter(a => a.estado === 'pendiente').length;
+
+  document.getElementById('stat-criticas').textContent  = criticas;
+  document.getElementById('stat-altas').textContent     = altas;
+  document.getElementById('stat-estables').textContent  = ALERTAS.filter(a => a.estado === 'resuelta').length;
+
+  const totalEl = document.getElementById('stat-total');
+  if (totalEl) totalEl.textContent = ALERTAS.length;
+
+  const navCrit = document.getElementById('nav-criticas');
+  if (navCrit) navCrit.textContent = criticas;
+
+  const navAlert = document.getElementById('nav-alertas');
+  if (navAlert) navAlert.textContent = ALERTAS.length;
+
+  const ftabs = document.querySelectorAll('.ftab .count');
+  if (ftabs[0]) ftabs[0].textContent = ALERTAS.length;
+  if (ftabs[1]) ftabs[1].textContent = criticas;
+  if (ftabs[2]) ftabs[2].textContent = altas;
+  if (ftabs[3]) ftabs[3].textContent = medias;
+}
+
+async function refreshData() {
+  await cargarDatos();
+  showToast('Panel actualizado desde el servidor', '↻');
+}
+
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
+let toastTimer;
+function showToast(msg, icon = '✓') {
+  clearTimeout(toastTimer);
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  t.classList.add('show');
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ═══════════════════════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════════════════════
+function etarioLabel(g) {
+  return { pediatrico:'Pediátrico', adolescente:'Adolescente', adulto:'Adulto', adulto_mayor:'Adulto mayor' }[g] || g;
+}
+function estadoLabel(e) {
+  return { pendiente:'Pendiente', vista:'Vista', en_proceso:'En proceso', resuelta:'Resuelta' }[e] || e;
+}
+function numToRoman(n) {
+  return ['I','II','III','IV'][n-1] || n;
+}
+function calcularEdad(fechaNac) {
+  if (!fechaNac) return null;
+  const hoy = new Date();
+  const nac = new Date(fechaNac);
+  return Math.floor((hoy - nac) / (365.25 * 24 * 60 * 60 * 1000));
+}
+function tiempoRelativo(isoDate) {
+  if (!isoDate) return '';
+  const diff = (Date.now() - new Date(isoDate)) / 1000;
+  if (diff < 60)   return 'justo ahora';
+  if (diff < 3600) return `hace ${Math.floor(diff/60)} min`;
+  if (diff < 86400) return `hace ${Math.floor(diff/3600)} h`;
+  return `hace ${Math.floor(diff/86400)} días`;
+}
+</script>
+</body>
+</html>
