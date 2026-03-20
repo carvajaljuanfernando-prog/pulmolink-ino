@@ -58,7 +58,16 @@ app.get('/fix-tabla-pacientes', async (req, res) => {
     return res.json({ status: 'ok', columnas_agregadas: resultados.filter(r=>r.ok).length, resultados });
   } catch(err) { return res.status(500).json({ error: err.message }); }
 });
-
+app.get('/buscar-paciente', async (req, res) => {
+  if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
+  try {
+    const { pool } = require('./config/db');
+    const { rows } = await pool.query(
+      'SELECT id, nombre, apellido, email FROM pacientes ORDER BY created_at DESC LIMIT 5'
+    );
+    return res.json({ pacientes: rows });
+  } catch(err) { return res.status(500).json({ error: err.message }); }
+});
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
