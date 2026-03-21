@@ -36,6 +36,7 @@ app.get('/fix-columnas-eval', async (req, res) => {
     await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN momento TYPE VARCHAR(20)`);
     await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN clasificacion TYPE VARCHAR(40)`);
     await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN aplicada_por TYPE VARCHAR(30)`);
+    await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN puntaje_morisky TYPE NUMERIC(5,2)`);
     return res.json({ ok: true, mensaje: 'Columnas actualizadas correctamente' });
   } catch(err) { return res.status(500).json({ error: err.message }); }
 });
