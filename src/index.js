@@ -45,7 +45,13 @@ app.get('/dashboard', (req, res) => {
 app.get('/educacion', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/educacion/index.html'));
 });
+app.get('/examenes', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/examenes/index.html'));
+});
 
+app.get('/riesgo', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/riesgo/index.html'));
+});
 app.get('/paciente', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/paciente/index.html'));
 });
