@@ -29,7 +29,19 @@ app.use('/api/v1/examenes', examenesRouter);
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', sistema: 'PulmoLink INO', version: '1.0.0', timestamp: new Date().toISOString() });
 });
-
+app.get('/fix-columnas-eval', async (req, res) => {
+  if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
+  try {
+    const { pool } = require('./config/db');
+    await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN momento TYPE VARCHAR(20)`);
+    await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN clasificacion TYPE VARCHAR(40)`);
+    await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN aplicada_por TYPE VARCHAR(30)`);
+    await pool.query(`ALTER TABLE evaluaciones ALTER COLUMN puntaje_morisky TYPE NUMERIC(5,2)`);
+    await pool.query(`ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS riesgo_hp VARCHAR(20)`);
+    await pool.query(`ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS grupo_hp_oms SMALLINT`);
+    return res.json({ ok: true, mensaje: 'Columnas actualizadas correctamente' });
+  } catch(err) { return res.status(500).json({ error: err.message }); }
+});
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
