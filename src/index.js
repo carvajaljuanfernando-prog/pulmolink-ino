@@ -48,19 +48,45 @@ app.get('/educacion', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/educacion/index.html'));
 });
 
-app.get('/paciente', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/paciente/index.html'));
-});
 app.get('/fix-rehabilitacion', async (req, res) => {
   if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
   try {
     const { pool } = require('./config/db');
-    await pool.query(`CREATE TABLE IF NOT EXISTS sesiones_rehabilitacion (id UUID PRIMARY KEY, paciente_id UUID NOT NULL, numero_sesion SMALLINT, fecha_sesion DATE, tipo_ejercicio VARCHAR(30), modalidad VARCHAR(40), intensidad_pct_c6m NUMERIC(5,1), tiempo_ejercicio_min SMALLINT, o2_suplementario NUMERIC(4,1) DEFAULT 0, progresion VARCHAR(30), spo2_pre NUMERIC(4,1), spo2_post NUMERIC(4,1), fc_pre SMALLINT, fc_post SMALLINT, pas_pre SMALLINT, pas_post SMALLINT, pad_pre SMALLINT, pad_post SMALLINT, fr_pre SMALLINT, fr_post SMALLINT, borg_disnea SMALLINT, borg_mmii SMALLINT, incidencia VARCHAR(40) DEFAULT 'no', incidencia_descripcion TEXT, observaciones TEXT, profesional_registro VARCHAR(120), sesion_completada VARCHAR(10) DEFAULT 'si', genera_alerta BOOLEAN DEFAULT FALSE, registrado_por UUID, created_at TIMESTAMPTZ DEFAULT NOW())`);
+    await pool.query('DROP TABLE IF EXISTS sesiones_rehabilitacion');
+    await pool.query(`CREATE TABLE sesiones_rehabilitacion (
+      id UUID PRIMARY KEY,
+      paciente_id UUID NOT NULL,
+      numero_sesion SMALLINT,
+      fecha_sesion DATE,
+      tipo_ejercicio VARCHAR(30),
+      modalidad VARCHAR(40),
+      intensidad_pct_c6m NUMERIC(5,1),
+      tiempo_ejercicio_min SMALLINT,
+      o2_suplementario NUMERIC(4,1) DEFAULT 0,
+      progresion VARCHAR(30),
+      spo2_pre NUMERIC(4,1), spo2_post NUMERIC(4,1),
+      fc_pre SMALLINT, fc_post SMALLINT,
+      pas_pre SMALLINT, pas_post SMALLINT,
+      pad_pre SMALLINT, pad_post SMALLINT,
+      fr_pre SMALLINT, fr_post SMALLINT,
+      borg_disnea SMALLINT, borg_mmii SMALLINT,
+      incidencia VARCHAR(40) DEFAULT 'no',
+      incidencia_descripcion TEXT,
+      observaciones TEXT,
+      profesional_registro VARCHAR(120),
+      sesion_completada VARCHAR(10) DEFAULT 'si',
+      genera_alerta BOOLEAN DEFAULT FALSE,
+      registrado_por UUID,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`);
     await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS sesiones_rhb_programadas SMALLINT DEFAULT 48');
     await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS sesiones_rhb_completadas SMALLINT DEFAULT 0');
     await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS fecha_inicio_rhb DATE');
     await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS tc6m_inicial_metros NUMERIC(5,1)');
     await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS tc6m_inicial_fecha DATE');
+    return res.json({ ok: true, mensaje: 'Tabla recreada con todas las columnas' });
+  } catch(err) { return res.status(500).json({ error: err.message }); }
+});    await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS tc6m_inicial_fecha DATE');
     return res.json({ ok: true, mensaje: 'Tabla rehabilitacion creada' });
   } catch(err) { return res.status(500).json({ error: err.message }); }
 });
