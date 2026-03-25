@@ -86,10 +86,6 @@ app.get('/fix-rehabilitacion', async (req, res) => {
     await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS tc6m_inicial_fecha DATE');
     return res.json({ ok: true, mensaje: 'Tabla recreada con todas las columnas' });
   } catch(err) { return res.status(500).json({ error: err.message }); }
-});    await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS tc6m_inicial_fecha DATE');
-    return res.json({ ok: true, mensaje: 'Tabla rehabilitacion creada' });
-  } catch(err) { return res.status(500).json({ error: err.message }); }
-});
 
 app.get('/rehabilitacion', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/rehabilitacion/index.html'));
