@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Nutrición</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white;flex:1}
+.container{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.pac-box{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pac-label{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap}
+.pac-select{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer}
+.pac-select:focus{border-color:var(--teal-lt)}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:11px 18px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all 0.15s}
+.tab.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:22px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text-2)}
+.field input,.field select,.field textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none;transition:border-color 0.15s;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}
+.field .unit{font-size:10px;color:var(--text-3);margin-top:1px}
+.field-full{grid-column:1/-1}
+.imc-display{background:var(--teal-pale);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:16px;margin-top:8px}
+.imc-val{font-size:28px;font-weight:700;color:var(--teal-dk)}
+.imc-label{font-size:13px;color:var(--teal-dk)}
+.semaforo{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px}
+.sem-card{border-radius:10px;padding:12px;text-align:center}
+.sem-verde{background:var(--green-lt);border:1px solid rgba(26,122,74,0.2)}
+.sem-amarillo{background:var(--amber-lt);border:1px solid rgba(192,122,0,0.2)}
+.sem-rojo{background:var(--red-lt);border:1px solid rgba(214,62,62,0.2)}
+.sem-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px}
+.sem-verde .sem-label{color:var(--green)}
+.sem-amarillo .sem-label{color:var(--amber)}
+.sem-rojo .sem-label{color:var(--red)}
+.sem-val{font-size:12px;color:var(--text-2);line-height:1.4}
+.alerta-box{border-radius:12px;padding:14px 18px;margin-bottom:14px;display:none;align-items:center;gap:12px}
+.alerta-box.visible{display:flex}
+.alerta-verde{background:var(--green-lt);border:1px solid rgba(26,122,74,0.3)}
+.alerta-amarillo{background:var(--amber-lt);border:1px solid rgba(192,122,0,0.3)}
+.alerta-rojo{background:var(--red-lt);border:2px solid rgba(214,62,62,0.4)}
+.alerta-txt{font-size:13px;font-weight:600;flex:1}
+.alerta-verde .alerta-txt{color:var(--green)}
+.alerta-amarillo .alerta-txt{color:var(--amber)}
+.alerta-rojo .alerta-txt{color:var(--red)}
+.hist-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.hist-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hist-fecha{font-size:13px;font-weight:700;color:var(--text-1)}
+.hist-tipo{font-size:11px;padding:3px 10px;border-radius:10px;font-weight:600}
+.tipo-inicial{background:var(--teal-pale);color:var(--teal-dk)}
+.tipo-final{background:var(--green-lt);color:var(--green)}
+.hist-vals{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--text-2)}
+.zona-badge{display:inline-block;padding:2px 10px;border-radius:8px;font-size:11px;font-weight:700}
+.zona-v{background:var(--green-lt);color:var(--green)}
+.zona-a{background:var(--amber-lt);color:var(--amber)}
+.zona-r{background:var(--red-lt);color:var(--red)}
+.btn-primary{padding:12px 28px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--teal-dk)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.actions{display:flex;gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+.spinner{width:15px;height:15px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.msg.error{background:var(--red-lt);color:var(--red);display:block}
+.msg.ok{background:var(--green-lt);color:var(--green);display:block}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--teal-dk);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;z-index:1000}
+.toast.show{display:flex}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/dashboard'">← Dashboard</button>
+  <div class="topbar-title">Valoración Nutricional — Programa HP INO</div>
+</div>
+
+<div class="container">
+
+  <div class="pac-box">
+    <div class="pac-label">Paciente</div>
+    <select class="pac-select" id="pac-select" onchange="seleccionarPaciente()">
+      <option value="">Selecciona un paciente...</option>
+    </select>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-val" onclick="cambiarTab('val')">📋 Valoración nutricional</button>
+    <button class="tab" id="tab-hist" onclick="cambiarTab('hist')">📅 Historial</button>
+  </div>
+
+  <!-- VALORACIÓN -->
+  <div class="panel active" id="panel-val">
+
+    <div id="alerta-imc" class="alerta-box"><span style="font-size:18px">⚠️</span><div class="alerta-txt" id="alerta-imc-txt"></div></div>
+
+    <!-- MOMENTO -->
+    <div class="card">
+      <div class="card-title">Datos generales</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Fecha de valoración</label>
+          <input type="date" id="nut-fecha">
+        </div>
+        <div class="field">
+          <label>Momento de evaluación</label>
+          <select id="nut-momento">
+            <option value="inicial">Valoración inicial</option>
+            <option value="final">Valoración final</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Nutricionista</label>
+          <input type="text" id="nut-profesional" placeholder="Nombre del profesional">
+        </div>
+      </div>
+    </div>
+
+    <!-- ANTROPOMETRÍA -->
+    <div class="card">
+      <div class="card-title">Antropometría</div>
+      <div class="semaforo">
+        <div class="sem-card sem-verde"><div class="sem-label">🟢 Normal</div><div class="sem-val">IMC 18.5–29.9</div></div>
+        <div class="sem-card sem-amarillo"><div class="sem-label">🟡 Riesgo</div><div class="sem-val">IMC 17–18.4 ó 30–34.9</div></div>
+        <div class="sem-card sem-rojo"><div class="sem-label">🔴 Alto riesgo</div><div class="sem-val">IMC &lt;17 ó ≥35</div></div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Peso (kg)</label>
+          <input type="number" id="nut-peso" step="0.1" min="10" max="300" placeholder="ej. 68.5" oninput="calcularIMC()">
+        </div>
+        <div class="field">
+          <label>Talla (cm)</label>
+          <input type="number" id="nut-talla" step="0.1" min="50" max="250" placeholder="ej. 165" oninput="calcularIMC()">
+        </div>
+        <div class="field">
+          <label>Cambio de peso</label>
+          <select id="nut-cambio-peso">
+            <option value="">Seleccionar...</option>
+            <option value="estable">Estable</option>
+            <option value="aumento">Aumento</option>
+            <option value="perdida_controlada">Pérdida controlada</option>
+            <option value="perdida_2_5">Pérdida 2–5% no planificada</option>
+            <option value="perdida_mayor_5">Pérdida >5% (sin obesidad)</option>
+          </select>
+        </div>
+      </div>
+      <div class="imc-display" id="imc-display" style="display:none">
+        <div class="imc-val" id="imc-val">--</div>
+        <div>
+          <div class="imc-label" id="imc-label">IMC calculado</div>
+          <span class="zona-badge" id="imc-zona">--</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CIRCUNFERENCIAS -->
+    <div class="card">
+      <div class="card-title">Circunferencias</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Circunferencia de brazo (PB)</label>
+          <input type="number" id="nut-pb" step="0.1" min="10" max="60" placeholder="ej. 28">
+          <div class="unit">cm</div>
+        </div>
+        <div class="field">
+          <label>Circunferencia abdominal (CCA)</label>
+          <input type="number" id="nut-cca" step="0.1" min="40" max="200" placeholder="ej. 88" oninput="evaluarCircAbdominal()">
+          <div class="unit">cm</div>
+        </div>
+        <div class="field">
+          <label>Circunferencia de pantorrilla</label>
+          <input type="number" id="nut-pantorrilla" step="0.1" min="15" max="60" placeholder="ej. 34" oninput="evaluarSarcopenia()">
+          <div class="unit">cm — riesgo sarcopenia si &lt;34H / &lt;33M</div>
+        </div>
+        <div class="field">
+          <label>Sexo (para evaluación)</label>
+          <select id="nut-sexo">
+            <option value="">Seleccionar...</option>
+            <option value="m">Masculino</option>
+            <option value="f">Femenino</option>
+          </select>
+        </div>
+      </div>
+      <div id="alerta-circ" class="alerta-box" style="margin-top:10px"><span>⚠️</span><div class="alerta-txt" id="alerta-circ-txt"></div></div>
+    </div>
+
+    <!-- BIOIMPEDANCIA -->
+    <div class="card">
+      <div class="card-title">Bioimpedancia</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>% Grasa corporal</label>
+          <input type="number" id="nut-grasa" step="0.1" min="1" max="70" placeholder="ej. 28">
+          <div class="unit">H normal: 10–25% · M normal: 18–32%</div>
+        </div>
+        <div class="field">
+          <label>Masa músculo esquelética (kg)</label>
+          <input type="number" id="nut-musculo" step="0.1" min="5" max="80" placeholder="ej. 22.5">
+        </div>
+        <div class="field">
+          <label>Grasa visceral</label>
+          <select id="nut-grasa-visceral">
+            <option value="">Seleccionar...</option>
+            <option value="normal">Normal</option>
+            <option value="elevada">Elevada</option>
+            <option value="muy_elevada">Muy elevada</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- HÁBITOS ALIMENTARIOS -->
+    <div class="card">
+      <div class="card-title">Hábitos alimentarios e ingesta</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Apetito</label>
+          <select id="nut-apetito">
+            <option value="">Seleccionar...</option>
+            <option value="aumentado">Aumentado</option>
+            <option value="normal">Normal</option>
+            <option value="disminuido">Disminuido</option>
+            <option value="anorexia">Anorexia / rechazo alimentario</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Consumo de proteínas</label>
+          <select id="nut-proteinas">
+            <option value="">Seleccionar...</option>
+            <option value="alto">Alto</option>
+            <option value="moderado">Moderado</option>
+            <option value="bajo">Bajo</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Consumo de dulces</label>
+          <select id="nut-dulces">
+            <option value="">Seleccionar...</option>
+            <option value="bajo">Bajo</option>
+            <option value="moderado">Moderado</option>
+            <option value="alto">Alto</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Consumo de embutidos</label>
+          <select id="nut-embutidos">
+            <option value="">Seleccionar...</option>
+            <option value="bajo">Bajo</option>
+            <option value="moderado">Moderado</option>
+            <option value="alto">Alto</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Consumo de paquetes/snacks</label>
+          <select id="nut-paquetes">
+            <option value="">Seleccionar...</option>
+            <option value="bajo">Bajo</option>
+            <option value="moderado">Moderado</option>
+            <option value="alto">Alto</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Palatabilidad / cambios en gusto</label>
+          <input type="text" id="nut-palatabilidad" placeholder="Describir cambios...">
+        </div>
+        <div class="field">
+          <label>Sueño / descanso</label>
+          <input type="text" id="nut-sueno" placeholder="Describir calidad del sueño...">
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:12px">
+        <div class="field">
+          <label>Desayuno habitual</label>
+          <input type="text" id="nut-desayuno" placeholder="Describir...">
+        </div>
+        <div class="field">
+          <label>Almuerzo habitual</label>
+          <input type="text" id="nut-almuerzo" placeholder="Describir...">
+        </div>
+        <div class="field">
+          <label>Cena habitual</label>
+          <input type="text" id="nut-cena" placeholder="Describir...">
+        </div>
+      </div>
+    </div>
+
+    <!-- RECOMENDACIONES HP -->
+    <div class="card">
+      <div class="card-title">Recomendaciones nutricionales — HP</div>
+      <div style="background:var(--teal-pale);border-radius:10px;padding:14px 16px;font-size:13px;color:var(--teal-dk);margin-bottom:14px;line-height:1.7">
+        <strong>Pautas específicas para Hipertensión Pulmonar:</strong><br>
+        • Restricción de sal: &lt;2.5 g/día — reduce retención hídrica y carga del corazón<br>
+        • Balance hídrico: control de líquidos según indicación médica<br>
+        • Proteínas adecuadas: evitar pérdida muscular (sarcopenia)<br>
+        • Comidas pequeñas y frecuentes: evita el aumento de trabajo respiratorio post-comida
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Restricción de sal indicada</label>
+          <select id="nut-sal">
+            <option value="">Seleccionar...</option>
+            <option value="sin_restriccion">Sin restricción</option>
+            <option value="leve">Leve (&lt;5 g/día)</option>
+            <option value="moderada">Moderada (&lt;2.5 g/día)</option>
+            <option value="estricta">Estricta (&lt;1.5 g/día)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Control de líquidos</label>
+          <select id="nut-liquidos">
+            <option value="">Seleccionar...</option>
+            <option value="libre">Libre</option>
+            <option value="1500">Restricción 1.5 L/día</option>
+            <option value="2000">Restricción 2 L/día</option>
+            <option value="segun_indicacion">Según indicación médica</option>
+          </select>
+        </div>
+        <div class="field field-full">
+          <label>Anamnesis general / Observaciones</label>
+          <textarea id="nut-anamnesis" rows="3" placeholder="Antecedentes nutricionales relevantes, alergias, intolerancias, observaciones..."></textarea>
+        </div>
+        <div class="field field-full">
+          <label>Plan nutricional / Recomendaciones</label>
+          <textarea id="nut-plan" rows="3" placeholder="Plan de alimentación, metas nutricionales, intervenciones indicadas..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTEGRACIÓN CON REHABILITACIÓN -->
+    <div class="card">
+      <div class="card-title">Integración con Rehabilitación Pulmonar</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Impacto en entrenamiento</label>
+          <select id="nut-impacto-rhb">
+            <option value="sin_impacto">Sin impacto — continuar normal</option>
+            <option value="reducir_intensidad">Bajo peso — Reducir intensidad</option>
+            <option value="aumentar_fuerza">Sarcopenia — Aumentar ejercicio de fuerza</option>
+            <option value="incrementar_gasto">Obesidad — Incrementar gasto energético</option>
+            <option value="ajustar_carga">Bajo consumo proteico — Ajustar carga muscular</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Alerta para equipo de rehabilitación</label>
+          <select id="nut-alerta-rhb">
+            <option value="no">No — sin alerta</option>
+            <option value="si">Sí — notificar al fisioterapeuta</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg" id="msg-val"></div>
+    <div class="actions">
+      <button class="btn-primary" id="btn-guardar" onclick="guardarValoracion()">
+        Guardar valoración nutricional
+      </button>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <div class="panel" id="panel-hist">
+    <div id="hist-content">
+      <div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Selecciona un paciente para ver el historial.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✓</span> <span id="toast-msg">Guardado</span></div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+let pacienteActual = null;
+let pacientes = [];
+
+if (!token) window.location.href = '/login';
+
+window.addEventListener('DOMContentLoaded', () => {
+  cargarPacientes();
+  document.getElementById('nut-fecha').value = new Date().toISOString().split('T')[0];
+});
+
+async function cargarPacientes() {
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/pacientes-lista`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (r.status === 401) { window.location.href = '/login'; return; }
+    const d = await r.json();
+    pacientes = d.pacientes || [];
+    const sel = document.getElementById('pac-select');
+    pacientes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.nombre} ${p.apellido}`;
+      sel.appendChild(opt);
+    });
+  } catch(e) { console.error(e); }
+}
+
+function seleccionarPaciente() {
+  const id = document.getElementById('pac-select').value;
+  pacienteActual = pacientes.find(p => p.id === id) || null;
+  if (document.getElementById('panel-hist').classList.contains('active') && pacienteActual) cargarHistorial();
+}
+
+function cambiarTab(tab) {
+  ['val','hist'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('active', t===tab);
+    document.getElementById(`panel-${t}`).classList.toggle('active', t===tab);
+  });
+  if (tab==='hist' && pacienteActual) cargarHistorial();
+}
+
+function calcularIMC() {
+  const peso = parseFloat(document.getElementById('nut-peso').value);
+  const talla = parseFloat(document.getElementById('nut-talla').value) / 100;
+  if (!peso || !talla) { document.getElementById('imc-display').style.display='none'; return; }
+  const imc = peso / (talla * talla);
+  const imcR = Math.round(imc * 10) / 10;
+  document.getElementById('imc-val').textContent = imcR;
+  document.getElementById('imc-display').style.display = 'flex';
+
+  let zona, color, alerta, alertaClass;
+  if (imc < 17) {
+    zona='Muy bajo peso'; color='zona-r'; alertaClass='alerta-rojo';
+    alerta='🔴 IMC < 17 — Alto riesgo nutricional. Intervención prioritaria. Considerar reducir intensidad del ejercicio.';
+  } else if (imc < 18.5) {
+    zona='Bajo peso'; color='zona-a'; alertaClass='alerta-amarillo';
+    alerta='🟡 IMC 17–18.4 — Riesgo nutricional. Evaluar ingesta proteica y plan de intervención.';
+  } else if (imc < 30) {
+    zona='Normal'; color='zona-v'; alertaClass=null;
+    alerta=null;
+  } else if (imc < 35) {
+    zona='Sobrepeso/Obesidad I'; color='zona-a'; alertaClass='alerta-amarillo';
+    alerta='🟡 IMC 30–34.9 — Sobrepeso. Considerar plan nutricional de reducción de peso.';
+  } else {
+    zona='Obesidad severa'; color='zona-r'; alertaClass='alerta-rojo';
+    alerta='🔴 IMC ≥35 — Obesidad significativa. Alerta nutricional activada. Plan intensivo recomendado.';
+  }
+
+  const zonaEl = document.getElementById('imc-zona');
+  zonaEl.textContent = zona;
+  zonaEl.className = `zona-badge ${color}`;
+  document.getElementById('imc-label').textContent = `IMC: ${imcR} kg/m²`;
+
+  const alertaEl = document.getElementById('alerta-imc');
+  const alertaTxt = document.getElementById('alerta-imc-txt');
+  if (alerta) {
+    alertaEl.className = `alerta-box visible ${alertaClass}`;
+    alertaTxt.textContent = alerta;
+  } else {
+    alertaEl.className = 'alerta-box';
+  }
+}
+
+function evaluarCircAbdominal() {
+  const cca = parseFloat(document.getElementById('nut-cca').value);
+  const sexo = document.getElementById('nut-sexo').value;
+  if (!cca || !sexo) return;
+  const alertaEl = document.getElementById('alerta-circ');
+  const alertaTxt = document.getElementById('alerta-circ-txt');
+  const limite_riesgo = sexo==='m' ? 94 : 80;
+  const limite_alto = sexo==='m' ? 102 : 88;
+  if (cca > limite_alto) {
+    alertaEl.className = 'alerta-box visible alerta-rojo';
+    alertaTxt.textContent = `Circunferencia abdominal > ${limite_alto} cm — Riesgo cardiovascular/metabólico alto. Ajuste de intervención nutricional.`;
+  } else if (cca > limite_riesgo) {
+    alertaEl.className = 'alerta-box visible alerta-amarillo';
+    alertaTxt.textContent = `Circunferencia abdominal ${sexo==='m'?'94–102':'80–88'} cm — Riesgo metabólico moderado.`;
+  } else {
+    alertaEl.className = 'alerta-box';
+  }
+}
+
+function evaluarSarcopenia() {
+  const pant = parseFloat(document.getElementById('nut-pantorrilla').value);
+  const sexo = document.getElementById('nut-sexo').value;
+  if (!pant || !sexo) return;
+  const limite = sexo==='m' ? 34 : 33;
+  const alertaEl = document.getElementById('alerta-circ');
+  const alertaTxt = document.getElementById('alerta-circ-txt');
+  if (pant < limite) {
+    alertaEl.className = 'alerta-box visible alerta-rojo';
+    alertaTxt.textContent = `Pantorrilla < ${limite} cm — Riesgo de sarcopenia. Integrar con fisioterapia para aumentar ejercicio de fuerza.`;
+  }
+}
+
+async function guardarValoracion() {
+  if (!pacienteActual) return mostrarMsg('msg-val', 'Selecciona un paciente primero.', 'error');
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled=true; btn.innerHTML='<div class="spinner"></div> Guardando...';
+
+  const peso = num('nut-peso');
+  const talla = num('nut-talla');
+  const imc = peso && talla ? Math.round(peso / Math.pow(talla/100, 2) * 10) / 10 : null;
+
+  const body = {
+    paciente_id: pacienteActual.id,
+    fecha_valoracion: val('nut-fecha'),
+    momento: val('nut-momento'),
+    profesional: val('nut-profesional'),
+    peso, talla, imc,
+    cambio_peso: val('nut-cambio-peso'),
+    circ_brazo: num('nut-pb'),
+    circ_abdominal: num('nut-cca'),
+    circ_pantorrilla: num('nut-pantorrilla'),
+    sexo: val('nut-sexo'),
+    pct_grasa: num('nut-grasa'),
+    masa_muscular: num('nut-musculo'),
+    grasa_visceral: val('nut-grasa-visceral'),
+    apetito: val('nut-apetito'),
+    consumo_proteinas: val('nut-proteinas'),
+    consumo_dulces: val('nut-dulces'),
+    consumo_embutidos: val('nut-embutidos'),
+    consumo_paquetes: val('nut-paquetes'),
+    palatabilidad: val('nut-palatabilidad'),
+    sueno: val('nut-sueno'),
+    desayuno: val('nut-desayuno'),
+    almuerzo: val('nut-almuerzo'),
+    cena: val('nut-cena'),
+    restriccion_sal: val('nut-sal'),
+    control_liquidos: val('nut-liquidos'),
+    anamnesis: val('nut-anamnesis'),
+    plan_nutricional: val('nut-plan'),
+    impacto_rhb: val('nut-impacto-rhb'),
+    alerta_rhb: val('nut-alerta-rhb') === 'si',
+  };
+
+  try {
+    const r = await fetch(`${API}/api/v1/nutricion/valoracion`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (r.ok) { showToast('Valoración nutricional guardada', '✓'); mostrarMsg('msg-val','',''); }
+    else { mostrarMsg('msg-val', d.error||'Error al guardar.', 'error'); }
+  } catch(e) { mostrarMsg('msg-val', 'Error de conexión.', 'error'); }
+  btn.disabled=false; btn.innerHTML='Guardar valoración nutricional';
+}
+
+async function cargarHistorial() {
+  const cont = document.getElementById('hist-content');
+  cont.innerHTML='<div style="text-align:center;padding:24px;font-size:13px;color:var(--text-3)">Cargando...</div>';
+  try {
+    const r = await fetch(`${API}/api/v1/nutricion/valoraciones/${pacienteActual.id}`, {
+      headers: { 'Authorization':`Bearer ${token}` }
+    });
+    const d = await r.json();
+    const items = d.valoraciones || [];
+    if (!items.length) { cont.innerHTML='<div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Sin valoraciones registradas.</div>'; return; }
+    cont.innerHTML = items.map(v => {
+      const zonaIMC = v.imc ? (v.imc<17?'zona-r':v.imc<18.5?'zona-a':v.imc<30?'zona-v':v.imc<35?'zona-a':'zona-r') : '';
+      return `<div class="hist-item">
+        <div class="hist-head">
+          <div class="hist-fecha">${fechaCorta(v.fecha_valoracion)}</div>
+          <span class="hist-tipo ${v.momento==='inicial'?'tipo-inicial':'tipo-final'}">${v.momento==='inicial'?'Inicial':'Final'}</span>
+        </div>
+        <div class="hist-vals">
+          ${v.peso?`<span>Peso: <strong>${v.peso} kg</strong></span>`:''}
+          ${v.imc?`<span>IMC: <strong>${v.imc}</strong> <span class="zona-badge ${zonaIMC}">${v.imc<18.5?'Bajo':v.imc<30?'Normal':'Elevado'}</span></span>`:''}
+          ${v.pct_grasa?`<span>Grasa: ${v.pct_grasa}%</span>`:''}
+          ${v.circ_pantorrilla?`<span>Pantorrilla: ${v.circ_pantorrilla} cm</span>`:''}
+          ${v.profesional?`<span>Por: ${v.profesional}</span>`:''}
+        </div>
+        ${v.plan_nutricional?`<div style="font-size:12px;color:var(--text-2);margin-top:6px;font-style:italic">${v.plan_nutricional}</div>`:''}
+      </div>`;
+    }).join('');
+  } catch(e) { cont.innerHTML='<div style="text-align:center;padding:24px;font-size:13px;color:var(--text-3)">Error al cargar.</div>'; }
+}
+
+function val(id){return document.getElementById(id)?.value?.trim()||null;}
+function num(id){const v=document.getElementById(id)?.value;return v!==''&&v!=null?parseFloat(v):null;}
+function mostrarMsg(id,txt,tipo){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className='msg'+(tipo?' '+tipo:'');}
+function fechaCorta(iso){if(!iso)return'--';return new Date(iso).toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'});}
+let toastTimer;
+function showToast(msg,icon='✓'){clearTimeout(toastTimer);document.getElementById('toast-msg').textContent=msg;document.getElementById('toast-icon').textContent=icon;document.getElementById('toast').classList.add('show');toastTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),3500);}
+</script>
+</body>
+</html>
