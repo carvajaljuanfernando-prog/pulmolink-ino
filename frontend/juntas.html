@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Junta Médica HP</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--purple:#5B3FAA;--purple-lt:#EDE8FE;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white;flex:1}
+.container{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:10px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all 0.15s}
+.tab.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text-2)}
+.field input,.field select,.field textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}
+.field-full{grid-column:1/-1}
+.field.auto{background:var(--teal-pale);border-radius:8px;padding:8px 10px}
+.field.auto label{color:var(--teal-dk)}
+.field.auto input{background:transparent;border:none;font-weight:600;color:var(--teal-dk);pointer-events:none}
+
+/* MOTIVOS CHECK */
+.motivo-check{display:flex;align-items:flex-start;gap:8px;padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:var(--warm);transition:all 0.15s;font-size:13px;color:var(--text-1);line-height:1.4;margin-bottom:6px}
+.motivo-check input{accent-color:var(--teal);flex-shrink:0;margin-top:2px}
+.motivo-check.checked{border-color:var(--teal);background:var(--teal-pale)}
+
+/* PARTICIPANTES */
+.part-row{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;align-items:end;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.part-row:last-child{border-bottom:none}
+.part-header{display:grid;grid-template-columns:2fr 1fr 1fr;gap:8px;margin-bottom:6px}
+.part-h{font-size:10px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.5px}
+.part-input{padding:7px 10px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:12px;color:var(--text-1);background:var(--warm);outline:none;width:100%}
+.part-input:focus{border-color:var(--teal-lt);background:white}
+.btn-add-part{padding:7px 14px;background:var(--teal-pale);color:var(--teal-dk);border:1px solid rgba(0,107,143,0.2);border-radius:8px;font-family:"Nunito",sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:8px}
+.btn-remove{width:26px;height:26px;background:var(--red-lt);border:1px solid rgba(214,62,62,0.2);border-radius:6px;color:var(--red);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* JUNTA CARD EN LISTA */
+.junta-item{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:12px;cursor:pointer;transition:all 0.15s}
+.junta-item:hover{border-color:var(--teal-lt);box-shadow:var(--shadow)}
+.junta-fecha{font-size:12px;color:var(--text-3);margin-bottom:4px}
+.junta-pac{font-size:16px;font-weight:700;color:var(--text-1)}
+.junta-motivo{font-size:12px;color:var(--text-2);margin-top:4px}
+.junta-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.junta-badge{font-size:11px;padding:2px 10px;border-radius:8px;font-weight:600}
+.jb-cf{background:var(--teal-pale);color:var(--teal-dk)}
+.jb-riesgo-bajo{background:var(--green-lt);color:var(--green)}
+.jb-riesgo-inter{background:var(--amber-lt);color:var(--amber)}
+.jb-riesgo-alto{background:var(--red-lt);color:var(--red)}
+.jb-grupo{background:var(--purple-lt);color:var(--purple)}
+
+/* AUTO-CARGA INDICADOR */
+.auto-badge{display:inline-flex;align-items:center;gap:4px;background:var(--green-lt);color:var(--green);font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-left:8px}
+
+.btn-primary{padding:12px 28px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--teal-dk)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.btn-pdf{padding:11px 22px;background:var(--red);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.btn-pdf:hover{background:#b02e2e}
+.actions{display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.spinner{width:15px;height:15px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.msg.error{background:var(--red-lt);color:var(--red);display:block}
+.msg.ok{background:var(--green-lt);color:var(--green);display:block}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--teal-dk);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;z-index:1000}
+.toast.show{display:flex}
+.info-box{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin-bottom:14px}
+.ib-teal{background:var(--teal-pale);color:var(--teal-dk);border:1px solid rgba(0,107,143,0.15)}
+.pac-search{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.pac-search select{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer}
+.btn-cargar{padding:10px 20px;background:var(--green);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/dashboard'">← Dashboard</button>
+  <div class="topbar-title">Juntas Médicas — Programa HP · Instituto Neumológico del Oriente</div>
+</div>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab active" id="tab-nueva" onclick="cambiarTab('nueva')">➕ Nueva junta</button>
+    <button class="tab" id="tab-hist" onclick="cambiarTab('hist')">📅 Juntas anteriores</button>
+  </div>
+
+  <!-- ══ NUEVA JUNTA ══════════════════════════════════════════ -->
+  <div class="panel active" id="panel-nueva">
+
+    <!-- SELECTOR PACIENTE + AUTO-CARGA -->
+    <div class="card">
+      <div class="card-title">Seleccionar paciente <span class="auto-badge">✓ Auto-carga desde plataforma</span></div>
+      <div class="info-box ib-teal">Selecciona el paciente y haz clic en "Cargar datos" — PulmoLink completará automáticamente sus datos clínicos actualizados desde la plataforma.</div>
+      <div class="pac-search">
+        <select id="pac-select">
+          <option value="">Selecciona un paciente...</option>
+        </select>
+        <button class="btn-cargar" onclick="cargarDatosPaciente()">Cargar datos del paciente →</button>
+      </div>
+    </div>
+
+    <!-- I. INFORMACIÓN DEL PACIENTE -->
+    <div class="card">
+      <div class="card-title">I. Información del paciente</div>
+      <div class="form-grid">
+        <div class="field auto"><label>Nombre completo</label><input type="text" id="j-nombre" readonly></div>
+        <div class="field auto"><label>Tipo y número de documento</label><input type="text" id="j-doc" readonly></div>
+        <div class="field auto"><label>Fecha de nacimiento</label><input type="text" id="j-fnac" readonly></div>
+        <div class="field auto"><label>Edad</label><input type="text" id="j-edad" readonly></div>
+        <div class="field auto"><label>Sexo</label><input type="text" id="j-sexo" readonly></div>
+        <div class="field auto"><label>EPS / Asegurador</label><input type="text" id="j-eps" readonly></div>
+        <div class="field auto"><label>Diagnóstico principal (CIE-10)</label><input type="text" id="j-diag" readonly></div>
+        <div class="field auto"><label>Grupo de clasificación HP</label><input type="text" id="j-grupo-hp" readonly></div>
+        <div class="field"><label>Fecha primera consulta en el programa</label><input type="date" id="j-f-primera"></div>
+      </div>
+    </div>
+
+    <!-- II. ANTECEDENTES -->
+    <div class="card">
+      <div class="card-title">II. Antecedentes clínicos relevantes</div>
+      <div class="form-grid">
+        <div class="field field-full"><label>Enfermedades cardiovasculares previas</label>
+          <textarea id="j-ant-cardio" rows="2" placeholder="Enfermedades cardiovasculares relevantes..."></textarea>
+        </div>
+        <div class="field field-full"><label>Enfermedades respiratorias crónicas</label>
+          <textarea id="j-ant-resp" rows="2" placeholder="Enfermedades respiratorias crónicas..."></textarea>
+        </div>
+        <div class="field field-full"><label>Comorbilidades adicionales</label>
+          <textarea id="j-ant-comor" rows="2" placeholder="Otras comorbilidades relevantes..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- III. EVALUACIÓN MULTIDISCIPLINARIA -->
+    <div class="card">
+      <div class="card-title">III. Evaluación multidisciplinaria <span class="auto-badge">✓ Auto-cargado</span></div>
+      <div class="form-grid">
+        <div class="field auto"><label>Clase funcional OMS</label><input type="text" id="j-cf" readonly></div>
+        <div class="field auto"><label>NT-proBNP (pg/mL)</label><input type="text" id="j-bnp" readonly></div>
+        <div class="field auto"><label>TAPSE (mm)</label><input type="text" id="j-tapse" readonly></div>
+        <div class="field auto"><label>PSAP estimada (mmHg)</label><input type="text" id="j-psap" readonly></div>
+        <div class="field auto"><label>TC6M más reciente (metros)</label><input type="text" id="j-tc6m" readonly></div>
+        <div class="field auto"><label>Estratificación de riesgo</label><input type="text" id="j-riesgo" readonly></div>
+        <div class="field auto"><label>Adherencia al tratamiento</label><input type="text" id="j-adherencia" readonly></div>
+        <div class="field"><label>Rehabilitación pulmonar</label>
+          <select id="j-rhb">
+            <option value="no_realiza">No realiza</option>
+            <option value="en_programa">En programa activo</option>
+            <option value="completada">Completada</option>
+            <option value="indicada">Indicada — pendiente</option>
+          </select>
+        </div>
+        <div class="field field-full"><label>Otros hallazgos relevantes (ecocardiograma completo, cateterismo, espirometría, laboratorios)</label>
+          <textarea id="j-otros-hallazgos" rows="3" placeholder="Detalles adicionales del ecocardiograma, cateterismo, laboratorios relevantes..."></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Tratamiento actual <span class="auto-badge">✓ Auto-cargado</span></div>
+        <div class="form-grid">
+          <div class="field auto"><label>Esquema</label><input type="text" id="j-esquema" readonly></div>
+          <div class="field auto"><label>ERA (Antagonista endotelina)</label><input type="text" id="j-era" readonly></div>
+          <div class="field auto"><label>iPDE5</label><input type="text" id="j-pde5" readonly></div>
+          <div class="field auto"><label>eGC (Riociguat)</label><input type="text" id="j-egc" readonly></div>
+          <div class="field auto"><label>Prostanoide</label><input type="text" id="j-prostanoide" readonly></div>
+          <div class="field field-full"><label>Otros medicamentos relevantes</label>
+            <textarea id="j-otros-meds" rows="2" placeholder="Anticoagulantes, diuréticos, otros..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IV. MOTIVO DE LA JUNTA -->
+    <div class="card">
+      <div class="card-title">IV. Motivo de la junta médica</div>
+      <label class="motivo-check" id="m1"><input type="checkbox"> Inicio de terapia específica para Hipertensión Pulmonar</label>
+      <label class="motivo-check" id="m2"><input type="checkbox"> Escalamiento de tratamiento (doble / triple terapia)</label>
+      <label class="motivo-check" id="m3"><input type="checkbox"> Consideración de trasplante pulmonar</label>
+      <label class="motivo-check" id="m4"><input type="checkbox"> Evaluación por falta de respuesta clínica</label>
+      <label class="motivo-check" id="m5"><input type="checkbox"> Diagnóstico / cambio de grupo diagnóstico</label>
+      <label class="motivo-check" id="m6"><input type="checkbox"> Inclusión en protocolo clínico / estudio de investigación</label>
+      <label class="motivo-check" id="m7"><input type="checkbox"> Revisión por evento adverso / complicación</label>
+      <label class="motivo-check" id="m8"><input type="checkbox"> Caso nuevo en el programa</label>
+      <div class="field" style="margin-top:8px">
+        <label>Otro motivo</label>
+        <input type="text" id="j-motivo-otro" placeholder="Especificar...">
+      </div>
+    </div>
+
+    <!-- V. CONSIDERACIONES -->
+    <div class="card">
+      <div class="card-title">V. Consideraciones discutidas en junta</div>
+      <div class="form-grid">
+        <div class="field field-full"><label>Resumen clínico y evolución del paciente</label>
+          <textarea id="j-resumen" rows="4" placeholder="Descripción del caso clínico, evolución en el programa, situación actual..."></textarea>
+        </div>
+        <div class="field field-full"><label>Argumentos técnicos y científicos para la decisión</label>
+          <textarea id="j-argumentos" rows="4" placeholder="Evidencia científica, guías, experiencia del programa, criterios clínicos..."></textarea>
+        </div>
+        <div class="field field-full"><label>Riesgos y beneficios esperados</label>
+          <textarea id="j-riesgos-benef" rows="3" placeholder="Análisis de riesgo-beneficio de las decisiones tomadas..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- VI. DECISIÓN -->
+    <div class="card">
+      <div class="card-title">VI. Decisión de la junta médica</div>
+      <label class="motivo-check" id="d1"><input type="checkbox"> Continuar manejo actual y seguimiento estricto</label>
+      <label class="motivo-check" id="d2"><input type="checkbox"> Iniciar / escalar terapia específica HP</label>
+      <label class="motivo-check" id="d3"><input type="checkbox"> Solicitar estudios complementarios</label>
+      <label class="motivo-check" id="d4"><input type="checkbox"> Remisión a trasplante pulmonar</label>
+      <label class="motivo-check" id="d5"><input type="checkbox"> Cambio de vía de administración del prostanoide</label>
+      <label class="motivo-check" id="d6"><input type="checkbox"> Inclusión en protocolo / estudio clínico</label>
+      <label class="motivo-check" id="d7"><input type="checkbox"> Remisión a especialidad complementaria</label>
+      <div class="form-grid" style="margin-top:10px">
+        <div class="field field-full"><label>Concepto / Decisión específica de la junta</label>
+          <textarea id="j-decision" rows="4" placeholder="Descripción detallada de la decisión tomada, fármacos indicados, dosis, próximos pasos..."></textarea>
+        </div>
+        <div class="field field-full"><label>Observaciones finales</label>
+          <textarea id="j-obs-finales" rows="2" placeholder="Observaciones adicionales, condicionantes, plan de seguimiento..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- VII. PARTICIPANTES -->
+    <div class="card">
+      <div class="card-title">VII. Profesionales participantes en la junta</div>
+      <div class="info-box ib-teal">El acta PDF incluirá espacio para firmas de cada participante.</div>
+      <div class="part-header">
+        <div class="part-h">Nombre completo</div>
+        <div class="part-h">Cargo / Especialidad</div>
+        <div class="part-h">Tipo de participación</div>
+      </div>
+      <div id="participantes-cont"></div>
+      <button class="btn-add-part" onclick="agregarParticipante()">+ Agregar participante</button>
+    </div>
+
+    <!-- VIII. FECHA Y MODALIDAD -->
+    <div class="card">
+      <div class="card-title">VIII. Fecha, hora y modalidad</div>
+      <div class="form-grid">
+        <div class="field"><label>Fecha de la junta</label><input type="date" id="j-fecha"></div>
+        <div class="field"><label>Hora</label><input type="time" id="j-hora"></div>
+        <div class="field"><label>Modalidad</label>
+          <select id="j-modalidad">
+            <option value="presencial">Presencial</option>
+            <option value="virtual">Virtual</option>
+            <option value="hibrida">Híbrida</option>
+          </select>
+        </div>
+        <div class="field"><label>Lugar / Plataforma</label>
+          <input type="text" id="j-lugar" placeholder="ej. Sala de juntas INO / Teams">
+        </div>
+      </div>
+    </div>
+
+    <div class="msg" id="msg-junta"></div>
+    <div class="actions">
+      <button class="btn-primary" id="btn-guardar-junta" onclick="guardarJunta()">Guardar junta médica</button>
+      <button class="btn-pdf" onclick="generarPDF()" id="btn-pdf" style="display:none">📄 Generar acta PDF</button>
+    </div>
+  </div>
+
+  <!-- ══ JUNTAS ANTERIORES ════════════════════════════════════ -->
+  <div class="panel" id="panel-hist">
+    <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+      <input type="text" id="buscar-junta" placeholder="Buscar por paciente..." style="flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:Nunito,sans-serif;font-size:13px;outline:none" oninput="filtrarJuntas()">
+      <select id="filtro-motivo" style="padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:Nunito,sans-serif;font-size:13px;outline:none" onchange="filtrarJuntas()">
+        <option value="">Todos los motivos</option>
+        <option value="inicio">Inicio de terapia</option>
+        <option value="escalamiento">Escalamiento</option>
+        <option value="trasplante">Trasplante</option>
+        <option value="falta_respuesta">Falta de respuesta</option>
+        <option value="evento_adverso">Evento adverso</option>
+      </select>
+    </div>
+    <div id="hist-content">
+      <div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Cargando juntas...</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✓</span> <span id="toast-msg">Guardado</span></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+let pacientes = [];
+let pacienteActual = null;
+let participantes = [];
+let juntaGuardadaId = null;
+let todasLasJuntas = [];
+
+if (!token) window.location.href = '/login';
+
+window.addEventListener('DOMContentLoaded', () => {
+  cargarPacientes();
+  cargarJuntas();
+  const hoy = new Date().toISOString().split('T')[0];
+  const ahora = new Date().toTimeString().slice(0,5);
+  document.getElementById('j-fecha').value = hoy;
+  document.getElementById('j-hora').value = ahora;
+  // Participantes por defecto del INO
+  const defaultParts = [
+    {nombre:'Dr. Juan Fernando Carvajal', cargo:'Médico Cardiólogo', tipo:'Médico tratante'},
+    {nombre:'', cargo:'', tipo:'Médico participante'},
+  ];
+  defaultParts.forEach(p => agregarParticipante(p));
+  // Checks
+  document.querySelectorAll('.motivo-check input, #d1 input, #d2 input, #d3 input, #d4 input, #d5 input, #d6 input, #d7 input').forEach(cb => {
+    cb.addEventListener('change', () => cb.closest('.motivo-check').classList.toggle('checked', cb.checked));
+  });
+});
+
+async function cargarPacientes(){
+  try{
+    const r=await fetch(`${API}/api/v1/examenes/pacientes-lista`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(r.status===401){window.location.href='/login';return;}
+    const d=await r.json();pacientes=d.pacientes||[];
+    const sel=document.getElementById('pac-select');
+    pacientes.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.nombre} ${p.apellido}`;sel.appendChild(o);});
+  }catch(e){console.error(e);}
+}
+
+async function cargarDatosPaciente(){
+  const id=document.getElementById('pac-select').value;
+  if(!id){alert('Selecciona un paciente primero.');return;}
+  pacienteActual=pacientes.find(p=>p.id===id)||null;
+  if(!pacienteActual) return;
+
+  // Datos básicos
+  document.getElementById('j-nombre').value=`${pacienteActual.nombre} ${pacienteActual.apellido}`;
+  document.getElementById('j-eps').value=pacienteActual.eps||'--';
+  document.getElementById('j-diag').value=pacienteActual.diagnostico_hp||'I27.0 - Hipertensión Pulmonar';
+  document.getElementById('j-grupo-hp').value=pacienteActual.grupo_hp_oms?`Grupo ${pacienteActual.grupo_hp_oms}`:('--');
+  if(pacienteActual.clase_funcional_oms) document.getElementById('j-cf').value=`Clase ${['I','II','III','IV'][pacienteActual.clase_funcional_oms-1]}`;
+  if(pacienteActual.imc) document.getElementById('j-adherencia').value='--';
+
+  // Cargar último eco
+  try{
+    const re=await fetch(`${API}/api/v1/examenes/${id}?tipo=ecocardiograma`,{headers:{'Authorization':`Bearer ${token}`}});
+    const de=await re.json();
+    const eco=de.examenes?.[0]?.datos;
+    if(eco){
+      if(eco.tapse) document.getElementById('j-tapse').value=eco.tapse+' mm';
+      if(eco.psap_eco) document.getElementById('j-psap').value=eco.psap_eco+' mmHg';
+    }
+  }catch(e){}
+
+  // Cargar última estratificación
+  try{
+    const rs=await fetch(`${API}/api/v1/examenes/estratificacion/${id}`,{headers:{'Authorization':`Bearer ${token}`}});
+    const ds=await rs.json();
+    const est=ds.estratificaciones?.[0];
+    if(est) document.getElementById('j-riesgo').value=est.clasificacion_riesgo?est.clasificacion_riesgo.toUpperCase():'--';
+  }catch(e){}
+
+  // Cargar TC6M desde rehabilitación
+  try{
+    const rr=await fetch(`${API}/api/v1/rehabilitacion/sesiones/${id}`,{headers:{'Authorization':`Bearer ${token}`}});
+    const dr=await rr.json();
+    if(dr.sesiones_programadas) document.getElementById('j-rhb').value='en_programa';
+  }catch(e){}
+
+  // Perfil farmacológico
+  try{
+    const rf=await fetch(`${API}/api/v1/farmacia/historial/${id}`,{headers:{'Authorization':`Bearer ${token}`}});
+    const df=await rf.json();
+    const perfil=df.registros?.find(r=>r.accion==='PERFIL_FARMACO');
+    if(perfil){
+      const det=typeof perfil.detalle==='string'?JSON.parse(perfil.detalle):perfil.detalle;
+      const mhp=det.medicamentos_hp||[];
+      const era=mhp.find(m=>/bosentán|ambrisentán|macitentan/i.test(m.nombre));
+      const pde5=mhp.find(m=>/sildenafilo|tadalafilo/i.test(m.nombre));
+      const egc=mhp.find(m=>/riociguat/i.test(m.nombre));
+      const prost=mhp.find(m=>/epoprostenol|treprostinil|iloprost|selexipag/i.test(m.nombre));
+      if(era) document.getElementById('j-era').value=era.nombre+(era.dosis?' '+era.dosis:'');
+      if(pde5) document.getElementById('j-pde5').value=pde5.nombre+(pde5.dosis?' '+pde5.dosis:'');
+      if(egc) document.getElementById('j-egc').value=egc.nombre+(egc.dosis?' '+egc.dosis:'');
+      if(prost) document.getElementById('j-prostanoide').value=prost.nombre+(prost.dosis?' '+prost.dosis:'');
+      if(det.adherencia) document.getElementById('j-adherencia').value=det.adherencia;
+      // Esquema
+      const nMeds=[era,pde5,egc,prost].filter(Boolean).length;
+      document.getElementById('j-esquema').value=nMeds>=3?'Triple terapia':nMeds===2?'Doble terapia':'Monoterapia';
+    }
+  }catch(e){}
+
+  showToast('Datos del paciente cargados desde la plataforma','✓');
+}
+
+// ══ PARTICIPANTES ══════════════════════════════════════════════
+function agregarParticipante(data=null){
+  const id=Date.now();
+  participantes.push(id);
+  const cont=document.getElementById('participantes-cont');
+  const div=document.createElement('div');
+  div.className='part-row'; div.id=`part-${id}`;
+  div.innerHTML=`
+    <input class="part-input" type="text" id="pn-${id}" placeholder="Nombre completo" value="${data?.nombre||''}">
+    <input class="part-input" type="text" id="pc-${id}" placeholder="Cargo / Especialidad" value="${data?.cargo||''}">
+    <div style="display:flex;gap:6px">
+      <select class="part-input" id="pt-${id}" style="flex:1">
+        <option value="medico_tratante" ${data?.tipo==='Médico tratante'?'selected':''}>Médico tratante</option>
+        <option value="medico_participante" ${!data||data?.tipo==='Médico participante'?'selected':''}>Médico participante</option>
+        <option value="coordinador">Coordinador</option>
+        <option value="lider_programas">Líder Programas</option>
+        <option value="enfermeria">Enfermería</option>
+        <option value="farmacia">Farmacia</option>
+        <option value="otro">Otro</option>
+      </select>
+      <button class="btn-remove" onclick="removerParticipante(${id})">×</button>
+    </div>`;
+  cont.appendChild(div);
+}
+
+function removerParticipante(id){
+  document.getElementById(`part-${id}`)?.remove();
+  participantes=participantes.filter(x=>x!==id);
+}
+
+function getParticipantes(){
+  return participantes.map(id=>({
+    nombre:document.getElementById(`pn-${id}`)?.value||null,
+    cargo:document.getElementById(`pc-${id}`)?.value||null,
+    tipo:document.getElementById(`pt-${id}`)?.value||null,
+  })).filter(p=>p.nombre);
+}
+
+function getMotivos(){
+  return ['m1','m2','m3','m4','m5','m6','m7','m8']
+    .filter(id=>document.getElementById(id)?.querySelector('input')?.checked)
+    .map(id=>document.getElementById(id)?.textContent.trim());
+}
+
+function getDecisiones(){
+  return ['d1','d2','d3','d4','d5','d6','d7']
+    .filter(id=>document.getElementById(id)?.querySelector('input')?.checked)
+    .map(id=>document.getElementById(id)?.textContent.trim());
+}
+
+// ══ GUARDAR ════════════════════════════════════════════════════
+async function guardarJunta(){
+  if(!pacienteActual) return mostrarMsg('msg-junta','Carga los datos de un paciente primero.','error');
+  const btn=document.getElementById('btn-guardar-junta');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Guardando...';
+
+  const body={
+    paciente_id:pacienteActual.id,
+    paciente_nombre:`${pacienteActual.nombre} ${pacienteActual.apellido}`,
+    fecha:val('j-fecha'), hora:val('j-hora'), modalidad:val('j-modalidad'),
+    lugar:val('j-lugar'),
+    // Datos clínicos
+    cf:val('j-cf'), bnp:val('j-bnp'), tapse:val('j-tapse'),
+    psap:val('j-psap'), tc6m:val('j-tc6m'),
+    riesgo:val('j-riesgo'), adherencia:val('j-adherencia'),
+    rhb:val('j-rhb'),
+    esquema:val('j-esquema'), era:val('j-era'),
+    pde5:val('j-pde5'), egc:val('j-egc'), prostanoide:val('j-prostanoide'),
+    otros_meds:val('j-otros-meds'),
+    otros_hallazgos:val('j-otros-hallazgos'),
+    // Antecedentes
+    ant_cardio:val('j-ant-cardio'), ant_resp:val('j-ant-resp'), ant_comor:val('j-ant-comor'),
+    // Junta
+    motivos:getMotivos(), motivo_otro:val('j-motivo-otro'),
+    resumen_clinico:val('j-resumen'),
+    argumentos:val('j-argumentos'),
+    riesgos_beneficios:val('j-riesgos-benef'),
+    decisiones:getDecisiones(), decision_detalle:val('j-decision'),
+    obs_finales:val('j-obs-finales'),
+    participantes:getParticipantes(),
+    f_primera_consulta:val('j-f-primera'),
+    grupo_hp:val('j-grupo-hp'),
+  };
+
+  try{
+    const r=await fetch(`${API}/api/v1/juntas`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(r.ok){
+      juntaGuardadaId=d.id;
+      showToast('Junta médica guardada','✓');
+      mostrarMsg('msg-junta','','');
+      document.getElementById('btn-pdf').style.display='flex';
+      cargarJuntas();
+    }else{mostrarMsg('msg-junta',d.error||'Error al guardar.','error');}
+  }catch(e){mostrarMsg('msg-junta','Error de conexión.','error');}
+  btn.disabled=false;btn.innerHTML='Guardar junta médica';
+}
+
+// ══ PDF ════════════════════════════════════════════════════════
+function generarPDF(){
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W=210, ml=20, mr=20, tw=W-ml-mr;
+  let y=20;
+
+  const addText=(txt,x,yy,opts={})=>{
+    doc.setFontSize(opts.size||10);
+    doc.setFont('helvetica', opts.bold?'bold':'normal');
+    doc.setTextColor(...(opts.color||[30,50,65]));
+    const lines=doc.splitTextToSize(txt,opts.w||tw);
+    doc.text(lines,x,yy);
+    return yy+(lines.length*(opts.size||10)*0.4);
+  };
+
+  const addSection=(titulo)=>{
+    if(y>260){doc.addPage();y=20;}
+    doc.setFillColor(0,66,90);
+    doc.rect(ml,y,tw,7,'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(9);doc.setFont('helvetica','bold');
+    doc.text(titulo,ml+3,y+5);
+    y+=10; doc.setTextColor(30,50,65);
+  };
+
+  const addLine=(label,value,yy)=>{
+    doc.setFontSize(9);doc.setFont('helvetica','bold');
+    doc.text(label+':',ml,yy);
+    doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(value||'--',tw-45);
+    doc.text(lines,ml+45,yy);
+    return yy+(Math.max(1,lines.length)*5);
+  };
+
+  // HEADER
+  doc.setFillColor(0,66,90);doc.rect(0,0,W,28,'F');
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(11);doc.setFont('helvetica','bold');
+  doc.text('INSTITUTO NEUMOLÓGICO DEL ORIENTE',W/2,10,{align:'center'});
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  doc.text('PROGRAMA DE ATENCIÓN INTEGRAL DE HIPERTENSIÓN PULMONAR',W/2,16,{align:'center'});
+  doc.text('ACTA DE JUNTA MÉDICA DE DECISIONES',W/2,22,{align:'center'});
+  y=35;
+
+  // I. PACIENTE
+  addSection('I. INFORMACIÓN DEL PACIENTE');
+  y=addLine('Nombre completo',val('j-nombre'),y);
+  y=addLine('EPS / Asegurador',val('j-eps'),y);
+  y=addLine('Diagnóstico (CIE-10)',val('j-diag'),y);
+  y=addLine('Grupo HP',val('j-grupo-hp'),y);
+  y+=3;
+
+  // II. ANTECEDENTES
+  addSection('II. ANTECEDENTES CLÍNICOS');
+  if(val('j-ant-cardio')){y=addLine('Cardiovasculares',val('j-ant-cardio'),y);}
+  if(val('j-ant-resp')){y=addLine('Respiratorios',val('j-ant-resp'),y);}
+  if(val('j-ant-comor')){y=addLine('Comorbilidades',val('j-ant-comor'),y);}
+  y+=3;
+
+  // III. EVALUACIÓN
+  addSection('III. EVALUACIÓN MULTIDISCIPLINARIA');
+  y=addLine('Clase funcional OMS',val('j-cf'),y);
+  y=addLine('NT-proBNP',val('j-bnp'),y);
+  y=addLine('TAPSE',val('j-tapse'),y);
+  y=addLine('PSAP estimada',val('j-psap'),y);
+  y=addLine('TC6M',val('j-tc6m'),y);
+  y=addLine('Estratificación de riesgo',val('j-riesgo'),y);
+  y=addLine('Adherencia',val('j-adherencia'),y);
+  y=addLine('Tratamiento actual',`ERA: ${val('j-era')||'--'} | iPDE5: ${val('j-pde5')||'--'} | Prostanoide: ${val('j-prostanoide')||'--'}`,y);
+  if(val('j-otros-hallazgos')){y=addLine('Otros hallazgos',val('j-otros-hallazgos'),y);}
+  y+=3;
+
+  // IV. MOTIVO
+  addSection('IV. MOTIVO DE LA JUNTA');
+  const motivos=getMotivos();
+  if(motivos.length){
+    motivos.forEach(m=>{
+      doc.setFontSize(9);doc.setFont('helvetica','normal');
+      doc.text('• '+m,ml,y);y+=5;
+    });
+  }
+  if(val('j-motivo-otro')){doc.text('• '+val('j-motivo-otro'),ml,y);y+=5;}
+  y+=3;
+
+  // V. CONSIDERACIONES
+  addSection('V. CONSIDERACIONES DISCUTIDAS EN JUNTA');
+  if(val('j-resumen')){
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('Resumen clínico:',ml,y);y+=5;
+    doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(val('j-resumen')||'--',tw);
+    doc.text(lines,ml,y);y+=lines.length*4.5+3;
+  }
+  if(val('j-argumentos')){
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('Argumentos técnicos:',ml,y);y+=5;
+    doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(val('j-argumentos')||'--',tw);
+    doc.text(lines,ml,y);y+=lines.length*4.5+3;
+  }
+  if(val('j-riesgos-benef')){
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('Riesgos y beneficios:',ml,y);y+=5;
+    doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(val('j-riesgos-benef')||'--',tw);
+    doc.text(lines,ml,y);y+=lines.length*4.5+3;
+  }
+
+  // VI. DECISIÓN
+  addSection('VI. DECISIÓN DE LA JUNTA MÉDICA');
+  const decs=getDecisiones();
+  if(decs.length){decs.forEach(d=>{doc.setFontSize(9);doc.setFont('helvetica','normal');doc.text('• '+d,ml,y);y+=5;});}
+  if(val('j-decision')){
+    doc.setFontSize(9);doc.setFont('helvetica','bold');doc.text('Concepto de junta:',ml,y);y+=5;
+    doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(val('j-decision')||'--',tw);
+    doc.text(lines,ml,y);y+=lines.length*4.5+3;
+  }
+
+  // VII. PARTICIPANTES Y FIRMAS
+  if(y>220){doc.addPage();y=20;}
+  addSection('VII. PROFESIONALES PARTICIPANTES Y FIRMAS');
+  const parts=getParticipantes();
+  const colW=[tw*0.45,tw*0.3,tw*0.25];
+  doc.setFontSize(8);doc.setFont('helvetica','bold');
+  doc.text('Nombre completo',ml,y);
+  doc.text('Cargo / Especialidad',ml+colW[0],y);
+  doc.text('Firma',ml+colW[0]+colW[1],y);
+  y+=4;
+  doc.line(ml,y,ml+tw,y);y+=4;
+
+  parts.forEach(p=>{
+    if(y>270){doc.addPage();y=20;}
+    doc.setFont('helvetica','normal');doc.setFontSize(8);
+    doc.text(p.nombre||'--',ml,y);
+    doc.text(p.cargo||'--',ml+colW[0],y);
+    doc.line(ml+colW[0]+colW[1],y+1,ml+tw,y+1);
+    y+=10;
+  });
+  // Espacios extra para firmas adicionales
+  for(let i=0;i<3;i++){
+    if(y>270){doc.addPage();y=20;}
+    doc.line(ml,y+1,ml+colW[0]-5,y+1);
+    doc.line(ml+colW[0],y+1,ml+colW[0]+colW[1]-5,y+1);
+    doc.line(ml+colW[0]+colW[1],y+1,ml+tw,y+1);
+    y+=10;
+  }
+
+  // VIII. FECHA Y FIRMA COORDINADOR
+  y+=5;
+  doc.setFontSize(9);doc.setFont('helvetica','normal');
+  const fechaJunta=val('j-fecha')?new Date(val('j-fecha')+'T12:00:00').toLocaleDateString('es-CO',{day:'numeric',month:'long',year:'numeric'}):'-';
+  doc.text(`Bucaramanga, ${fechaJunta}  ·  Hora: ${val('j-hora')||'--'}  ·  Modalidad: ${val('j-modalidad')||'--'}`,ml,y);
+  y+=6;
+  if(val('j-obs-finales')){
+    doc.setFont('helvetica','bold');doc.text('Observaciones finales:',ml,y);y+=5;
+    doc.setFont('helvetica','normal');
+    const lines=doc.splitTextToSize(val('j-obs-finales')||'--',tw);
+    doc.text(lines,ml,y);
+  }
+
+  // FOOTER
+  const pages=doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setFontSize(7);doc.setTextColor(150,150,150);
+    doc.text(`Acta Junta Médica HP · INO · Página ${i} de ${pages}`,W/2,292,{align:'center'});
+    doc.text('Documento generado por PulmoLink INO',W/2,296,{align:'center'});
+  }
+
+  const nombre=val('j-nombre')||'paciente';
+  const fecha=(val('j-fecha')||new Date().toISOString().split('T')[0]).replace(/-/g,'');
+  doc.save(`Junta_Medica_HP_${nombre.replace(/ /g,'_')}_${fecha}.pdf`);
+}
+
+// ══ HISTORIAL ════════════════════════════════════════════════
+async function cargarJuntas(){
+  try{
+    const r=await fetch(`${API}/api/v1/juntas`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(!r.ok) return;
+    const d=await r.json();
+    todasLasJuntas=d.juntas||[];
+    renderJuntas(todasLasJuntas);
+  }catch(e){console.error(e);}
+}
+
+function filtrarJuntas(){
+  const buscar=document.getElementById('buscar-junta').value.toLowerCase();
+  const filtro=document.getElementById('filtro-motivo').value;
+  let juntas=todasLasJuntas;
+  if(buscar) juntas=juntas.filter(j=>(j.paciente_nombre||j.detalle?.paciente_nombre||'').toLowerCase().includes(buscar));
+  renderJuntas(juntas);
+}
+
+function renderJuntas(juntas){
+  const cont=document.getElementById('hist-content');
+  if(!juntas.length){cont.innerHTML='<div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">No hay juntas registradas.</div>';return;}
+  cont.innerHTML=juntas.map(j=>{
+    const det=typeof j.detalle==='string'?JSON.parse(j.detalle):j.detalle;
+    const riesgoClase=det.riesgo==='bajo'?'jb-riesgo-bajo':det.riesgo==='alto'?'jb-riesgo-alto':'jb-riesgo-inter';
+    return `<div class="junta-item" onclick="verJunta('${j.id}')">
+      <div class="junta-fecha">${fechaCorta(det.fecha||j.created_at)} · ${det.modalidad||''}</div>
+      <div class="junta-pac">${det.paciente_nombre||'--'}</div>
+      <div class="junta-motivo">${(det.motivos||[]).slice(0,2).join(' · ')||'Sin motivo registrado'}</div>
+      <div class="junta-badges">
+        ${det.cf?`<span class="junta-badge jb-cf">CF ${det.cf}</span>`:''}
+        ${det.riesgo?`<span class="junta-badge ${riesgoClase}">Riesgo ${det.riesgo}</span>`:''}
+        ${det.grupo_hp?`<span class="junta-badge jb-grupo">${det.grupo_hp}</span>`:''}
+        ${(det.participantes||[]).length?`<span class="junta-badge" style="background:var(--warm);color:var(--text-3)">${det.participantes.length} profesionales</span>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function verJunta(id){
+  const junta=todasLasJuntas.find(j=>j.id===id);
+  if(!junta) return;
+  const det=typeof junta.detalle==='string'?JSON.parse(junta.detalle):junta.detalle;
+  alert(`Junta del ${fechaCorta(det.fecha)}\nPaciente: ${det.paciente_nombre}\nDecisión: ${det.decision_detalle||'--'}\n\nUsa el módulo de nueva junta para generar el acta PDF.`);
+}
+
+function cambiarTab(tab){
+  ['nueva','hist'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('active',t===tab);
+    document.getElementById(`panel-${t}`).classList.toggle('active',t===tab);
+  });
+  if(tab==='hist') cargarJuntas();
+}
+
+function val(id){return document.getElementById(id)?.value?.trim()||null;}
+function mostrarMsg(id,txt,tipo){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className='msg'+(tipo?' '+tipo:'');}
+function fechaCorta(iso){if(!iso)return'--';return new Date(iso).toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'});}
+let toastTimer;
+function showToast(msg,icon='✓'){clearTimeout(toastTimer);document.getElementById('toast-msg').textContent=msg;document.getElementById('toast-icon').textContent=icon;document.getElementById('toast').classList.add('show');toastTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),3500);}
+</script>
+</body>
+</html>
