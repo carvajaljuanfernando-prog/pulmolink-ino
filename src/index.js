@@ -73,7 +73,14 @@ app.get('/fix-rehabilitacion', async (req, res) => {
     return res.json({ ok: true, mensaje: 'Tabla recreada con todas las columnas' });
   } catch(err) { return res.status(500).json({ error: err.message }); }
 });
-
+app.get('/fix-nutricion', async (req, res) => {
+  if (req.query.key !== 'pulmolink-ino-setup') return res.status(403).json({ error: 'No autorizado' });
+  try {
+    const { pool } = require('./config/db');
+    await pool.query('ALTER TABLE pacientes ADD COLUMN IF NOT EXISTS imc NUMERIC(5,2)');
+    return res.json({ ok: true, mensaje: 'Columna imc agregada' });
+  } catch(err) { return res.status(500).json({ error: err.message }); }
+});
 app.get('/login', (req, res) => {
   res.sendFile(path.join(__dirname, '../frontend/login.html'));
 });
