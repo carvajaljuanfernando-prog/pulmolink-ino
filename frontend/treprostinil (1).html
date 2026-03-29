@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Treprostinil SC</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--purple:#5B3FAA;--purple-lt:#EDE8FE;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white;flex:1}
+.container{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.pac-box{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pac-label{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap}
+.pac-select{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:10px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all 0.15s}
+.tab.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text-2)}
+.field input,.field select,.field textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}
+.field .unit{font-size:10px;color:var(--text-3);margin-top:1px}
+.field-full{grid-column:1/-1}
+
+/* CALCULADORA */
+.calc-box{background:var(--teal-dk);border-radius:16px;padding:24px;margin-bottom:16px;color:white}
+.calc-title{font-size:13px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.8px;margin-bottom:16px}
+.calc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.calc-field{display:flex;flex-direction:column;gap:5px}
+.calc-field label{font-size:11px;font-weight:600;color:rgba(255,255,255,0.7)}
+.calc-field input,.calc-field select{padding:10px 12px;border:1.5px solid rgba(255,255,255,0.2);border-radius:8px;font-family:"Nunito",sans-serif;font-size:14px;color:white;background:rgba(255,255,255,0.1);outline:none;width:100%}
+.calc-field input::placeholder{color:rgba(255,255,255,0.4)}
+.calc-field input:focus,.calc-field select:focus{border-color:rgba(255,255,255,0.5);background:rgba(255,255,255,0.15)}
+.calc-field select option{background:var(--teal-dk);color:white}
+.calc-result{background:rgba(255,255,255,0.1);border:1.5px solid rgba(255,255,255,0.2);border-radius:12px;padding:16px;display:none}
+.calc-result.visible{display:block}
+.result-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.1)}
+.result-row:last-child{border-bottom:none}
+.result-label{font-size:12px;color:rgba(255,255,255,0.7)}
+.result-val{font-size:18px;font-weight:700;color:white}
+.result-unit{font-size:11px;color:rgba(255,255,255,0.5);margin-left:4px}
+.result-highlight{background:rgba(255,255,255,0.15);border-radius:8px;padding:12px 16px;margin-top:12px;font-size:13px;color:white;line-height:1.6}
+.btn-calc{padding:11px 24px;background:white;color:var(--teal-dk);border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;cursor:pointer;transition:all 0.15s;margin-top:4px}
+.btn-calc:hover{background:rgba(255,255,255,0.9)}
+
+/* ALERTAS */
+.alerta-box{border-radius:12px;padding:14px 18px;margin-bottom:14px;display:none;align-items:flex-start;gap:10px}
+.alerta-box.visible{display:flex}
+.alerta-critica{background:var(--red-lt);border:2px solid rgba(214,62,62,0.4)}
+.alerta-amber{background:var(--amber-lt);border:1.5px solid rgba(192,122,0,0.3)}
+.alerta-txt{font-size:13px;font-weight:600;line-height:1.5;flex:1}
+.alerta-critica .alerta-txt{color:var(--red)}
+.alerta-amber .alerta-txt{color:var(--amber)}
+
+/* PROGRESO TITULACIÓN */
+.prog-titulacion{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:16px}
+.prog-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.prog-titulo{font-size:14px;font-weight:700;color:var(--text-1)}
+.prog-dosis-actual{font-size:22px;font-weight:800;color:var(--teal-dk)}
+.prog-dosis-label{font-size:11px;color:var(--text-3)}
+.prog-track{height:12px;background:var(--teal-pale);border-radius:6px;overflow:hidden;margin-bottom:6px}
+.prog-fill{height:100%;background:var(--teal);border-radius:6px;transition:width 0.5s ease}
+.prog-sub{display:flex;justify-content:space-between;font-size:11px;color:var(--text-3)}
+.hitos-cont{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.hito{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.hito-actual{background:var(--teal);color:white}
+.hito-pasado{background:var(--green-lt);color:var(--green)}
+.hito-futuro{background:var(--teal-pale);color:var(--teal)}
+
+/* HISTORIAL */
+.hist-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+.hist-dosis{font-size:20px;font-weight:800;color:var(--teal-dk)}
+.hist-vel{font-size:13px;color:var(--text-2)}
+.tolerancia-badge{display:inline-block;padding:2px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-top:4px}
+.tb-buena{background:var(--green-lt);color:var(--green)}
+.tb-parcial{background:var(--amber-lt);color:var(--amber)}
+.tb-mala{background:var(--red-lt);color:var(--red)}
+
+.btn-primary{padding:12px 28px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--teal-dk)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.actions{display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.spinner{width:15px;height:15px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.msg.error{background:var(--red-lt);color:var(--red);display:block}
+.msg.ok{background:var(--green-lt);color:var(--green);display:block}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--teal-dk);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;z-index:1000}
+.toast.show{display:flex}
+.info-box{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin-bottom:14px}
+.ib-teal{background:var(--teal-pale);color:var(--teal-dk);border:1px solid rgba(0,107,143,0.15)}
+.ib-purple{background:var(--purple-lt);color:var(--purple);border:1px solid rgba(91,63,170,0.2)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/farmacia'">← Farmacia</button>
+  <div class="topbar-title">Treprostinil SC — Titulación y Seguimiento · INO</div>
+</div>
+
+<div class="container">
+
+  <div class="pac-box">
+    <div class="pac-label">Paciente</div>
+    <select class="pac-select" id="pac-select" onchange="seleccionarPaciente()">
+      <option value="">Selecciona un paciente...</option>
+    </select>
+  </div>
+
+  <!-- PROGRESO DE TITULACIÓN -->
+  <div class="prog-titulacion" id="prog-cont" style="display:none">
+    <div class="prog-header">
+      <div>
+        <div class="prog-titulo">Progreso de titulación</div>
+        <div class="prog-dosis-label">Dosis actual</div>
+        <div class="prog-dosis-actual" id="prog-dosis-actual">-- ng/kg/min</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;color:var(--text-3)">Ajustes realizados</div>
+        <div style="font-size:22px;font-weight:800;color:var(--teal-dk)" id="prog-n-ajustes">0</div>
+      </div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="prog-sub"><span>Inicio 2.5 ng/kg/min</span><span id="prog-meta">Meta individualizada</span></div>
+    <div class="hitos-cont" id="hitos-cont"></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-calc" onclick="cambiarTab('calc')">🧮 Calculadora + Ajuste</button>
+    <button class="tab" id="tab-hist" onclick="cambiarTab('hist')">📅 Historial de titulación</button>
+  </div>
+
+  <!-- ══ CALCULADORA + AJUSTE ═══════════════════════════════ -->
+  <div class="panel active" id="panel-calc">
+
+    <!-- CALCULADORA -->
+    <div class="calc-box">
+      <div class="calc-title">Calculadora de velocidad de infusión — Treprostinil SC</div>
+      <div class="calc-grid">
+        <div class="calc-field">
+          <label>Peso del paciente (kg)</label>
+          <input type="number" id="c-peso" min="20" max="200" step="0.1" placeholder="ej. 65" oninput="calcular()">
+        </div>
+        <div class="calc-field">
+          <label>Dosis objetivo (ng/kg/min)</label>
+          <input type="number" id="c-dosis" min="0.5" max="200" step="1.25" placeholder="ej. 20" oninput="calcular()">
+        </div>
+        <div class="calc-field">
+          <label>Concentración del cassette</label>
+          <select id="c-conc" onchange="calcular()">
+            <option value="5">5 mg/mL (5,000 ng/mL) — Inicio</option>
+            <option value="10">10 mg/mL (10,000 ng/mL)</option>
+          </select>
+        </div>
+        <div class="calc-field">
+          <label>Incremento propuesto (ng/kg/min)</label>
+          <input type="number" id="c-incremento" min="1.25" max="10" step="1.25" placeholder="ej. 2.5" oninput="calcular()">
+        </div>
+      </div>
+      <button class="btn-calc" onclick="calcular()">Calcular →</button>
+
+      <div class="calc-result" id="calc-result">
+        <div class="result-row">
+          <span class="result-label">Velocidad de infusión actual</span>
+          <span><span class="result-val" id="r-vel-actual">--</span><span class="result-unit">mL/h</span></span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Velocidad tras el incremento</span>
+          <span><span class="result-val" id="r-vel-nueva">--</span><span class="result-unit">mL/h</span></span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Dosis tras el incremento</span>
+          <span><span class="result-val" id="r-dosis-nueva">--</span><span class="result-unit">ng/kg/min</span></span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Duración cassette (72h estándar)</span>
+          <span><span class="result-val" id="r-duracion">--</span><span class="result-unit">h / <span id="r-vol-72h">--</span> mL</span></span>
+        </div>
+        <div class="result-highlight" id="r-highlight"></div>
+      </div>
+    </div>
+
+    <!-- ALERTAS CLÍNICAS -->
+    <div class="alerta-box alerta-critica" id="alerta-dosis-alta">
+      <span style="font-size:20px">🚨</span>
+      <div class="alerta-txt">Dosis > 40 ng/kg/min — Verificar con el cardiólogo antes de ajustar. Riesgo de hipotensión severa.</div>
+    </div>
+    <div class="alerta-box alerta-amber" id="alerta-conc-cambio">
+      <span style="font-size:18px">⚠️</span>
+      <div class="alerta-txt" id="alerta-conc-txt"></div>
+    </div>
+
+    <!-- REGISTRO DEL AJUSTE -->
+    <div class="card">
+      <div class="card-title">Registro del ajuste de dosis</div>
+      <div class="info-box ib-purple">El cardiólogo indica — la enfermera gestora ejecuta y registra. Toda modificación de dosis debe quedar registrada con hora exacta.</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Fecha del ajuste</label>
+          <input type="date" id="a-fecha">
+        </div>
+        <div class="field">
+          <label>Hora exacta del cambio</label>
+          <input type="time" id="a-hora">
+        </div>
+        <div class="field">
+          <label>Tipo de ajuste</label>
+          <select id="a-tipo">
+            <option value="inicio">Inicio del tratamiento</option>
+            <option value="incremento">Incremento de dosis</option>
+            <option value="mantenimiento">Mantenimiento (sin cambio)</option>
+            <option value="reduccion">Reducción por efectos adversos</option>
+            <option value="suspension_temporal">Suspensión temporal</option>
+            <option value="reinicio">Reinicio tras suspensión</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Dosis nueva (ng/kg/min)</label>
+          <input type="number" id="a-dosis-nueva" min="0" max="200" step="1.25" placeholder="ej. 20">
+        </div>
+        <div class="field">
+          <label>Velocidad nueva (mL/h)</label>
+          <input type="number" id="a-vel-nueva" min="0" max="5" step="0.001" placeholder="ej. 0.156">
+          <div class="unit">Calculada automáticamente arriba</div>
+        </div>
+        <div class="field">
+          <label>Concentración cassette usado</label>
+          <select id="a-conc">
+            <option value="5">5 mg/mL</option>
+            <option value="10">10 mg/mL</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Peso actual (kg)</label>
+          <input type="number" id="a-peso" min="20" max="200" step="0.1" placeholder="ej. 65">
+        </div>
+        <div class="field">
+          <label>Profesional que ejecuta</label>
+          <input type="text" id="a-ejecuta" placeholder="Enfermera gestora">
+        </div>
+        <div class="field">
+          <label>Indicado por</label>
+          <input type="text" id="a-indica" placeholder="Dr./Dra. cardiólogo">
+        </div>
+      </div>
+
+      <!-- SIGNOS VITALES -->
+      <div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Signos vitales al momento del ajuste</div>
+        <div class="form-grid">
+          <div class="field"><label>PA (mmHg)</label><input type="text" id="a-pa" placeholder="ej. 110/70"></div>
+          <div class="field"><label>FC (lpm)</label><input type="number" id="a-fc" min="30" max="250" placeholder="ej. 88"></div>
+          <div class="field"><label>SpO₂ (%)</label><input type="number" id="a-spo2" min="50" max="100" placeholder="ej. 92"></div>
+          <div class="field"><label>FR (resp/min)</label><input type="number" id="a-fr" min="8" max="60" placeholder="ej. 18"></div>
+        </div>
+      </div>
+
+      <!-- TOLERANCIA -->
+      <div style="margin-top:14px">
+        <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Tolerancia al incremento anterior</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Tolerancia general</label>
+            <select id="a-tolerancia">
+              <option value="buena">Buena — sin limitaciones</option>
+              <option value="parcial">Parcial — con síntomas manejables</option>
+              <option value="mala">Mala — requirió reducción/suspensión</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Dolor sitio de infusión (0-10)</label>
+            <input type="number" id="a-dolor-sitio" min="0" max="10" placeholder="0-10">
+          </div>
+          <div class="field">
+            <label>Rubor / flushing</label>
+            <select id="a-rubor">
+              <option value="no">No</option>
+              <option value="leve">Leve</option>
+              <option value="moderado">Moderado</option>
+              <option value="severo">Severo</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Náuseas / vómito</label>
+            <select id="a-nauseas">
+              <option value="no">No</option>
+              <option value="leve">Leves</option>
+              <option value="moderado">Moderadas</option>
+              <option value="severo">Severas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Dolor de mandíbula</label>
+            <select id="a-mandibula">
+              <option value="no">No</option>
+              <option value="leve">Leve</option>
+              <option value="moderado">Moderado</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Cefalea</label>
+            <select id="a-cefalea">
+              <option value="no">No</option>
+              <option value="leve">Leve</option>
+              <option value="moderada">Moderada</option>
+              <option value="severa">Severa</option>
+            </select>
+          </div>
+          <div class="field field-full">
+            <label>Efectos adversos que limitaron la titulación</label>
+            <textarea id="a-ea-limitantes" rows="2" placeholder="Describir efectos que impidieron el incremento planificado..."></textarea>
+          </div>
+          <div class="field field-full">
+            <label>Observaciones / Plan del próximo ajuste</label>
+            <textarea id="a-obs" rows="2" placeholder="Fecha estimada próximo incremento, condicionantes, instrucciones al paciente..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="msg" id="msg-ajuste"></div>
+      <div class="actions">
+        <button class="btn-primary" id="btn-guardar-ajuste" onclick="guardarAjuste()">Guardar ajuste de dosis</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ══ HISTORIAL ══════════════════════════════════════════ -->
+  <div class="panel" id="panel-hist">
+    <div id="hist-content">
+      <div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Selecciona un paciente para ver el historial de titulación.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✓</span> <span id="toast-msg">Guardado</span></div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+let pacienteActual = null;
+let pacientes = [];
+let historialAjustes = [];
+
+if (!token) window.location.href = '/login';
+
+window.addEventListener('DOMContentLoaded', () => {
+  cargarPacientes();
+  const hoy = new Date().toISOString().split('T')[0];
+  const ahora = new Date().toTimeString().slice(0,5);
+  document.getElementById('a-fecha').value = hoy;
+  document.getElementById('a-hora').value = ahora;
+});
+
+async function cargarPacientes() {
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/pacientes-lista`, { headers:{'Authorization':`Bearer ${token}`} });
+    if (r.status===401){window.location.href='/login';return;}
+    const d = await r.json();
+    pacientes = d.pacientes||[];
+    const sel = document.getElementById('pac-select');
+    pacientes.forEach(p => { const o=document.createElement('option');o.value=p.id;o.textContent=`${p.nombre} ${p.apellido}`;sel.appendChild(o); });
+  } catch(e){console.error(e);}
+}
+
+function seleccionarPaciente(){
+  const id=document.getElementById('pac-select').value;
+  pacienteActual=pacientes.find(p=>p.id===id)||null;
+  if(pacienteActual) cargarHistorialPaciente();
+  if(document.getElementById('panel-hist').classList.contains('active')&&pacienteActual) renderHistorial();
+}
+
+function cambiarTab(tab){
+  ['calc','hist'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('active',t===tab);
+    document.getElementById(`panel-${t}`).classList.toggle('active',t===tab);
+  });
+  if(tab==='hist'&&pacienteActual) renderHistorial();
+}
+
+// ══ CALCULADORA ═══════════════════════════════════════════════
+function calcular(){
+  const peso = parseFloat(document.getElementById('c-peso').value);
+  const dosis = parseFloat(document.getElementById('c-dosis').value);
+  const conc = parseFloat(document.getElementById('c-conc').value);
+  const incr = parseFloat(document.getElementById('c-incremento').value)||0;
+
+  if(!peso||!dosis) return;
+
+  // Fórmula: velocidad (mL/h) = dosis(ng/kg/min) × peso(kg) × 60min / concentración(ng/mL)
+  const concNgML = conc * 1000000 / 1000; // mg/mL → ng/mL: 5mg/mL = 5,000,000 ng/mL / 1000 = 5000 ng/mL
+  const velActual = (dosis * peso * 60) / (concNgML * 1000);
+  const dosisNueva = dosis + incr;
+  const velNueva = (dosisNueva * peso * 60) / (concNgML * 1000);
+  const vol72h = velActual * 72;
+
+  document.getElementById('r-vel-actual').textContent = velActual.toFixed(3);
+  document.getElementById('r-vel-nueva').textContent = incr > 0 ? velNueva.toFixed(3) : '--';
+  document.getElementById('r-dosis-nueva').textContent = incr > 0 ? dosisNueva.toFixed(2) : '--';
+  document.getElementById('r-duracion').textContent = '72';
+  document.getElementById('r-vol-72h').textContent = vol72h.toFixed(1)+' mL';
+
+  let highlight = `Cassette de ${conc} mg/mL · Peso ${peso} kg · Dosis ${dosis} ng/kg/min → ${velActual.toFixed(3)} mL/h`;
+  if(incr > 0) highlight += `<br>Tras incremento de ${incr} ng/kg/min → Nueva velocidad: <strong>${velNueva.toFixed(3)} mL/h</strong>`;
+
+  document.getElementById('r-highlight').innerHTML = highlight;
+  document.getElementById('calc-result').classList.add('visible');
+
+  // Copiar valores al formulario de registro
+  document.getElementById('a-dosis-nueva').value = incr > 0 ? dosisNueva.toFixed(2) : dosis.toFixed(2);
+  document.getElementById('a-vel-nueva').value = incr > 0 ? velNueva.toFixed(3) : velActual.toFixed(3);
+  document.getElementById('a-peso').value = peso;
+  document.getElementById('a-conc').value = conc;
+
+  // Alertas
+  const dosisFinal = incr > 0 ? dosisNueva : dosis;
+  document.getElementById('alerta-dosis-alta').classList.toggle('visible', dosisFinal > 40);
+
+  // Alerta cambio de concentración
+  if(conc === 10) {
+    document.getElementById('alerta-conc-txt').textContent = 'Cassette de 10 mg/mL — Verificar que la bomba esté programada con la nueva concentración. Un error de programación puede resultar en sobredosis o subdosis.';
+    document.getElementById('alerta-conc-cambio').classList.add('visible');
+  } else {
+    document.getElementById('alerta-conc-cambio').classList.remove('visible');
+  }
+}
+
+// ══ HISTORIAL Y PROGRESO ════════════════════════════════════
+async function cargarHistorialPaciente(){
+  try {
+    const r = await fetch(`${API}/api/v1/farmacia/treprostinil/${pacienteActual.id}`, { headers:{'Authorization':`Bearer ${token}`} });
+    if(!r.ok) return;
+    const d = await r.json();
+    historialAjustes = d.ajustes || [];
+    actualizarProgreso();
+    if(document.getElementById('panel-hist').classList.contains('active')) renderHistorial();
+  } catch(e){ console.error(e); }
+}
+
+function actualizarProgreso(){
+  if(!historialAjustes.length){ document.getElementById('prog-cont').style.display='none'; return; }
+  const ultimo = historialAjustes[0];
+  const det = typeof ultimo.detalle==='string'?JSON.parse(ultimo.detalle):ultimo.detalle;
+  const dosisActual = det.dosis_nueva || 0;
+  const nAjustes = historialAjustes.length;
+  const pct = Math.min(100, (dosisActual / 80) * 100);
+
+  document.getElementById('prog-cont').style.display='block';
+  document.getElementById('prog-dosis-actual').textContent = dosisActual + ' ng/kg/min';
+  document.getElementById('prog-n-ajustes').textContent = nAjustes;
+  document.getElementById('prog-fill').style.width = pct + '%';
+
+  // Hitos
+  const hitos = [2.5, 5, 10, 15, 20, 30, 40, 60, 80];
+  const hitosCont = document.getElementById('hitos-cont');
+  hitosCont.innerHTML = hitos.map(h => {
+    let cls = h < dosisActual ? 'hito-pasado' : h === dosisActual ? 'hito-actual' : 'hito-futuro';
+    return `<span class="hito ${cls}">${h}</span>`;
+  }).join('');
+}
+
+function renderHistorial(){
+  const cont = document.getElementById('hist-content');
+  if(!historialAjustes.length){ cont.innerHTML='<div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Sin ajustes registrados para este paciente.</div>'; return; }
+  const tolClases = { buena:'tb-buena', parcial:'tb-parcial', mala:'tb-mala' };
+  const tolLabels = { buena:'Buena tolerancia', parcial:'Tolerancia parcial', mala:'Mala tolerancia' };
+  cont.innerHTML = historialAjustes.map((it,i) => {
+    const det = typeof it.detalle==='string'?JSON.parse(it.detalle):it.detalle;
+    const esUltimo = i===0;
+    return `<div class="hist-item" style="${esUltimo?'border-color:var(--teal);':''}">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+        <div>
+          <div style="font-size:11px;color:var(--text-3);margin-bottom:2px">${fechaCorta(det.fecha)} ${det.hora||''} ${esUltimo?'<span style="background:var(--teal);color:white;font-size:10px;padding:1px 6px;border-radius:6px;font-weight:600;margin-left:4px">ACTUAL</span>':''}</div>
+          <div class="hist-dosis">${det.dosis_nueva||'--'} <span style="font-size:13px;font-weight:400;color:var(--text-3)">ng/kg/min</span></div>
+          <div class="hist-vel">${det.vel_nueva||'--'} mL/h · ${det.conc||'--'} mg/mL · ${det.peso||'--'} kg</div>
+          ${det.tolerancia?`<span class="tolerancia-badge ${tolClases[det.tolerancia]||''}">${tolLabels[det.tolerancia]||det.tolerancia}</span>`:''}
+        </div>
+        <div style="text-align:right;font-size:12px;color:var(--text-2)">
+          ${det.tipo?`<div>${det.tipo}</div>`:''}
+          ${det.ejecuta?`<div>Ejecuta: ${det.ejecuta}</div>`:''}
+          ${det.indica?`<div>Indica: ${det.indica}</div>`:''}
+        </div>
+      </div>
+      ${det.dolor_sitio>0||det.rubor!=='no'||det.nauseas!=='no'?`
+        <div style="font-size:12px;color:var(--text-2);margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
+          ${det.dolor_sitio>0?`Dolor sitio: ${det.dolor_sitio}/10 · `:''} 
+          ${det.rubor!=='no'?`Rubor: ${det.rubor} · `:''}
+          ${det.nauseas!=='no'?`Náuseas: ${det.nauseas}`:''} 
+        </div>`:''}
+      ${det.obs?`<div style="font-size:12px;color:var(--text-2);margin-top:6px;font-style:italic">${det.obs}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ══ GUARDAR ════════════════════════════════════════════════════
+async function guardarAjuste(){
+  if(!pacienteActual) return mostrarMsg('msg-ajuste','Selecciona un paciente primero.','error');
+  const btn=document.getElementById('btn-guardar-ajuste');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Guardando...';
+
+  const dosisNueva = num('a-dosis-nueva');
+  const body={
+    paciente_id: pacienteActual.id,
+    fecha: val('a-fecha'), hora: val('a-hora'),
+    tipo: val('a-tipo'),
+    dosis_nueva: dosisNueva,
+    vel_nueva: num('a-vel-nueva'),
+    conc: num('a-conc'),
+    peso: num('a-peso'),
+    ejecuta: val('a-ejecuta'),
+    indica: val('a-indica'),
+    pa: val('a-pa'), fc: num('a-fc'),
+    spo2: num('a-spo2'), fr: num('a-fr'),
+    tolerancia: val('a-tolerancia'),
+    dolor_sitio: num('a-dolor-sitio'),
+    rubor: val('a-rubor'),
+    nauseas: val('a-nauseas'),
+    mandibula: val('a-mandibula'),
+    cefalea: val('a-cefalea'),
+    ea_limitantes: val('a-ea-limitantes'),
+    obs: val('a-obs'),
+    genera_alerta: dosisNueva > 40 || val('a-tolerancia') === 'mala',
+  };
+
+  try {
+    const r = await fetch(`${API}/api/v1/farmacia/treprostinil`, {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body:JSON.stringify(body)
+    });
+    const d = await r.json();
+    if(r.ok){
+      showToast('Ajuste registrado correctamente','✓');
+      mostrarMsg('msg-ajuste','','');
+      await cargarHistorialPaciente();
+    } else { mostrarMsg('msg-ajuste',d.error||'Error al guardar.','error'); }
+  } catch(e){ mostrarMsg('msg-ajuste','Error de conexión.','error'); }
+  btn.disabled=false;btn.innerHTML='Guardar ajuste de dosis';
+}
+
+function val(id){return document.getElementById(id)?.value?.trim()||null;}
+function num(id){const v=document.getElementById(id)?.value;return v!==''&&v!=null?parseFloat(v):null;}
+function mostrarMsg(id,txt,tipo){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className='msg'+(tipo?' '+tipo:'');}
+function fechaCorta(iso){if(!iso)return'--';return new Date(iso).toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'});}
+let toastTimer;
+function showToast(msg,icon='✓'){clearTimeout(toastTimer);document.getElementById('toast-msg').textContent=msg;document.getElementById('toast-icon').textContent=icon;document.getElementById('toast').classList.add('show');toastTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),3500);}
+</script>
+<script src="/paciente-search.js"></script>
+</body>
+</html>
