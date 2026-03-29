@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Transición Treprostinil SC → Inhalado</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white;flex:1}
+.container{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.pac-box{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pac-label{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap}
+.pac-select{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:10px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all 0.15s}
+.tab.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.panel{display:none}
+.panel.active{display:block}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text-2)}
+.field input,.field select,.field textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}
+.field .unit{font-size:10px;color:var(--text-3);margin-top:1px}
+.field-full{grid-column:1/-1}
+
+/* TIMELINE */
+.timeline{display:flex;flex-direction:column;gap:0;margin-bottom:20px}
+.tl-item{display:flex;gap:0;position:relative}
+.tl-left{width:120px;text-align:right;padding:0 16px 0 0;flex-shrink:0;padding-top:12px}
+.tl-dia{font-size:12px;font-weight:700;color:var(--teal-dk)}
+.tl-hora{font-size:10px;color:var(--text-3)}
+.tl-center{display:flex;flex-direction:column;align-items:center;width:24px;flex-shrink:0}
+.tl-dot{width:16px;height:16px;border-radius:50%;border:2.5px solid var(--teal);background:var(--white);flex-shrink:0;margin-top:14px;z-index:1}
+.tl-dot.activo{background:var(--teal)}
+.tl-dot.completado{background:var(--green);border-color:var(--green)}
+.tl-dot.pendiente{background:var(--white);border-color:var(--border)}
+.tl-line{width:2px;background:var(--border);flex:1;min-height:20px}
+.tl-right{flex:1;padding:8px 0 20px 16px}
+.tl-card{border-radius:12px;padding:14px 16px;border:1.5px solid}
+.tl-verde{background:var(--green-lt);border-color:rgba(26,122,74,0.3)}
+.tl-amarillo{background:var(--amber-lt);border-color:rgba(192,122,0,0.3)}
+.tl-rojo{background:var(--red-lt);border-color:rgba(214,62,62,0.3)}
+.tl-titulo{font-size:13px;font-weight:700;margin-bottom:6px}
+.tl-verde .tl-titulo{color:var(--green)}
+.tl-amarillo .tl-titulo{color:var(--amber)}
+.tl-rojo .tl-titulo{color:var(--red)}
+.tl-items{font-size:12px;color:var(--text-2);line-height:1.8}
+.tl-badge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;margin-bottom:8px}
+.badge-v{background:var(--green-lt);color:var(--green)}
+.badge-a{background:var(--amber-lt);color:var(--amber)}
+.badge-r{background:var(--red-lt);color:var(--red)}
+
+/* DOSIS CONCURRENTE */
+.dosis-box{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+.dosis-sc{background:var(--teal-pale);border-radius:8px;padding:10px 12px;text-align:center}
+.dosis-inh{background:var(--green-lt);border-radius:8px;padding:10px 12px;text-align:center}
+.dosis-val{font-size:16px;font-weight:700;color:var(--teal-dk)}
+.dosis-inh .dosis-val{color:var(--green)}
+.dosis-label{font-size:10px;color:var(--text-3);margin-top:2px}
+
+/* PROGRESS DÍA */
+.dia-progress{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.dia-btn{flex:1;min-width:100px;padding:12px 8px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:"Nunito",sans-serif;font-size:12px;font-weight:600;color:var(--text-2);cursor:pointer;text-align:center;transition:all 0.15s}
+.dia-btn.activo{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.dia-btn.completado{border-color:var(--green);background:var(--green-lt);color:var(--green)}
+.dia-num{font-size:20px;font-weight:800;margin-bottom:2px}
+
+/* SV TABLE */
+.sv-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.sv-table th{font-size:10px;font-weight:700;color:var(--text-3);padding:6px 8px;text-align:left;border-bottom:1px solid var(--border)}
+.sv-table td{padding:7px 8px;border-bottom:1px solid var(--border)}
+.sv-table tr:last-child td{border-bottom:none}
+.sv-input{width:80px;padding:5px 8px;border:1.5px solid var(--border);border-radius:6px;font-family:"Nunito",sans-serif;font-size:12px;text-align:center;background:var(--warm);outline:none}
+.sv-input:focus{border-color:var(--teal-lt);background:white}
+
+/* ALERTAS */
+.alerta{border-radius:12px;padding:12px 16px;margin-bottom:10px;display:none;align-items:flex-start;gap:10px}
+.alerta.visible{display:flex}
+.alerta-r{background:var(--red-lt);border:2px solid rgba(214,62,62,0.4)}
+.alerta-a{background:var(--amber-lt);border:1px solid rgba(192,122,0,0.3)}
+.alerta-txt{font-size:13px;font-weight:600;line-height:1.5;flex:1}
+.alerta-r .alerta-txt{color:var(--red)}
+.alerta-a .alerta-txt{color:var(--amber)}
+
+/* CRITERIOS */
+.criterio-check{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:var(--warm);transition:all 0.15s;margin-bottom:6px;font-size:12px;color:var(--text-1);line-height:1.4}
+.criterio-check input{accent-color:var(--teal);flex-shrink:0;margin-top:2px}
+.criterio-check.checked{border-color:var(--teal);background:var(--teal-pale)}
+.criterio-check.excl{border-color:rgba(214,62,62,0.2)}
+.criterio-check.excl.checked{border-color:var(--red);background:var(--red-lt)}
+
+/* HISTORIAL */
+.hist-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px}
+
+.btn-primary{padding:12px 28px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--teal-dk)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.btn-green{background:var(--green)}
+.btn-green:hover{background:#145f38}
+.actions{display:flex;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);flex-wrap:wrap}
+.spinner{width:15px;height:15px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.msg.error{background:var(--red-lt);color:var(--red);display:block}
+.msg.ok{background:var(--green-lt);color:var(--green);display:block}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--teal-dk);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;z-index:1000}
+.toast.show{display:flex}
+.info-box{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin-bottom:14px}
+.ib-teal{background:var(--teal-pale);color:var(--teal-dk);border:1px solid rgba(0,107,143,0.15)}
+.ib-red{background:var(--red-lt);color:var(--red);border:1px solid rgba(214,62,62,0.2)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/treprostinil'">← Treprostinil SC</button>
+  <div class="topbar-title">Transición SC → Inhalado · Protocolo HP-PTTI-001 · INO</div>
+</div>
+
+<div class="container">
+
+  <div class="pac-box">
+    <div class="pac-label">Paciente</div>
+    <select class="pac-select" id="pac-select" onchange="seleccionarPaciente()">
+      <option value="">Selecciona un paciente...</option>
+    </select>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-criterios" onclick="cambiarTab('criterios')">✅ Criterios de elegibilidad</button>
+    <button class="tab" id="tab-registro" onclick="cambiarTab('registro')">📋 Registro diario</button>
+    <button class="tab" id="tab-protocolo" onclick="cambiarTab('protocolo')">📖 Protocolo INO</button>
+    <button class="tab" id="tab-hist" onclick="cambiarTab('hist')">📅 Historial</button>
+  </div>
+
+  <!-- ══ CRITERIOS DE ELEGIBILIDAD ════════════════════════════ -->
+  <div class="panel active" id="panel-criterios">
+
+    <div class="info-box ib-teal">Verificar criterios antes de iniciar la transición. El paciente debe cumplir TODOS los criterios de inclusión y NINGUNO de exclusión.</div>
+
+    <div class="card">
+      <div class="card-title">Criterios de inclusión — deben cumplirse todos</div>
+      <label class="criterio-check" id="ci1"><input type="checkbox" onchange="actualizarElegibilidad()"> HAP Grupo 1 OMS con CF I–II</label>
+      <label class="criterio-check" id="ci2"><input type="checkbox" onchange="actualizarElegibilidad()"> Estabilidad clínica con treprostinil SC ≥ 90 días</label>
+      <label class="criterio-check" id="ci3"><input type="checkbox" onchange="actualizarElegibilidad()"> Dosis SC actual ≤ 25 ng/kg/min (o reducible a ese nivel)</label>
+      <label class="criterio-check" id="ci4"><input type="checkbox" onchange="actualizarElegibilidad()"> RVP &lt; 6 UW en último cateterismo</label>
+      <label class="criterio-check" id="ci5"><input type="checkbox" onchange="actualizarElegibilidad()"> Motivo válido de transición (dolor SC intratable, efectos adversos intolerables)</label>
+      <label class="criterio-check" id="ci6"><input type="checkbox" onchange="actualizarElegibilidad()"> Capacidad de aprender y cumplir técnica de inhalación</label>
+      <label class="criterio-check" id="ci7"><input type="checkbox" onchange="actualizarElegibilidad()"> Consentimiento informado firmado</label>
+      <label class="criterio-check" id="ci8"><input type="checkbox" onchange="actualizarElegibilidad()"> Entrenamiento en dispositivo inhalador completado</label>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Criterios de exclusión — no debe cumplir ninguno</div>
+      <label class="criterio-check excl" id="ce1"><input type="checkbox" onchange="actualizarElegibilidad()"> CF III–IV (NYHA/OMS)</label>
+      <label class="criterio-check excl" id="ce2"><input type="checkbox" onchange="actualizarElegibilidad()"> Nuevo medicamento HP en los últimos 90 días o cambio de dosis en 30 días</label>
+      <label class="criterio-check excl" id="ce3"><input type="checkbox" onchange="actualizarElegibilidad()"> Tabaquismo activo o uso de marihuana inhalada</label>
+      <label class="criterio-check excl" id="ce4"><input type="checkbox" onchange="actualizarElegibilidad()"> Insuficiencia cardíaca derecha activa</label>
+      <label class="criterio-check excl" id="ce5"><input type="checkbox" onchange="actualizarElegibilidad()"> Dosis SC muy alta que no puede disminuirse</label>
+      <label class="criterio-check excl" id="ce6"><input type="checkbox" onchange="actualizarElegibilidad()"> Incapacidad para aprender la técnica de inhalación</label>
+    </div>
+
+    <div id="elegibilidad-resultado" style="display:none;border-radius:12px;padding:16px 20px;margin-bottom:16px;font-size:14px;font-weight:700"></div>
+
+    <div class="card">
+      <div class="card-title">Evaluación pre-transición requerida</div>
+      <div class="form-grid">
+        <div class="field"><label>Fecha de evaluación</label><input type="date" id="pre-fecha"></div>
+        <div class="field"><label>Dosis SC actual (ng/kg/min)</label><input type="number" id="pre-dosis-sc" step="1.25" placeholder="ej. 22"></div>
+        <div class="field"><label>RVP último cateterismo (UW)</label><input type="number" id="pre-rvp" step="0.1" placeholder="ej. 4.5"></div>
+        <div class="field"><label>TC6M pre-transición (m)</label><input type="number" id="pre-tc6m" placeholder="ej. 380"></div>
+        <div class="field"><label>NT-proBNP (pg/mL)</label><input type="number" id="pre-bnp" placeholder="ej. 450"></div>
+        <div class="field"><label>CF OMS actual</label>
+          <select id="pre-cf">
+            <option value="">Seleccionar...</option>
+            <option value="I">Clase I</option>
+            <option value="II">Clase II</option>
+            <option value="III">Clase III</option>
+          </select>
+        </div>
+        <div class="field"><label>Fecha de ingreso hospitalario</label><input type="date" id="pre-ingreso"></div>
+        <div class="field"><label>Unidad de hospitalización</label>
+          <select id="pre-unidad">
+            <option value="uci">UCI</option>
+            <option value="intermedia">Cuidado intermedio</option>
+            <option value="hospitalización">Hospitalización general</option>
+          </select>
+        </div>
+        <div class="field field-full"><label>Responsable médico de la transición</label><input type="text" id="pre-medico" placeholder="Dr./Dra. cardiólogo/neumólogo"></div>
+        <div class="field field-full"><label>Observaciones pre-transición</label>
+          <textarea id="pre-obs" rows="2" placeholder="Hallazgos relevantes, ecocardiograma reciente, condiciones especiales..."></textarea>
+        </div>
+      </div>
+      <div class="msg" id="msg-criterios"></div>
+      <div class="actions">
+        <button class="btn-primary" id="btn-guardar-criterios" onclick="guardarCriterios()">Guardar evaluación pre-transición</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REGISTRO DIARIO ════════════════════════════════════════ -->
+  <div class="panel" id="panel-registro">
+
+    <div class="dia-progress">
+      <button class="dia-btn" id="dia-btn-0" onclick="seleccionarDia(0)">
+        <div class="dia-num">Pre</div>Reducción previa
+      </button>
+      <button class="dia-btn activo" id="dia-btn-1" onclick="seleccionarDia(1)">
+        <div class="dia-num">1</div>Inicio transición
+      </button>
+      <button class="dia-btn" id="dia-btn-2" onclick="seleccionarDia(2)">
+        <div class="dia-num">2</div>Titulación
+      </button>
+      <button class="dia-btn" id="dia-btn-3" onclick="seleccionarDia(3)">
+        <div class="dia-num">3</div>Suspensión SC
+      </button>
+      <button class="dia-btn" id="dia-btn-4" onclick="seleccionarDia(4)">
+        <div class="dia-num">4</div>Alta / Ajuste
+      </button>
+    </div>
+
+    <!-- ALERTAS -->
+    <div class="alerta alerta-r" id="alerta-deterioro">
+      <span style="font-size:18px">🚨</span>
+      <div class="alerta-txt">Deterioro hemodinámico detectado — Suspender reducción SC, evaluar retorno a dosis anterior. Notificar al cardiólogo de inmediato.</div>
+    </div>
+    <div class="alerta alerta-a" id="alerta-rebote">
+      <span style="font-size:18px">⚠️</span>
+      <div class="alerta-txt" id="alerta-rebote-txt">Síndrome de rebote posible — No suspender SC abruptamente. Asegurar solapamiento adecuado con inhalado.</div>
+    </div>
+
+    <div class="card" id="reg-card">
+      <div class="card-title" id="reg-titulo">Registro — Día 1: Inicio de la transición</div>
+
+      <div class="form-grid">
+        <div class="field"><label>Fecha</label><input type="date" id="r-fecha"></div>
+        <div class="field"><label>Hora del registro</label><input type="time" id="r-hora"></div>
+        <div class="field"><label>Profesional</label><input type="text" id="r-prof" placeholder="Nombre"></div>
+      </div>
+
+      <!-- DOSIS CONCURRENTE -->
+      <div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Dosis en este momento</div>
+        <div class="dosis-box">
+          <div class="dosis-sc">
+            <div class="dosis-label">Treprostinil SC</div>
+            <input type="number" id="r-dosis-sc" step="1.25" placeholder="ng/kg/min" style="background:transparent;border:none;font-size:20px;font-weight:700;color:var(--teal-dk);width:100%;text-align:center;outline:none" oninput="verificarDosisRebote()">
+            <div class="dosis-label">ng/kg/min</div>
+          </div>
+          <div class="dosis-inh">
+            <div class="dosis-label">Treprostinil Inhalado</div>
+            <select id="r-inh-sesion" style="background:transparent;border:none;font-size:14px;font-weight:700;color:var(--green);width:100%;text-align:center;outline:none">
+              <option value="0">Sin inhalado</option>
+              <option value="3">3 inh (18 mcg)</option>
+              <option value="6">6 inh (36 mcg)</option>
+              <option value="9">9 inh (54 mcg) ✓ META</option>
+            </select>
+            <div class="dosis-label">4 veces al día</div>
+          </div>
+        </div>
+        <div class="form-grid" style="margin-top:10px">
+          <div class="field">
+            <label>Frecuencia inhalaciones/día</label>
+            <select id="r-inh-freq">
+              <option value="1">1 vez/día</option>
+              <option value="2">2 veces/día</option>
+              <option value="3">3 veces/día</option>
+              <option value="4" selected>4 veces/día (QID)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Técnica inhalación</label>
+            <select id="r-tecnica">
+              <option value="correcta">Correcta</option>
+              <option value="mejorar">Necesita mejorar</option>
+              <option value="incorrecta">Incorrecta — re-entrenar</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIGNOS VITALES -->
+      <div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:8px">Signos vitales</div>
+        <table class="sv-table">
+          <thead><tr><th>Parámetro</th><th>Pre-dosis</th><th>Post-dosis (1h)</th></tr></thead>
+          <tbody>
+            <tr><td>PA (mmHg)</td><td><input class="sv-input" type="text" id="sv-pa-pre" placeholder="--"></td><td><input class="sv-input" type="text" id="sv-pa-post" placeholder="--" oninput="verificarDeterioro()"></td></tr>
+            <tr><td>FC (lpm)</td><td><input class="sv-input" type="number" id="sv-fc-pre" placeholder="--"></td><td><input class="sv-input" type="number" id="sv-fc-post" placeholder="--"></td></tr>
+            <tr><td>SpO₂ (%)</td><td><input class="sv-input" type="number" id="sv-spo2-pre" placeholder="--"></td><td><input class="sv-input" type="number" id="sv-spo2-post" placeholder="--" oninput="verificarDeterioro()"></td></tr>
+            <tr><td>FR (resp/min)</td><td><input class="sv-input" type="number" id="sv-fr-pre" placeholder="--"></td><td><input class="sv-input" type="number" id="sv-fr-post" placeholder="--"></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TOLERANCIA -->
+      <div style="margin-top:16px">
+        <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:10px">Tolerancia y efectos adversos</div>
+        <div class="form-grid">
+          <div class="field"><label>Tolerancia general</label>
+            <select id="r-tolerancia" onchange="verificarDeterioro()">
+              <option value="buena">Buena</option>
+              <option value="parcial">Parcial — síntomas manejables</option>
+              <option value="mala">Mala — enlentecer transición</option>
+              <option value="deterioro">Deterioro hemodinámico</option>
+            </select>
+          </div>
+          <div class="field"><label>Tos post-inhalación</label>
+            <select id="r-tos">
+              <option value="no">No</option>
+              <option value="leve">Leve</option>
+              <option value="moderada">Moderada</option>
+              <option value="severa">Severa</option>
+            </select>
+          </div>
+          <div class="field"><label>Cefalea</label>
+            <select id="r-cefalea">
+              <option value="no">No</option>
+              <option value="leve">Leve</option>
+              <option value="moderada">Moderada</option>
+              <option value="severa">Severa</option>
+            </select>
+          </div>
+          <div class="field"><label>Hipotensión sintomática</label>
+            <select id="r-hipotension">
+              <option value="no">No</option>
+              <option value="si">Sí</option>
+            </select>
+          </div>
+          <div class="field"><label>Dolor mandíbula</label>
+            <select id="r-mandibula">
+              <option value="no">No</option>
+              <option value="leve">Leve</option>
+              <option value="moderado">Moderado</option>
+            </select>
+          </div>
+          <div class="field"><label>Signos de rebote SC</label>
+            <select id="r-rebote" onchange="verificarRebote()">
+              <option value="no">No</option>
+              <option value="si">Sí — disnea, taquicardia</option>
+            </select>
+          </div>
+          <div class="field field-full"><label>Decisión clínica</label>
+            <select id="r-decision">
+              <option value="continuar">Continuar según protocolo</option>
+              <option value="enlentecer">Enlentecer transición</option>
+              <option value="mantener">Mantener dosis actuales</option>
+              <option value="retorno_sc">Retorno a SC — transición fallida</option>
+              <option value="alta">Alta médica — transición completada</option>
+            </select>
+          </div>
+          <div class="field field-full"><label>Observaciones / Notas clínicas</label>
+            <textarea id="r-obs" rows="2" placeholder="Respuesta clínica, ajustes, instrucciones al paciente..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="msg" id="msg-registro"></div>
+      <div class="actions">
+        <button class="btn-primary" id="btn-guardar-reg" onclick="guardarRegistro()">Guardar registro del día</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ PROTOCOLO INO ══════════════════════════════════════════ -->
+  <div class="panel" id="panel-protocolo">
+    <div class="card">
+      <div class="card-title">Protocolo HP-PTTI-001 — Esquema de transición</div>
+      <div class="info-box ib-teal">Protocolo oficial del Programa de Hipertensión Pulmonar del Instituto Neumológico del Oriente. Código HP-PTTI-001 · Versión 01.</div>
+
+      <div class="timeline">
+
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dia">Previo</div><div class="tl-hora">Ambulatorio</div></div>
+          <div class="tl-center"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-right"><div class="tl-card tl-verde">
+            <span class="tl-badge badge-v">Verde — Preparación</span>
+            <div class="tl-titulo">Reducción anticipada + Admisión hospitalaria</div>
+            <div class="tl-items">
+              • Reducir dosis SC a 20–25 ng/kg/min (si es posible, de forma ambulatoria)<br>
+              • Entrenamiento en técnica de inhalación<br>
+              • Evaluaciones pre-transición: ECO, NT-proBNP, TC6M, espirometría<br>
+              • Consentimiento informado firmado<br>
+              • Ingreso a UCI o sala con monitorización hemodinámica continua
+            </div>
+          </div></div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dia">Día 1</div><div class="tl-hora">Hora 0</div></div>
+          <div class="tl-center"><div class="tl-dot activo"></div><div class="tl-line"></div></div>
+          <div class="tl-right"><div class="tl-card tl-amarillo">
+            <span class="tl-badge badge-a">Amarillo — Vigilancia activa</span>
+            <div class="tl-titulo">Inicio de la transición (fase concurrente)</div>
+            <div class="tl-items">
+              • Si SC &gt; 25 ng/kg/min: reducir a 10–15 ng/kg/min en las primeras 2–4 horas<br>
+              • Iniciar treprostinil <strong>inhalado: 3 inhalaciones (18 mcg)</strong><br>
+              • Continuar reduciendo SC: <strong>2–4 ng/kg/min cada 4–6 horas</strong><br>
+              • Monitorización continua: SV, síntomas, tolerancia respiratoria
+            </div>
+            <div class="dosis-box" style="margin-top:10px">
+              <div class="dosis-sc"><div class="dosis-val">↓ SC</div><div class="dosis-label">Reducir progresivamente</div></div>
+              <div class="dosis-inh"><div class="dosis-val">3 inh × 4/día</div><div class="dosis-label">18 mcg por sesión</div></div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dia">Días 2–4</div><div class="tl-hora">Cada 4–6h</div></div>
+          <div class="tl-center"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-right"><div class="tl-card tl-amarillo">
+            <span class="tl-badge badge-a">Amarillo — Vigilancia activa</span>
+            <div class="tl-titulo">Titulación progresiva del inhalado</div>
+            <div class="tl-items">
+              • <strong>Día 1–2:</strong> Escalar inhalado a 6 inhalaciones (36 mcg) × 4/día<br>
+              • <strong>Día 2–3:</strong> Escalar a 9 inhalaciones (54 mcg) × 4/día — META FINAL<br>
+              • Continuar reduciendo SC 2–4 ng/kg/min cada 4–6h<br>
+              • En caso de eventos adversos (tos, cefalea, síncope, dolor mandibular): enlentecer o suspender transición
+            </div>
+            <div class="dosis-box" style="margin-top:10px">
+              <div class="dosis-sc"><div class="dosis-val">↓↓ SC → 0</div><div class="dosis-label">Reducción hasta suspender</div></div>
+              <div class="dosis-inh"><div class="dosis-val">9 inh × 4/día</div><div class="dosis-label">54 mcg por sesión — META</div></div>
+            </div>
+          </div></div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dia">Día 3</div><div class="tl-hora">Final</div></div>
+          <div class="tl-center"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-right"><div class="tl-card tl-verde">
+            <span class="tl-badge badge-v">Verde — Finalización</span>
+            <div class="tl-titulo">Suspensión del SC + Confirmación de tolerancia</div>
+            <div class="tl-items">
+              • Suspender definitivamente el treprostinil SC (0 ng/kg/min)<br>
+              • Confirmar tolerancia al esquema inhalado completo (54 mcg × 4/día)<br>
+              • Observación mínima 12–24h post-suspensión SC
+            </div>
+          </div></div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-left"><div class="tl-dia">Alta</div><div class="tl-hora">Día 3–4</div></div>
+          <div class="tl-center"><div class="tl-dot"></div><div class="tl-line"></div></div>
+          <div class="tl-right"><div class="tl-card tl-verde">
+            <span class="tl-badge badge-v">Verde — Alta médica</span>
+            <div class="tl-titulo">Educación y alta hospitalaria</div>
+            <div class="tl-items">
+              • Educar en: técnica de inhalación, horarios estrictos, almacenamiento<br>
+              • Reconocimiento de signos de descompensación (disnea súbita, síncope, cianosis)<br>
+              • Entregar instructivo + número de contacto INO: 607 697 2473<br>
+              • Seguimiento: consulta a la semana, luego mensual<br>
+              • Evaluaciones funcionales a las 16 semanas (TC6M, NT-proBNP, SF-12)
+            </div>
+          </div></div>
+        </div>
+
+      </div>
+
+      <div style="background:var(--red-lt);border:1px solid rgba(214,62,62,0.2);border-radius:10px;padding:14px 16px;font-size:12px;color:var(--red);margin-top:4px">
+        <strong>Criterios de falla:</strong> Hemodinámica inestable · Necesidad de reintroducir SC · Eventos adversos graves · SpO₂ &lt; 85% sostenida · Síncope durante la transición
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HISTORIAL ══════════════════════════════════════════════ -->
+  <div class="panel" id="panel-hist">
+    <div id="hist-content">
+      <div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Selecciona un paciente para ver el historial de transición.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✓</span> <span id="toast-msg">Guardado</span></div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+let pacienteActual = null;
+let pacientes = [];
+let diaActual = 1;
+
+if (!token) window.location.href = '/login';
+
+window.addEventListener('DOMContentLoaded', () => {
+  cargarPacientes();
+  const hoy = new Date().toISOString().split('T')[0];
+  const ahora = new Date().toTimeString().slice(0,5);
+  ['pre-fecha','pre-ingreso','r-fecha'].forEach(id=>{document.getElementById(id).value=hoy;});
+  document.getElementById('r-hora').value=ahora;
+});
+
+async function cargarPacientes(){
+  try{
+    const r=await fetch(`${API}/api/v1/examenes/pacientes-lista`,{headers:{'Authorization':`Bearer ${token}`}});
+    if(r.status===401){window.location.href='/login';return;}
+    const d=await r.json();pacientes=d.pacientes||[];
+    const sel=document.getElementById('pac-select');
+    pacientes.forEach(p=>{const o=document.createElement('option');o.value=p.id;o.textContent=`${p.nombre} ${p.apellido}`;sel.appendChild(o);});
+  }catch(e){console.error(e);}
+}
+
+function seleccionarPaciente(){
+  const id=document.getElementById('pac-select').value;
+  pacienteActual=pacientes.find(p=>p.id===id)||null;
+  if(document.getElementById('panel-hist').classList.contains('active')&&pacienteActual) cargarHistorial();
+}
+
+function cambiarTab(tab){
+  ['criterios','registro','protocolo','hist'].forEach(t=>{
+    document.getElementById(`tab-${t}`).classList.toggle('active',t===tab);
+    document.getElementById(`panel-${t}`).classList.toggle('active',t===tab);
+  });
+  if(tab==='hist'&&pacienteActual) cargarHistorial();
+}
+
+function seleccionarDia(n){
+  diaActual=n;
+  [0,1,2,3,4].forEach(i=>document.getElementById(`dia-btn-${i}`).classList.toggle('activo',i===n));
+  const titulos={0:'Previo: Reducción anticipada',1:'Día 1: Inicio de la transición',2:'Día 2: Titulación progresiva',3:'Día 3: Suspensión del SC',4:'Día 4: Alta / Ajuste final'};
+  document.getElementById('reg-titulo').textContent=`Registro — ${titulos[n]}`;
+}
+
+function actualizarElegibilidad(){
+  const incl=['ci1','ci2','ci3','ci4','ci5','ci6','ci7','ci8'].every(id=>document.getElementById(id)?.querySelector('input')?.checked);
+  const excl=['ce1','ce2','ce3','ce4','ce5','ce6'].some(id=>document.getElementById(id)?.querySelector('input')?.checked);
+  const res=document.getElementById('elegibilidad-resultado');
+  res.style.display='block';
+  if(incl&&!excl){
+    res.style.background='var(--green-lt)';res.style.border='2px solid rgba(26,122,74,0.3)';res.style.color='var(--green)';
+    res.innerHTML='✓ Paciente ELEGIBLE para la transición. Todos los criterios de inclusión cumplidos y sin criterios de exclusión.';
+  } else if(excl){
+    res.style.background='var(--red-lt)';res.style.border='2px solid rgba(214,62,62,0.3)';res.style.color='var(--red)';
+    res.innerHTML='✗ Paciente NO ELEGIBLE — Criterio(s) de exclusión presentes. No iniciar transición.';
+  } else {
+    res.style.background='var(--amber-lt)';res.style.border='1px solid rgba(192,122,0,0.3)';res.style.color='var(--amber)';
+    res.innerHTML='⚠ Criterios incompletos — Verificar todos los ítems antes de proceder.';
+  }
+}
+
+function verificarDeterioro(){
+  const spo2Post=parseFloat(document.getElementById('sv-spo2-post').value);
+  const tolerancia=document.getElementById('r-tolerancia').value;
+  const deterioro=spo2Post<85||tolerancia==='deterioro';
+  document.getElementById('alerta-deterioro').classList.toggle('visible',deterioro);
+}
+
+function verificarRebote(){
+  const rebote=document.getElementById('r-rebote').value==='si';
+  document.getElementById('alerta-rebote').classList.toggle('visible',rebote);
+}
+
+function verificarDosisRebote(){
+  const dosisSC=parseFloat(document.getElementById('r-dosis-sc').value);
+  if(dosisSC===0){
+    document.getElementById('alerta-rebote-txt').textContent='SC en 0 — Confirmar que el inhalado esté en dosis completa (9 inh × 4/día) antes de suspender definitivamente.';
+    document.getElementById('alerta-rebote').classList.add('visible');
+  } else {
+    document.getElementById('alerta-rebote').classList.remove('visible');
+  }
+}
+
+async function guardarCriterios(){
+  if(!pacienteActual) return mostrarMsg('msg-criterios','Selecciona un paciente primero.','error');
+  const btn=document.getElementById('btn-guardar-criterios');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Guardando...';
+  const incl=['ci1','ci2','ci3','ci4','ci5','ci6','ci7','ci8'].filter(id=>document.getElementById(id)?.querySelector('input')?.checked).length;
+  const excl=['ce1','ce2','ce3','ce4','ce5','ce6'].filter(id=>document.getElementById(id)?.querySelector('input')?.checked).length;
+  const body={
+    paciente_id:pacienteActual.id,
+    tipo:'CRITERIOS_TRANSICION',
+    criterios_inclusion_cumplidos:incl,
+    criterios_exclusion_presentes:excl,
+    elegible:incl===8&&excl===0,
+    fecha:val('pre-fecha'), dosis_sc_actual:num('pre-dosis-sc'),
+    rvp:num('pre-rvp'), tc6m:num('pre-tc6m'), bnp:num('pre-bnp'),
+    cf:val('pre-cf'), fecha_ingreso:val('pre-ingreso'),
+    unidad:val('pre-unidad'), medico_responsable:val('pre-medico'),
+    observaciones:val('pre-obs'),
+  };
+  try{
+    const r=await fetch(`${API}/api/v1/farmacia/transicion`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(r.ok){showToast('Evaluación pre-transición guardada','✓');mostrarMsg('msg-criterios','','');}
+    else{mostrarMsg('msg-criterios',d.error||'Error.','error');}
+  }catch(e){mostrarMsg('msg-criterios','Error de conexión.','error');}
+  btn.disabled=false;btn.innerHTML='Guardar evaluación pre-transición';
+}
+
+async function guardarRegistro(){
+  if(!pacienteActual) return mostrarMsg('msg-registro','Selecciona un paciente primero.','error');
+  const btn=document.getElementById('btn-guardar-reg');
+  btn.disabled=true;btn.innerHTML='<div class="spinner"></div> Guardando...';
+  const decision=val('r-decision');
+  const body={
+    paciente_id:pacienteActual.id, tipo:'REGISTRO_TRANSICION',
+    dia:diaActual, fecha:val('r-fecha'), hora:val('r-hora'),
+    profesional:val('r-prof'),
+    dosis_sc:num('r-dosis-sc'),
+    inh_sesion:val('r-inh-sesion'), inh_freq:val('r-inh-freq'),
+    tecnica:val('r-tecnica'),
+    sv_pa_pre:val('sv-pa-pre'), sv_pa_post:val('sv-pa-post'),
+    sv_fc_pre:num('sv-fc-pre'), sv_fc_post:num('sv-fc-post'),
+    sv_spo2_pre:num('sv-spo2-pre'), sv_spo2_post:num('sv-spo2-post'),
+    sv_fr_pre:num('sv-fr-pre'), sv_fr_post:num('sv-fr-post'),
+    tolerancia:val('r-tolerancia'), tos:val('r-tos'),
+    cefalea:val('r-cefalea'), hipotension:val('r-hipotension'),
+    mandibula:val('r-mandibula'), rebote:val('r-rebote'),
+    decision, observaciones:val('r-obs'),
+    genera_alerta:decision==='retorno_sc'||document.getElementById('alerta-deterioro').classList.contains('visible'),
+  };
+  try{
+    const r=await fetch(`${API}/api/v1/farmacia/transicion`,{method:'POST',headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(r.ok){
+      showToast(`Registro día ${diaActual} guardado`,'✓');
+      mostrarMsg('msg-registro','','');
+      document.getElementById(`dia-btn-${diaActual}`).classList.add('completado');
+      document.getElementById(`dia-btn-${diaActual}`).classList.remove('activo');
+      if(diaActual<4) seleccionarDia(diaActual+1);
+    } else {mostrarMsg('msg-registro',d.error||'Error.','error');}
+  }catch(e){mostrarMsg('msg-registro','Error de conexión.','error');}
+  btn.disabled=false;btn.innerHTML='Guardar registro del día';
+}
+
+async function cargarHistorial(){
+  const cont=document.getElementById('hist-content');
+  cont.innerHTML='<div style="text-align:center;padding:24px;font-size:13px;color:var(--text-3)">Cargando...</div>';
+  try{
+    const r=await fetch(`${API}/api/v1/farmacia/transicion/${pacienteActual.id}`,{headers:{'Authorization':`Bearer ${token}`}});
+    const d=await r.json();
+    const items=d.registros||[];
+    if(!items.length){cont.innerHTML='<div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Sin registros de transición para este paciente.</div>';return;}
+    cont.innerHTML=items.map(it=>{
+      const det=typeof it.detalle==='string'?JSON.parse(it.detalle):it.detalle;
+      const esDecision=det.decision;
+      return `<div class="hist-item">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+          <div style="font-size:13px;font-weight:700">${fechaCorta(det.fecha||it.created_at)} ${det.hora||''}</div>
+          ${det.dia!==undefined?`<span style="background:var(--teal-pale);color:var(--teal-dk);font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600">Día ${det.dia}</span>`:''}
+          ${det.tipo==='CRITERIOS_TRANSICION'?'<span style="background:var(--purple-lt);color:#5B3FAA;font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600">Criterios</span>':''}
+          ${det.elegible===false?'<span style="background:var(--red-lt);color:var(--red);font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600">No elegible</span>':''}
+          ${det.elegible===true?'<span style="background:var(--green-lt);color:var(--green);font-size:11px;padding:2px 8px;border-radius:8px;font-weight:600">Elegible</span>':''}
+        </div>
+        <div style="font-size:12px;color:var(--text-2);display:flex;gap:14px;flex-wrap:wrap">
+          ${det.dosis_sc!==undefined?`<span>SC: <strong>${det.dosis_sc}</strong> ng/kg/min</span>`:''}
+          ${det.inh_sesion?`<span>Inh: <strong>${det.inh_sesion}</strong> × ${det.inh_freq}/día</span>`:''}
+          ${det.tolerancia?`<span>Tolerancia: ${det.tolerancia}</span>`:''}
+          ${det.decision?`<span>Decisión: <strong>${det.decision}</strong></span>`:''}
+        </div>
+        ${det.observaciones?`<div style="font-size:12px;color:var(--text-2);margin-top:6px;font-style:italic">${det.observaciones}</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){cont.innerHTML='<div style="text-align:center;padding:24px;font-size:13px;color:var(--text-3)">Error al cargar.</div>';}
+}
+
+function val(id){return document.getElementById(id)?.value?.trim()||null;}
+function num(id){const v=document.getElementById(id)?.value;return v!==''&&v!=null?parseFloat(v):null;}
+function mostrarMsg(id,txt,tipo){const el=document.getElementById(id);if(!el)return;el.textContent=txt;el.className='msg'+(tipo?' '+tipo:'');}
+function fechaCorta(iso){if(!iso)return'--';return new Date(iso).toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'});}
+let toastTimer;
+function showToast(msg,icon='✓'){clearTimeout(toastTimer);document.getElementById('toast-msg').textContent=msg;document.getElementById('toast-icon').textContent=icon;document.getElementById('toast').classList.add('show');toastTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),3500);}
+</script>
+<script src="/paciente-search.js"></script>
+</body>
+</html>
