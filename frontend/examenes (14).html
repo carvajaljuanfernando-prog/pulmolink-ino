@@ -1,0 +1,2151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Exámenes Diagnósticos</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.15s}
+.btn-back:hover{background:rgba(255,255,255,0.2)}
+.topbar-title{font-size:16px;font-weight:700;color:white;flex:1}
+.container{max-width:900px;margin:0 auto;padding:24px 20px 60px}
+
+/* SELECTOR PACIENTE */
+.pac-selector{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px;margin-bottom:20px;box-shadow:var(--shadow)}
+.pac-selector-title{font-size:13px;font-weight:700;color:var(--text-3);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:12px}
+.pac-select{width:100%;padding:12px 16px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer;transition:border-color 0.15s}
+.pac-select:focus{border-color:var(--teal-lt)}
+.pac-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px;display:none}
+.pac-info.visible{display:grid}
+.pac-info-item{background:var(--teal-pale);border-radius:10px;padding:10px 14px}
+.pac-info-label{font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px}
+.pac-info-val{font-size:13px;font-weight:600;color:var(--teal-dk)}
+
+/* TABS */
+.exam-tabs{display:flex;gap:10px;margin-bottom:20px}
+.exam-tab{padding:10px 14px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:"Nunito",sans-serif;font-size:14px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all 0.15s;text-align:center}
+.exam-tab.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.exam-tab:hover:not(.active){border-color:var(--teal-lt)}
+
+/* FORMULARIO */
+.form-panel{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:24px;box-shadow:var(--shadow);display:none}
+.form-panel.active{display:block}
+.form-section{margin-bottom:24px}
+.form-section-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.form-field{display:flex;flex-direction:column;gap:5px}
+.form-field label{font-size:11px;font-weight:600;color:var(--text-2)}
+.form-field input,.form-field select,.form-field textarea{padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none;transition:border-color 0.15s;width:100%}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--teal-lt);background:white}
+.form-field .unit{font-size:10px;color:var(--text-3);margin-top:2px}
+.form-field-full{grid-column:1/-1}
+.form-check{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;background:var(--warm);transition:all 0.15s}
+.form-check:hover{border-color:var(--teal-lt)}
+.form-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--teal);cursor:pointer}
+.form-check label{font-size:13px;color:var(--text-1);cursor:pointer}
+
+/* ALERTA PMAP */
+.alerta-pmap{background:var(--red-lt);border:1px solid rgba(214,62,62,0.3);border-radius:10px;padding:12px 16px;font-size:13px;color:var(--red);margin:12px 0;display:none;align-items:center;gap:10px;font-weight:600}
+.alerta-pmap.visible{display:flex}
+
+/* HISTORIAL */
+.historial-item{background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:12px;padding:14px 18px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between}
+.hist-fecha{font-size:12px;color:var(--text-3)}
+.hist-tipo{font-size:13px;font-weight:700;color:var(--teal-dk)}
+.hist-vals{font-size:12px;color:var(--text-2);margin-top:3px}
+.hist-empty{text-align:center;padding:24px;font-size:13px;color:var(--text-3)}
+
+/* BOTONES */
+.btn-primary{padding:13px 28px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.15s;display:flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--teal-dk)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.btn-secondary{padding:13px 24px;background:var(--teal-pale);color:var(--teal-dk);border:1px solid rgba(0,107,143,0.2);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s}
+.btn-secondary:hover{background:var(--teal-soft,#C5EAF5)}
+.form-actions{display:flex;gap:10px;margin-top:20px;padding-top:20px;border-top:1px solid var(--border)}
+.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--teal-dk);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;z-index:1000;box-shadow:0 4px 20px rgba(0,66,90,0.3)}
+.toast.show{display:flex}
+.msg-box{padding:12px 16px;border-radius:10px;font-size:13px;font-weight:500;margin-top:12px;display:none}
+.msg-box.error{background:var(--red-lt);color:var(--red);border:1px solid rgba(214,62,62,0.2);display:block}
+.msg-box.ok{background:var(--green-lt);color:var(--green);border:1px solid rgba(26,122,74,0.2);display:block}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/dashboard'">← Dashboard</button>
+  <div class="topbar-title">Exámenes Diagnósticos — HP</div>
+</div>
+
+<div class="container">
+
+  <!-- SELECTOR DE PACIENTE -->
+  <div class="pac-selector">
+    <div class="pac-selector-title">Paciente</div>
+    <select class="pac-select" id="pac-select" onchange="seleccionarPaciente()">
+      <option value="">Selecciona un paciente...</option>
+    </select>
+    <div class="pac-info" id="pac-info">
+      <div class="pac-info-item"><div class="pac-info-label">Grupo HP</div><div class="pac-info-val" id="pi-grupo">--</div></div>
+      <div class="pac-info-item"><div class="pac-info-label">Diagnóstico HP</div><div class="pac-info-val" id="pi-diag">--</div></div>
+      <div class="pac-info-item"><div class="pac-info-label">Clase OMS</div><div class="pac-info-val" id="pi-clase">--</div></div>
+      <div class="pac-info-item"><div class="pac-info-label">Último examen</div><div class="pac-info-val" id="pi-ultimo">--</div></div>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="exam-tabs" style="flex-wrap:wrap;gap:6px">
+    <button class="exam-tab active" id="tab-eco" onclick="cambiarTab('eco')">🫀 Eco</button>
+    <button class="exam-tab" id="tab-cat" onclick="cambiarTab('cat')">🔬 Cateterismo</button>
+    <button class="exam-tab" id="tab-gam" onclick="cambiarTab('gam')">☢️ Gammagrafía V/Q</button>
+    <button class="exam-tab" id="tab-pfp" onclick="cambiarTab('pfp')">💨 Función Pulmonar</button>
+    <button class="exam-tab" id="tab-cpet" onclick="cambiarTab('cpet')">🚴 CPET</button>
+    <button class="exam-tab" id="tab-tac" onclick="cambiarTab('tac')">🩻 TAC Tórax</button>
+    <button class="exam-tab" id="tab-rmc" onclick="cambiarTab('rmc')">🧲 RMC</button>
+    <button class="exam-tab" id="tab-hist" onclick="cambiarTab('hist')">📋 Historial</button>
+  </div>
+
+  <!-- FORMULARIO ECOCARDIOGRAMA -->
+  <div class="form-panel active" id="panel-eco">
+    <div class="form-section">
+      <div class="form-section-title">📅 Datos generales</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Fecha del examen</label>
+          <input type="date" id="eco-fecha">
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══ VENTRÍCULO IZQUIERDO ══════════════════════════════ -->
+    <div class="form-section">
+      <div class="form-section-title">🫀 Ventrículo izquierdo</div>
+      <div class="form-grid">
+        <div class="form-field"><label>FEVI — Clasificación</label>
+          <select id="eco-clasif-fevi">
+            <option value="">Seleccionar...</option>
+            <option value="normal">Normal (≥55%)</option>
+            <option value="levemente_reducida">Levemente reducida (41-54%)</option>
+            <option value="reducida">Reducida (≤40%)</option>
+          </select>
+        </div>
+        <div class="form-field"><label>FEVI (%)</label>
+          <input type="number" id="eco-fevi" min="0" max="100" placeholder="ej. 65">
+          <span class="unit">%</span></div>
+        <div class="form-field"><label>Diámetro VI diástole</label>
+          <input type="number" id="eco-diam-vi-d" step="0.1" min="0" max="150" placeholder="ej. 48">
+          <span class="unit">mm</span></div>
+        <div class="form-field"><label>Diámetro VI sístole</label>
+          <input type="number" id="eco-diam-vi-s" step="0.1" min="0" max="150" placeholder="ej. 32">
+          <span class="unit">mm</span></div>
+        <div class="form-field"><label>Espesor septum interventricular</label>
+          <input type="number" id="eco-septum" step="0.1" min="0" max="50" placeholder="ej. 9">
+          <span class="unit">mm</span></div>
+        <div class="form-field"><label>Espesor pared posterior VI</label>
+          <input type="number" id="eco-pared-post" step="0.1" min="0" max="50" placeholder="ej. 9">
+          <span class="unit">mm</span></div>
+        <div class="form-field"><label>Masa ventricular</label>
+          <input type="number" id="eco-masa-vi" step="0.1" min="0" placeholder="ej. 150">
+          <span class="unit">g</span></div>
+        <div class="form-field"><label>Masa VI indexada</label>
+          <input type="number" id="eco-masa-vi-idx" step="0.1" min="0" placeholder="ej. 88">
+          <span class="unit">g/m²</span></div>
+        <div class="form-field"><label>Vol. aurícula izquierda indexado</label>
+          <input type="number" id="eco-vol-ai" step="0.1" min="0" placeholder="ej. 28">
+          <span class="unit">ml/m²</span></div>
+        <div class="form-field"><label>Función diastólica</label>
+          <select id="eco-diast">
+            <option value="">Seleccionar...</option>
+            <option value="normal">Normal</option>
+            <option value="disfuncion_grado1">Disfunción grado I (relajación deteriorada)</option>
+            <option value="disfuncion_grado2">Disfunción grado II (pseudonormal)</option>
+            <option value="disfuncion_grado3">Disfunción grado III (restrictivo)</option>
+            <option value="indeterminada">Indeterminada</option>
+          </select></div>
+        <div class="form-field"><label>Relación E/e&apos;</label>
+          <input type="number" id="eco-e-e" step="0.1" min="0" placeholder="ej. 8.5">
+          <span class="unit">normal &lt;14</span></div>
+        <div class="form-field"><label>Valvulopatía aórtica</label>
+          <select id="eco-valv-ao">
+            <option value="">Sin alteración</option>
+            <option>Estenosis leve</option><option>Estenosis moderada</option><option>Estenosis severa</option>
+            <option>Insuficiencia leve</option><option>Insuficiencia moderada</option><option>Insuficiencia severa</option>
+          </select></div>
+        <div class="form-field"><label>Valvulopatía mitral</label>
+          <select id="eco-valv-mi">
+            <option value="">Sin alteración</option>
+            <option>Estenosis leve</option><option>Estenosis moderada</option><option>Estenosis severa</option>
+            <option>Insuficiencia leve</option><option>Insuficiencia moderada</option><option>Insuficiencia severa</option>
+          </select></div>
+      </div>
+    </div>
+
+    <!-- ═══ VENTRÍCULO DERECHO — ASE 2025 ══════════════════════ -->
+    <div class="form-section">
+      <div class="form-section-title">🔴 Ventrículo derecho — ASE 2025</div>
+      <div style="background:#FEF5E4;border:1px solid rgba(192,122,0,0.2);border-radius:10px;padding:10px 14px;font-size:11px;color:#7A5800;margin-bottom:14px">
+        ⚡ Gradación automática según ASE 2025 (Mukherjee M et al., J Am Soc Echocardiogr 2025;38:141-186)
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Diámetro VD basal</label>
+          <input type="number" id="eco-diam-vd-b" step="0.1" min="0" max="150" placeholder="ej. 35" oninput="gradASE2025()">
+          <span class="unit">mm &nbsp;<span class="grad-badge" id="grad-vd-basal"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &lt;41 · Leve 41-44 · Mod 44-49 · Sev &gt;49</span></div>
+        <div class="form-field"><label>Diámetro VD medio</label>
+          <input type="number" id="eco-diam-vd-m" step="0.1" min="0" max="150" placeholder="ej. 28">
+          <span class="unit">mm</span></div>
+        <div class="form-field"><label>Diámetro VD longitudinal</label>
+          <input type="number" id="eco-diam-vd-l" step="0.1" min="0" max="200" placeholder="ej. 72">
+          <span class="unit">mm</span></div>
+        <div class="form-field"><label>Grosor pared libre VD (RVWT)</label>
+          <input type="number" id="eco-rvwt" step="0.1" min="0" max="30" placeholder="ej. 4" oninput="gradASE2025()">
+          <span class="unit">mm &nbsp;<span class="grad-badge" id="grad-rvwt"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &lt;5 · Leve 5-7 · Mod 7-9 · Sev &gt;9</span></div>
+        <div class="form-field"><label>TAPSE</label>
+          <input type="number" id="eco-tapse" step="0.1" min="0" max="500" placeholder="ej. 18" oninput="gradASE2025()">
+          <span class="unit">mm &nbsp;<span class="grad-badge" id="grad-tapse"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &gt;17 · Leve 13-17 · Mod 10-13 · Sev &lt;10</span></div>
+        <div class="form-field"><label>TAPSE/PSAP</label>
+          <input type="number" id="eco-tapse-psap" step="0.001" min="0" placeholder="ej. 0.32">
+          <span class="unit">mm/mmHg &nbsp;(normal &gt;0.32)</span></div>
+        <div class="form-field"><label>FAC — Fracción acortamiento área VD</label>
+          <input type="number" id="eco-fac" step="0.1" min="0" max="100" placeholder="ej. 38" oninput="gradASE2025()">
+          <span class="unit">% &nbsp;<span class="grad-badge" id="grad-fac"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &gt;35 · Leve 29-35 · Mod 22-29 · Sev &lt;22</span></div>
+        <div class="form-field"><label>TDI S' — Velocidad sistólica anular</label>
+          <input type="number" id="eco-tdi-s" step="0.1" min="0" max="30" placeholder="ej. 10" oninput="gradASE2025()">
+          <span class="unit">cm/s &nbsp;<span class="grad-badge" id="grad-tdi-s"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &gt;9.5 · Leve 7.2-9.5 · Mod 5-7.2 · Sev &lt;5</span></div>
+        <div class="form-field"><label>RVOT VTI</label>
+          <input type="number" id="eco-rvot-vti" step="0.1" min="0" max="50" placeholder="ej. 18">
+          <span class="unit">cm</span></div>
+        <div class="form-field"><label>Tiempo aceleración pulmonar (AccT/TAP)</label>
+          <input type="number" id="eco-tap" step="1" min="0" max="500" placeholder="ej. 80" oninput="gradASE2025()">
+          <span class="unit">ms &nbsp;<span class="grad-badge" id="grad-tap"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Normal &gt;105ms · Anormal &lt;105ms</span></div>
+        <div class="form-field"><label>Índice de excentricidad VI (LVEI)</label>
+          <input type="number" id="eco-iex" step="0.01" min="0" max="5" placeholder="ej. 1.1" oninput="gradASE2025()">
+          <span class="unit">&nbsp;<span class="grad-badge" id="grad-iex"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Normal &lt;1 · Sist+diast &gt;1: sobrecarga presión</span></div>
+        <div class="form-field"><label>RV Strain (deformación longitudinal)</label>
+          <input type="number" id="eco-rv-strain" step="0.1" min="-40" max="0" placeholder="ej. -20">
+          <span class="unit">% &nbsp;(normal ≤ −20%)</span></div>
+      </div>
+    </div>
+
+    <!-- ═══ AURÍCULA DERECHA — ASE 2025 ═══════════════════════ -->
+    <div class="form-section">
+      <div class="form-section-title">🔵 Aurícula derecha — ASE 2025</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Área aurícula derecha</label>
+          <input type="number" id="eco-area-ad" step="0.1" min="0" placeholder="ej. 18" oninput="gradASE2025()">
+          <span class="unit">cm² &nbsp;<span class="grad-badge" id="grad-area-ad"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &lt;19 · Leve 19-22 · Mod 22-24 · Sev &gt;24</span></div>
+        <div class="form-field"><label>RAVi — Volumen AD indexado (discos)</label>
+          <input type="number" id="eco-ravi" step="0.1" min="0" placeholder="ej. 28">
+          <span class="unit">mL/m² &nbsp;(normal &lt;30)</span></div>
+        <div class="form-field"><label>Presión AD estimada (RAP)</label>
+          <select id="eco-rap">
+            <option value="">Por colapso VCI...</option>
+            <option value="3">3 mmHg — VCI normal + colapso &gt;50%</option>
+            <option value="8">8 mmHg — intermedio</option>
+            <option value="15">15 mmHg — VCI dilatada + colapso &lt;50%</option>
+          </select></div>
+      </div>
+    </div>
+
+    <!-- ═══ HEMODINÁMICA — ASE 2025 ════════════════════════════ -->
+    <div class="form-section">
+      <div class="form-section-title">📊 Hemodinámica y probabilidad HP — ASE 2025</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Velocidad regurgitación tricúspide (TRV)</label>
+          <input type="number" id="eco-vel-tri" step="0.01" min="0" max="10" placeholder="ej. 3.2" oninput="gradASE2025()">
+          <span class="unit">m/s &nbsp;<span class="grad-badge" id="grad-trv"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &lt;2.8 · Leve 2.8-3.1 · Mod 3.2-3.5 · Sev &gt;3.6</span></div>
+        <div class="form-field"><label>PSAP estimada</label>
+          <input type="number" id="eco-psap" step="1" min="0" max="200" placeholder="ej. 45" oninput="gradASE2025()">
+          <span class="unit">mmHg &nbsp;<span class="grad-badge" id="grad-psap"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &lt;34 · Leve 35-49 · Mod 50-69 · Sev &gt;70</span></div>
+        <div class="form-field"><label>Probabilidad HP (ASE 2025)</label>
+          <select id="eco-prob-hp">
+            <option value="">Seleccionar...</option>
+            <option value="baja">Baja — TRV &lt;2.8 sin signos adicionales</option>
+            <option value="intermedia">Intermedia — TRV 2.8-3.4 o signos adicionales</option>
+            <option value="alta">Alta — TRV ≥3.4 o TRV 2.8-3.4 + signos adicionales</option>
+          </select></div>
+        <div class="form-field"><label>Diámetro arteria pulmonar</label>
+          <input type="number" id="eco-diam-ap" step="0.1" min="0" max="10" placeholder="ej. 2.8" oninput="gradASE2025()">
+          <span class="unit">cm &nbsp;<span class="grad-badge" id="grad-ap"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">N &lt;2.5 · Leve 2.5-3.0 · Mod 3.0-3.5 · Sev &gt;3.5</span></div>
+        <div class="form-field"><label>Razón AP/Ao</label>
+          <input type="number" id="eco-ap-ao" step="0.01" min="0" max="5" placeholder="ej. 0.85">
+          <span class="unit">anormal si ≥1.0</span></div>
+        <div class="form-field"><label>Insuficiencia tricúspide</label>
+          <select id="eco-insuf-tri">
+            <option value="">Seleccionar...</option>
+            <option value="ninguna">Ninguna</option>
+            <option value="leve">Leve</option>
+            <option value="moderada">Moderada</option>
+            <option value="severa">Severa</option>
+          </select></div>
+      </div>
+    </div>
+
+    <!-- ═══ HALLAZGOS ADICIONALES ════════════════════════════ -->
+    <div class="form-section">
+      <div class="form-section-title">🔍 Hallazgos adicionales</div>
+      <div class="form-grid">
+        <div class="form-field"><label>Derrame pericárdico</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <input type="checkbox" id="eco-derp" style="width:auto">
+            <label for="eco-derp" style="font-weight:normal;font-size:13px">Presente</label>
+          </div></div>
+        <div class="form-field"><label>Defecto interauricular</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <input type="checkbox" id="eco-dia" style="width:auto">
+            <label for="eco-dia" style="font-weight:normal;font-size:13px">Presente</label>
+          </div></div>
+        <div class="form-field"><label>Defecto interventricular</label>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+            <input type="checkbox" id="eco-div" style="width:auto">
+            <label for="eco-div" style="font-weight:normal;font-size:13px">Presente</label>
+          </div></div>
+        <div class="form-field"><label>Otros defectos congénitos</label>
+          <input type="text" id="eco-otros" placeholder="Describir..."></div>
+        <div class="form-field" style="grid-column:1/-1"><label>Observaciones / Conclusión ecográfica</label>
+          <textarea id="eco-obs" rows="3" placeholder="Ej: Dilatación severa VD con disfunción moderada. Alta probabilidad HP por TRV 3.4 m/s + LVEI 1.3 + AP dilatada..."></textarea></div>
+      </div>
+    </div>
+
+    <div class="msg-box" id="msg-eco"></div>
+    <div class="form-actions">
+      <button class="btn-primary" id="btn-eco" onclick="guardarEco()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar ecocardiograma
+      </button>
+    </div>
+  </div>
+
+  <!-- FORMULARIO CATETERISMO -->
+  <div class="form-panel" id="panel-cat">
+
+    <!-- PRESIONES -->
+    <div class="form-section">
+      <div class="form-section-title">📊 Presiones</div>
+      <div class="alerta-pmap" id="alerta-pmap">
+        🚨 PMAP ≥ 20 mmHg — Criterio diagnóstico de HP cumplido (ESC/ERS 2022 · Simonneau et al.)
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Fecha del cateterismo</label>
+          <input type="date" id="cat-fecha">
+        </div>
+        <div class="form-field">
+          <label>Presión aurícula derecha (PAD)</label>
+          <input type="number" id="cat-pad" step="1" min="0" max="50" placeholder="ej. 8" oninput="calcularCat()">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field">
+          <label>PSAP — Presión sistólica AP</label>
+          <input type="number" id="cat-psap" step="1" min="0" max="200" placeholder="ej. 65">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field">
+          <label>PDAP — Presión diastólica AP</label>
+          <input type="number" id="cat-pdap" step="1" min="0" max="150" placeholder="ej. 28" oninput="calcularCat()">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field">
+          <label>PMAP — Presión media AP ⭐</label>
+          <input type="number" id="cat-pmap" step="1" min="0" max="150" placeholder="ej. 35" oninput="verificarPMAP(this.value);calcularCat()">
+          <span class="unit">mmHg — HP si ≥ 20</span>
+        </div>
+        <div class="form-field">
+          <label>PCAP — Presión capilar pulmonar ⭐</label>
+          <input type="number" id="cat-pcap" step="1" min="0" max="50" placeholder="ej. 10" oninput="calcularCat()">
+          <span class="unit">mmHg — postcapilar si &gt; 15</span>
+        </div>
+        <div class="form-field">
+          <label>PFDVD — Presión fin diástole VD</label>
+          <input type="number" id="cat-pfdvd" step="1" min="0" max="50" placeholder="ej. 12">
+          <span class="unit">mmHg</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- FUNCIÓN CARDÍACA -->
+    <div class="form-section">
+      <div class="form-section-title">💓 Función cardíaca y cálculos automáticos</div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Gasto cardíaco (GC)</label>
+          <input type="number" id="cat-gc" step="0.01" min="0" max="30" placeholder="ej. 4.5" oninput="calcularCat()">
+          <span class="unit">L/min</span>
+        </div>
+        <div class="form-field">
+          <label>Índice cardíaco (IC)</label>
+          <input type="number" id="cat-ic" step="0.01" min="0" max="10" placeholder="ej. 2.5">
+          <span class="unit">L/min/m²</span>
+        </div>
+        <div class="form-field">
+          <label>RVP — Calculada manualmente</label>
+          <input type="number" id="cat-rvp" step="0.01" min="0" placeholder="ej. 6.2">
+          <span class="unit">UW (si ya viene calculada)</span>
+        </div>
+        <div class="form-field">
+          <label>PA sistémica sistólica</label>
+          <input type="number" id="cat-pa-s" step="1" min="0" max="300" placeholder="ej. 120">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field">
+          <label>PA sistémica diastólica</label>
+          <input type="number" id="cat-pa-d" step="1" min="0" max="200" placeholder="ej. 80">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field">
+          <label>PA sistémica media</label>
+          <input type="number" id="cat-pa-m" step="1" min="0" max="250" placeholder="ej. 93">
+          <span class="unit">mmHg</span>
+        </div>
+      </div>
+
+      <!-- RESULTADO CÁLCULO RVP -->
+      <div id="cat-calc-resultado" style="display:none;margin-top:14px;background:var(--teal-pale);border:1.5px solid rgba(0,107,143,0.2);border-radius:12px;padding:16px 20px">
+        <div style="font-size:11px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">⚡ Cálculo automático</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+          <div style="background:white;border-radius:9px;padding:10px 14px">
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">RVP calculada</div>
+            <div style="font-size:20px;font-weight:800;color:var(--teal-dk)" id="res-rvp">-- UW</div>
+            <div style="font-size:10px;color:var(--text-3)">(PMAP − PCAP) ÷ GC</div>
+          </div>
+          <div style="background:white;border-radius:9px;padding:10px 14px">
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Gradiente transpulmonar (GTP)</div>
+            <div style="font-size:20px;font-weight:800;color:var(--teal-dk)" id="res-gtp">-- mmHg</div>
+            <div style="font-size:10px;color:var(--text-3)">PMAP − PCAP</div>
+          </div>
+          <div style="background:white;border-radius:9px;padding:10px 14px">
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Gradiente diastólico (GDP)</div>
+            <div style="font-size:20px;font-weight:800;color:var(--teal-dk)" id="res-gdp">-- mmHg</div>
+            <div style="font-size:10px;color:var(--text-3)">PDAP − PCAP</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QP/QS CARDIOPATÍAS CONGÉNITAS -->
+    <div class="form-section">
+      <div class="form-section-title">🔄 QP/QS — Cortocircuitos (cardiopatías congénitas)</div>
+      <div style="background:var(--amber-lt);border:1px solid rgba(192,122,0,0.2);border-radius:10px;padding:10px 14px;font-size:11px;color:#7A5800;margin-bottom:14px">
+        Completar saturaciones para calcular flujos pulmonar (QP) y sistémico (QS) por método de Fick
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>SaO₂ vena cava superior</label>
+          <input type="number" id="cat-sat-vcs" step="0.1" min="0" max="100" placeholder="ej. 68" oninput="calcularQpQs()">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>SaO₂ vena cava inferior</label>
+          <input type="number" id="cat-sat-vci" step="0.1" min="0" max="100" placeholder="ej. 72" oninput="calcularQpQs()">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>SaO₂ arteria pulmonar (SvO₂ mixta)</label>
+          <input type="number" id="cat-sat-ap" step="0.1" min="0" max="100" placeholder="ej. 65" oninput="calcularQpQs()">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>SaO₂ venas pulmonares / AI</label>
+          <input type="number" id="cat-sat-ai" step="0.1" min="0" max="100" placeholder="ej. 98" oninput="calcularQpQs()">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>SaO₂ aorta</label>
+          <input type="number" id="cat-sat-ao" step="0.1" min="0" max="100" placeholder="ej. 97" oninput="calcularQpQs()">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>SvO₂ mixta (si no hay cortocircuito)</label>
+          <input type="number" id="cat-sat-vm" step="0.1" min="0" max="100" placeholder="ej. 65">
+          <span class="unit">%</span>
+        </div>
+      </div>
+
+      <!-- RESULTADO QP/QS -->
+      <div id="cat-qpqs-resultado" style="display:none;margin-top:14px;background:#EDE8FE;border:1.5px solid rgba(91,63,170,0.2);border-radius:12px;padding:16px 20px">
+        <div style="font-size:11px;font-weight:700;color:#5B3FAA;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:12px">🔄 Flujos cardíacos</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+          <div style="background:white;border-radius:9px;padding:10px 14px">
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">QP/QS</div>
+            <div style="font-size:20px;font-weight:800" id="res-qpqs" style="color:#5B3FAA">--</div>
+            <div style="font-size:10px;color:var(--text-3)">Normal = 1.0</div>
+          </div>
+          <div style="background:white;border-radius:9px;padding:10px 14px">
+            <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Interpretación</div>
+            <div style="font-size:13px;font-weight:700" id="res-qpqs-interp">--</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- DIAGNÓSTICO HEMODINÁMICO -->
+    <div class="form-section">
+      <div class="form-section-title">🏥 Diagnóstico hemodinámico (ESC/ERS 2022)</div>
+      <div id="cat-diag-hemo" style="border-radius:12px;padding:16px 20px;border:2px solid var(--border);background:var(--warm);min-height:80px;display:flex;align-items:center;justify-content:center;margin-bottom:14px">
+        <span style="color:var(--text-3);font-size:13px">Complete PMAP, PCAP y GC para obtener el diagnóstico hemodinámico</span>
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Grupo HP (OMS)</label>
+          <select id="cat-grupo">
+            <option value="">Seleccionar...</option>
+            <option value="1">Grupo 1 — HAP</option>
+            <option value="2">Grupo 2 — HP por cardiopatía izquierda</option>
+            <option value="3">Grupo 3 — HP por enfermedad pulmonar</option>
+            <option value="4">Grupo 4 — HPTEC</option>
+            <option value="5">Grupo 5 — HP mecanismo multifactorial</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Clasificación de riesgo ESC/ERS 2022</label>
+          <select id="cat-riesgo">
+            <option value="">Seleccionar...</option>
+            <option value="bajo">Bajo riesgo</option>
+            <option value="intermedio">Riesgo intermedio</option>
+            <option value="alto">Alto riesgo</option>
+          </select>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label>Diagnóstico hemodinámico (editable)</label>
+          <input type="text" id="cat-diag-hemo-texto" placeholder="Se genera automáticamente o edite aquí...">
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <label>Observaciones</label>
+          <textarea id="cat-obs" rows="3" placeholder="Observaciones del cateterismo, otros hallazgos relevantes..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- TEST DE VASOREACTIVIDAD -->
+    <div class="form-section">
+      <div class="form-section-title">💊 Test de vasoreactividad pulmonar</div>
+      <div style="background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--teal-dk);margin-bottom:14px">
+        Indicado en HAP Grupo 1. Agente habitual: Óxido nítrico inhalado (iNO) 10-20 ppm × 5 min, o adenosina, prostaciclina IV.
+        Respuesta positiva: descenso de PMAP ≥ 10 mmHg hasta PMAP ≤ 40 mmHg con GC estable o aumentado.
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>¿Test de vasoreactividad realizado?</label>
+          <select id="cat-vaso-realizado" onchange="toggleVaso()">
+            <option value="">Seleccionar...</option>
+            <option value="si">Sí — realizado</option>
+            <option value="no">No — no indicado</option>
+            <option value="no_disponible">No — no disponible en este momento</option>
+          </select>
+        </div>
+        <div class="form-field" id="vaso-agente-field" style="display:none">
+          <label>Agente vasodilatador utilizado</label>
+          <select id="cat-vaso-agente">
+            <option value="">Seleccionar...</option>
+            <option value="ino">Óxido nítrico inhalado (iNO)</option>
+            <option value="adenosina">Adenosina IV</option>
+            <option value="prostaciclina">Prostaciclina IV (epoprostenol)</option>
+            <option value="sildenafilo">Sildenafilo oral</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-field" id="vaso-resultado-field" style="display:none">
+          <label>Resultado del test</label>
+          <select id="cat-vaso-resultado" onchange="interpretarVaso()">
+            <option value="">Seleccionar...</option>
+            <option value="positivo">✅ Positivo — respondedor (PMAP descendió ≥10 mmHg hasta ≤40 mmHg)</option>
+            <option value="negativo">❌ Negativo — no respondedor</option>
+            <option value="indeterminado">⚠️ Indeterminado</option>
+          </select>
+        </div>
+        <div class="form-field" id="vaso-pmap-pre-field" style="display:none">
+          <label>PMAP pre-test</label>
+          <input type="number" id="cat-vaso-pmap-pre" step="1" min="0" max="150" placeholder="ej. 45">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field" id="vaso-pmap-post-field" style="display:none">
+          <label>PMAP post-test</label>
+          <input type="number" id="cat-vaso-pmap-post" step="1" min="0" max="150" placeholder="ej. 30" oninput="interpretarVaso()">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field" id="vaso-gc-post-field" style="display:none">
+          <label>GC post-test</label>
+          <input type="number" id="cat-vaso-gc-post" step="0.1" min="0" max="30" placeholder="ej. 5.2">
+          <span class="unit">L/min</span>
+        </div>
+        <div class="form-field" id="vaso-interp-field" style="display:none;grid-column:1/-1">
+          <div id="vaso-interpretacion" style="border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600"></div>
+        </div>
+        <div class="form-field" id="vaso-obs-field" style="display:none;grid-column:1/-1">
+          <label>Observaciones del test</label>
+          <input type="text" id="cat-vaso-obs" placeholder="Tolerancia, eventos, consideraciones clínicas...">
+        </div>
+      </div>
+    </div>
+
+    <!-- MANIOBRA DE CARGA DE VOLUMEN -->
+    <div class="form-section">
+      <div class="form-section-title">💧 Maniobra de carga de volumen</div>
+      <div style="background:var(--amber-lt);border:1px solid rgba(192,122,0,0.2);border-radius:10px;padding:10px 14px;font-size:11px;color:#7A5800;margin-bottom:14px">
+        Indicada cuando PCAP basal ≤ 15 mmHg y se sospecha HP postcapilar oculta (disfunción diastólica). 
+        Protocolo: 500 mL SSN 0.9% en 5-10 min. Positiva si PCAP post-carga &gt; 18 mmHg.
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>¿Maniobra de carga de volumen realizada?</label>
+          <select id="cat-carga-realizada" onchange="toggleCarga()">
+            <option value="">Seleccionar...</option>
+            <option value="si">Sí — realizada</option>
+            <option value="no">No — no indicada</option>
+          </select>
+        </div>
+        <div class="form-field" id="carga-vol-field" style="display:none">
+          <label>Volumen administrado</label>
+          <select id="cat-carga-vol">
+            <option value="500">500 mL SSN 0.9%</option>
+            <option value="250">250 mL SSN 0.9%</option>
+            <option value="1000">1000 mL SSN 0.9%</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="form-field" id="carga-pcap-pre-field" style="display:none">
+          <label>PCAP pre-carga</label>
+          <input type="number" id="cat-carga-pcap-pre" step="1" min="0" max="50" placeholder="ej. 12">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field" id="carga-pcap-post-field" style="display:none">
+          <label>PCAP post-carga</label>
+          <input type="number" id="cat-carga-pcap-post" step="1" min="0" max="50" placeholder="ej. 20" oninput="interpretarCarga()">
+          <span class="unit">mmHg — positiva si &gt;18</span>
+        </div>
+        <div class="form-field" id="carga-pmap-post-field" style="display:none">
+          <label>PMAP post-carga</label>
+          <input type="number" id="cat-carga-pmap-post" step="1" min="0" max="150" placeholder="ej. 38">
+          <span class="unit">mmHg</span>
+        </div>
+        <div class="form-field" id="carga-interp-field" style="display:none;grid-column:1/-1">
+          <div id="carga-interpretacion" style="border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600"></div>
+        </div>
+        <div class="form-field" id="carga-obs-field" style="display:none;grid-column:1/-1">
+          <label>Observaciones</label>
+          <input type="text" id="cat-carga-obs" placeholder="Tolerancia, respuesta clínica, consideraciones...">
+        </div>
+      </div>
+    </div>
+
+    <div class="msg-box" id="msg-cat"></div>
+    <div class="form-actions">
+      <button class="btn-primary" id="btn-cat" onclick="guardarCat()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar cateterismo
+      </button>
+    </div>
+  </div>
+
+  <!-- HISTORIAL -->
+  <!-- ═══ GAMMAGRAFÍA V/Q ════════════════════════════════════ -->
+  <div class="form-panel" id="panel-gam">
+    <div class="form-section">
+      <div class="form-section-title">☢️ Gammagrafía ventilación/perfusión (V/Q)</div>
+      <div style="background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--teal-dk);margin-bottom:14px">
+        Indicación ESC/ERS 2022: examen de elección para descartar HPTEC (Grupo 4). Sensibilidad ~97%, especificidad ~90% para HPTEC.
+        Un resultado normal prácticamente descarta HPTEC.
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Fecha</label><input type="date" id="gam-fecha"></div>
+        <div class="form-field">
+          <label>Resultado global</label>
+          <select id="gam-resultado" onchange="interpretarGam()">
+            <option value="">Seleccionar...</option>
+            <option value="normal">Normal — sin defectos de perfusión</option>
+            <option value="defectos_no_concordantes">Defectos de perfusión no concordantes con ventilación</option>
+            <option value="defectos_concordantes">Defectos concordantes V/Q</option>
+            <option value="probabilidad_alta">Alta probabilidad de TEP/HPTEC</option>
+            <option value="probabilidad_intermedia">Probabilidad intermedia</option>
+            <option value="probabilidad_baja">Baja probabilidad</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Número de segmentos afectados</label>
+          <input type="number" id="gam-segmentos" min="0" max="18" placeholder="ej. 3" oninput="interpretarGam()">
+          <span class="unit">de 18 segmentos</span>
+        </div>
+        <div class="form-field">
+          <label>Distribución de defectos</label>
+          <select id="gam-distribucion">
+            <option value="">Seleccionar...</option>
+            <option value="bilateral">Bilateral</option>
+            <option value="unilateral_der">Unilateral derecha</option>
+            <option value="unilateral_izq">Unilateral izquierda</option>
+            <option value="lobar">Lobar</option>
+            <option value="segmentario">Segmentario</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Compatible con HPTEC</label>
+          <select id="gam-hptec" onchange="interpretarGam()">
+            <option value="">Seleccionar...</option>
+            <option value="si">Sí — patrón sugestivo de HPTEC</option>
+            <option value="no">No — descarta HPTEC</option>
+            <option value="indeterminado">Indeterminado</option>
+          </select>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <div id="gam-interpretacion" style="display:none;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;border:1.5px solid"></div>
+        </div>
+        <div class="form-field" style="grid-column:1/-1"><label>Observaciones / Conclusión del informe</label>
+          <textarea id="gam-obs" rows="3" placeholder="Conclusión del radiólogo nuclear, hallazgos adicionales..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="msg-box" id="msg-gam"></div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="guardarExamenAdicional('gam','gammagrafia_vq')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Guardar gammagrafía
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ FUNCIÓN PULMONAR ════════════════════════════════════ -->
+  <div class="form-panel" id="panel-pfp">
+    <div class="form-section">
+      <div class="form-section-title">💨 Pruebas de función pulmonar</div>
+      <div style="background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--teal-dk);margin-bottom:14px">
+        Permiten clasificar el patrón (obstructivo/restrictivo/mixto), evaluar compromiso parenquimatoso y distinguir HP Grupo 3.
+        Valores expresados como % del predicho según NHANES III o GLI-2012.
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Fecha</label><input type="date" id="pfp-fecha"></div>
+        <!-- Espirometría -->
+        <div class="form-field">
+          <label>FVC — Capacidad vital forzada</label>
+          <input type="number" id="pfp-fvc" step="0.01" min="0" max="10" placeholder="ej. 2.85" oninput="interpretarPFP()">
+          <span class="unit">L</span>
+        </div>
+        <div class="form-field">
+          <label>FVC % predicho</label>
+          <input type="number" id="pfp-fvc-pct" step="1" min="0" max="150" placeholder="ej. 78" oninput="interpretarPFP()">
+          <span class="unit">% &nbsp;<span class="grad-badge" id="grad-fvc"></span></span>
+        </div>
+        <div class="form-field">
+          <label>VEF₁ — Volumen espiratorio forzado 1s</label>
+          <input type="number" id="pfp-vef1" step="0.01" min="0" max="10" placeholder="ej. 2.20" oninput="interpretarPFP()">
+          <span class="unit">L</span>
+        </div>
+        <div class="form-field">
+          <label>VEF₁ % predicho</label>
+          <input type="number" id="pfp-vef1-pct" step="1" min="0" max="150" placeholder="ej. 72" oninput="interpretarPFP()">
+          <span class="unit">% &nbsp;<span class="grad-badge" id="grad-vef1"></span></span>
+        </div>
+        <div class="form-field">
+          <label>Relación VEF₁/FVC (índice de Tiffeneau)</label>
+          <input type="number" id="pfp-tiffeneau" step="0.01" min="0" max="1.5" placeholder="ej. 0.77" oninput="interpretarPFP()">
+          <span class="unit">&nbsp;<span class="grad-badge" id="grad-tiff"></span></span>
+        </div>
+        <!-- Volúmenes pulmonares -->
+        <div class="form-field">
+          <label>CPT — Capacidad pulmonar total</label>
+          <input type="number" id="pfp-cpt" step="0.01" min="0" max="15" placeholder="ej. 5.2" oninput="interpretarPFP()">
+          <span class="unit">L</span>
+        </div>
+        <div class="form-field">
+          <label>CPT % predicho</label>
+          <input type="number" id="pfp-cpt-pct" step="1" min="0" max="150" placeholder="ej. 85" oninput="interpretarPFP()">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>VR — Volumen residual</label>
+          <input type="number" id="pfp-vr" step="0.01" min="0" max="8" placeholder="ej. 1.8">
+          <span class="unit">L</span>
+        </div>
+        <div class="form-field">
+          <label>VR % predicho</label>
+          <input type="number" id="pfp-vr-pct" step="1" min="0" max="200" placeholder="ej. 110">
+          <span class="unit">%</span>
+        </div>
+        <!-- Interpretación -->
+        <div class="form-field" style="grid-column:1/-1">
+          <div id="pfp-interpretacion" style="display:none;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;border:1.5px solid"></div>
+        </div>
+        <div class="form-field" style="grid-column:1/-1"><label>Observaciones / Patrón funcional</label>
+          <textarea id="pfp-obs" rows="2" placeholder="ej. Patrón restrictivo leve compatible con enfermedad parenquimatosa pulmonar..."></textarea>
+        </div>
+      </div>
+    </div>
+    <!-- DLCO en la misma visita -->
+    <div class="form-section">
+      <div class="form-section-title">🔵 Difusión de CO (DLCO)</div>
+      <div style="background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--teal-dk);margin-bottom:14px">
+        DLCO reducida en HAP (compromiso vascular), EPID (compromiso parenquimatoso) y HP-EPOC.
+        Normal o elevada en HP por shunt izquierda-derecha. Guía ESC/ERS 2022: DLCO &lt;45% predicho es factor de mal pronóstico en HAP.
+      </div>
+      <div class="form-grid">
+        <div class="form-field">
+          <label>DLCO absoluta</label>
+          <input type="number" id="dlco-abs" step="0.1" min="0" max="50" placeholder="ej. 12.5">
+          <span class="unit">mL/min/mmHg</span>
+        </div>
+        <div class="form-field">
+          <label>DLCO % predicho</label>
+          <input type="number" id="dlco-pct" step="1" min="0" max="150" placeholder="ej. 58" oninput="interpretarDLCO()">
+          <span class="unit">% &nbsp;<span class="grad-badge" id="grad-dlco"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">&lt;45% = mal pronóstico en HAP (ESC/ERS 2022)</span>
+        </div>
+        <div class="form-field">
+          <label>KCO (DLCO/VA)</label>
+          <input type="number" id="dlco-kco" step="0.01" min="0" max="10" placeholder="ej. 1.2">
+          <span class="unit">mL/min/mmHg/L</span>
+        </div>
+        <div class="form-field">
+          <label>KCO % predicho</label>
+          <input type="number" id="dlco-kco-pct" step="1" min="0" max="150" placeholder="ej. 65">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <div id="dlco-interpretacion" style="display:none;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;border:1.5px solid"></div>
+        </div>
+      </div>
+    </div>
+    <div class="msg-box" id="msg-pfp"></div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="guardarExamenAdicional('pfp','funcion_pulmonar')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Guardar función pulmonar + DLCO
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ CPET ════════════════════════════════════════════════ -->
+  <div class="form-panel" id="panel-cpet">
+    <div class="form-section">
+      <div class="form-section-title">🚴 Prueba cardiopulmonar integrada (CPET)</div>
+      <div style="background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--teal-dk);margin-bottom:14px">
+        Guía ESC/ERS 2022: VO₂ máx &lt;12 mL/kg/min y VE/VCO₂ &gt;45 son marcadores de mal pronóstico en HAP.
+        Distingue limitación cardiovascular, ventilatoria o muscular. Patrón HP: limitación cardiovascular + respuesta ventilatoria ineficiente.
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Fecha</label><input type="date" id="cpet-fecha"></div>
+        <div class="form-field">
+          <label>VO₂ máximo</label>
+          <input type="number" id="cpet-vo2max" step="0.1" min="0" max="80" placeholder="ej. 14.5" oninput="interpretarCPET()">
+          <span class="unit">mL/kg/min &nbsp;<span class="grad-badge" id="grad-vo2"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Mal pronóstico HP si &lt;12</span>
+        </div>
+        <div class="form-field">
+          <label>VO₂ máximo % predicho</label>
+          <input type="number" id="cpet-vo2-pct" step="1" min="0" max="150" placeholder="ej. 52" oninput="interpretarCPET()">
+          <span class="unit">% &nbsp;<span class="grad-badge" id="grad-vo2pct"></span></span>
+        </div>
+        <div class="form-field">
+          <label>VE/VCO₂ slope (pendiente)</label>
+          <input type="number" id="cpet-vevco2" step="0.1" min="0" max="100" placeholder="ej. 48" oninput="interpretarCPET()">
+          <span class="unit">&nbsp;<span class="grad-badge" id="grad-vevco2"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Mal pronóstico HP si &gt;45</span>
+        </div>
+        <div class="form-field">
+          <label>Umbral anaeróbico (AT)</label>
+          <input type="number" id="cpet-at" step="0.1" min="0" max="50" placeholder="ej. 9.5">
+          <span class="unit">mL/kg/min</span>
+        </div>
+        <div class="form-field">
+          <label>Pulso de O₂ en pico ejercicio</label>
+          <input type="number" id="cpet-pulso-o2" step="0.1" min="0" max="30" placeholder="ej. 8.2">
+          <span class="unit">mL/latido</span>
+        </div>
+        <div class="form-field">
+          <label>FC máxima alcanzada</label>
+          <input type="number" id="cpet-fc-max" step="1" min="0" max="250" placeholder="ej. 130">
+          <span class="unit">lpm</span>
+        </div>
+        <div class="form-field">
+          <label>FC máxima % predicho</label>
+          <input type="number" id="cpet-fc-pct" step="1" min="0" max="150" placeholder="ej. 78">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>SpO₂ en reposo</label>
+          <input type="number" id="cpet-spo2-rep" step="1" min="50" max="100" placeholder="ej. 95">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>SpO₂ en pico ejercicio</label>
+          <input type="number" id="cpet-spo2-max" step="1" min="50" max="100" placeholder="ej. 88" oninput="interpretarCPET()">
+          <span class="unit">% &nbsp;<span class="grad-badge" id="grad-spo2"></span></span>
+        </div>
+        <div class="form-field">
+          <label>Patrón de limitación</label>
+          <select id="cpet-patron">
+            <option value="">Seleccionar...</option>
+            <option value="cardiovascular">Cardiovascular (típico HP)</option>
+            <option value="ventilatorio">Ventilatorio</option>
+            <option value="muscular">Muscular/periférico</option>
+            <option value="mixto">Mixto</option>
+            <option value="no_limitado">No limitado por prueba</option>
+          </select>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <div id="cpet-interpretacion" style="display:none;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;border:1.5px solid"></div>
+        </div>
+        <div class="form-field" style="grid-column:1/-1"><label>Observaciones / Conclusión</label>
+          <textarea id="cpet-obs" rows="2" placeholder="ej. Limitación cardiovascular con respuesta ventilatoria ineficiente. Compatible con HP. VO₂ pico reducido con VE/VCO₂ elevado..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="msg-box" id="msg-cpet"></div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="guardarExamenAdicional('cpet','cpet')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Guardar CPET
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ TAC TÓRAX ═══════════════════════════════════════════ -->
+  <div class="form-panel" id="panel-tac">
+    <div class="form-section">
+      <div class="form-section-title">🩻 TAC de tórax / AngioTAC pulmonar</div>
+      <div style="background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--teal-dk);margin-bottom:14px">
+        Evalúa parénquima pulmonar, morfología vascular y signos indirectos de HP. Esencial para diagnóstico diferencial
+        HP Grupo 3 (EPID, enfisema) y Grupo 4 (HPTEC). AngioTAC: gold standard para TEP agudo.
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Fecha</label><input type="date" id="tac-fecha"></div>
+        <div class="form-field">
+          <label>Tipo de estudio</label>
+          <select id="tac-tipo">
+            <option value="tac_simple">TAC simple de tórax</option>
+            <option value="tac_contraste">TAC de tórax con contraste</option>
+            <option value="angiotac">AngioTAC pulmonar</option>
+            <option value="angiotac_tac">AngioTAC + TAC de alta resolución</option>
+          </select>
+        </div>
+        <!-- Signos HP -->
+        <div class="form-field">
+          <label>Diámetro arteria pulmonar principal</label>
+          <input type="number" id="tac-ap-diam" step="0.1" min="0" max="8" placeholder="ej. 3.2" oninput="interpretarTAC()">
+          <span class="unit">cm &nbsp;<span class="grad-badge" id="grad-tac-ap"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Dilatada si &gt;2.9 cm (sugestivo HP)</span>
+        </div>
+        <div class="form-field">
+          <label>Razón AP/Ao en TAC</label>
+          <input type="number" id="tac-ap-ao" step="0.01" min="0" max="5" placeholder="ej. 1.1" oninput="interpretarTAC()">
+          <span class="unit">&nbsp;<span class="grad-badge" id="grad-tac-ao"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Sugestivo HP si ≥1.0</span>
+        </div>
+        <!-- Hallazgos vasculares -->
+        <div class="form-field">
+          <label>Defectos de llenado (AngioTAC)</label>
+          <select id="tac-defectos" onchange="interpretarTAC()">
+            <option value="">Seleccionar...</option>
+            <option value="no">No — sin defectos de llenado</option>
+            <option value="agudos">Sí — defectos agudos (TEP agudo)</option>
+            <option value="cronicos">Sí — defectos crónicos (HPTEC)</option>
+            <option value="mixtos">Mixtos agudos y crónicos</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Patrón parenquimatoso</label>
+          <select id="tac-parenc">
+            <option value="">Sin alteración significativa</option>
+            <option value="normal">Normal</option>
+            <option value="enfisema">Enfisema</option>
+            <option value="vidrio_esmerilado">Vidrio esmerilado difuso</option>
+            <option value="fibrosis">Fibrosis / panal de abeja</option>
+            <option value="neumonia_intersticial">Neumonía intersticial usual (NIU)</option>
+            <option value="consolidacion">Consolidación</option>
+            <option value="mosaic_perfusion">Patrón en mosaico (perfusión)</option>
+            <option value="mixto">Mixto</option>
+          </select>
+        </div>
+        <!-- Signos cardíacos -->
+        <div class="form-field">
+          <label>Dilatación de cavidades derechas</label>
+          <select id="tac-cavidades">
+            <option value="">Seleccionar...</option>
+            <option value="no">No</option>
+            <option value="leve">Leve</option>
+            <option value="moderada">Moderada</option>
+            <option value="severa">Severa</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Derrame pericárdico en TAC</label>
+          <select id="tac-derrame">
+            <option value="no">No</option>
+            <option value="leve">Leve</option>
+            <option value="moderado">Moderado</option>
+            <option value="severo">Severo</option>
+          </select>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <div id="tac-interpretacion" style="display:none;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;border:1.5px solid"></div>
+        </div>
+        <div class="form-field" style="grid-column:1/-1"><label>Conclusión del radiólogo</label>
+          <textarea id="tac-obs" rows="3" placeholder="Transcribir o resumir la conclusión del informe radiológico..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="msg-box" id="msg-tac"></div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="guardarExamenAdicional('tac','tac_torax')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Guardar TAC tórax
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ RMC ══════════════════════════════════════════════════ -->
+  <div class="form-panel" id="panel-rmc">
+    <div class="form-section">
+      <div class="form-section-title">🧲 Resonancia magnética cardíaca (RMC)</div>
+      <div style="background:var(--teal-pale);border:1px solid rgba(0,107,143,0.15);border-radius:10px;padding:10px 14px;font-size:11px;color:var(--teal-dk);margin-bottom:14px">
+        Gold standard para cuantificación de volúmenes y función VD. ESC/ERS 2022: FEVD &lt;35%, SVI VD &lt;25 mL/m² y masa VD/VI &gt;0.4
+        son marcadores de mal pronóstico. Útil en seguimiento de respuesta al tratamiento.
+      </div>
+      <div class="form-grid">
+        <div class="form-field"><label>Fecha</label><input type="date" id="rmc-fecha"></div>
+        <!-- Función VD -->
+        <div class="form-field">
+          <label>FEVD — Fracción eyección VD</label>
+          <input type="number" id="rmc-fevd" step="1" min="0" max="80" placeholder="ej. 38" oninput="interpretarRMC()">
+          <span class="unit">% &nbsp;<span class="grad-badge" id="grad-fevd"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Mal pronóstico si &lt;35%</span>
+        </div>
+        <div class="form-field">
+          <label>VSIVD — Volumen sistólico indexado VD</label>
+          <input type="number" id="rmc-vsivd" step="0.1" min="0" max="200" placeholder="ej. 22" oninput="interpretarRMC()">
+          <span class="unit">mL/m² &nbsp;<span class="grad-badge" id="grad-vsivd"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Mal pronóstico si &lt;25 mL/m²</span>
+        </div>
+        <div class="form-field">
+          <label>VTD VD indexado</label>
+          <input type="number" id="rmc-vtdvd" step="0.1" min="0" max="300" placeholder="ej. 110">
+          <span class="unit">mL/m²</span>
+        </div>
+        <div class="form-field">
+          <label>VTS VD indexado</label>
+          <input type="number" id="rmc-vtsvd" step="0.1" min="0" max="250" placeholder="ej. 68">
+          <span class="unit">mL/m²</span>
+        </div>
+        <!-- Función VI -->
+        <div class="form-field">
+          <label>FEVI por RMC</label>
+          <input type="number" id="rmc-fevi" step="1" min="0" max="80" placeholder="ej. 62">
+          <span class="unit">%</span>
+        </div>
+        <div class="form-field">
+          <label>Masa VD indexada</label>
+          <input type="number" id="rmc-masa-vd" step="0.1" min="0" max="200" placeholder="ej. 38">
+          <span class="unit">g/m²</span>
+        </div>
+        <div class="form-field">
+          <label>Razón masa VD/VI</label>
+          <input type="number" id="rmc-vd-vi" step="0.01" min="0" max="2" placeholder="ej. 0.45" oninput="interpretarRMC()">
+          <span class="unit">&nbsp;<span class="grad-badge" id="grad-vdvi"></span></span>
+          <span class="unit" style="font-size:10px;color:var(--text-3)">Mal pronóstico si &gt;0.4</span>
+        </div>
+        <!-- Realce tardío -->
+        <div class="form-field">
+          <label>Realce tardío con gadolinio (RTG)</label>
+          <select id="rmc-rtg" onchange="interpretarRMC()">
+            <option value="">Seleccionar...</option>
+            <option value="no">No — ausente</option>
+            <option value="si_vi">Sí — en VI (inserción VD)</option>
+            <option value="si_vd">Sí — en VD</option>
+            <option value="si_extenso">Sí — extenso</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label>Movimiento septal paradójico</label>
+          <select id="rmc-septo">
+            <option value="no">No</option>
+            <option value="leve">Leve</option>
+            <option value="moderado">Moderado</option>
+            <option value="severo">Severo — desplazamiento D-shape</option>
+          </select>
+        </div>
+        <div class="form-field" style="grid-column:1/-1">
+          <div id="rmc-interpretacion" style="display:none;border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;border:1.5px solid"></div>
+        </div>
+        <div class="form-field" style="grid-column:1/-1"><label>Observaciones / Conclusión del informe RMC</label>
+          <textarea id="rmc-obs" rows="3" placeholder="Conclusión del informe de resonancia cardíaca, hallazgos adicionales..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="msg-box" id="msg-rmc"></div>
+    <div class="form-actions">
+      <button class="btn-primary" onclick="guardarExamenAdicional('rmc','resonancia_cardiaca')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        Guardar RMC
+      </button>
+    </div>
+  </div>
+
+  <!-- ═══ HISTORIAL ════════════════════════════════════════════ -->
+  <div class="form-panel" id="panel-hist">
+    <div id="hist-content"><div class="hist-empty">Selecciona un paciente para ver su historial de exámenes.</div></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✓</span><span id="toast-msg">Guardado</span></div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+let pacienteActual = null;
+let pacientes = [];
+
+if (!token) window.location.href = '/login';
+
+window.addEventListener('DOMContentLoaded', cargarPacientes);
+
+async function cargarPacientes() {
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/pacientes-lista`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (r.status === 401) { window.location.href = '/login'; return; }
+    const d = await r.json();
+    pacientes = d.pacientes || [];
+    const sel = document.getElementById('pac-select');
+    pacientes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.nombre} ${p.apellido}`;
+      sel.appendChild(opt);
+    });
+  } catch(e) { console.error('Error cargando pacientes', e); }
+}
+
+
+function actualizarInfoPaciente(pac) {
+  if (!pac) { document.getElementById('pac-info').classList.remove('visible'); return; }
+  document.getElementById('pi-grupo').textContent = pac.grupo_hp_oms ? 'Grupo '+pac.grupo_hp_oms : (pac.grupo_etario || '--');
+  document.getElementById('pi-diag').textContent = pac.diagnostico_hp || '--';
+  document.getElementById('pi-clase').textContent = pac.clase_funcional_oms ? `Clase ${['I','II','III','IV'][pac.clase_funcional_oms-1]}` : '--';
+  document.getElementById('pac-info').classList.add('visible');
+}
+
+function seleccionarPaciente() {
+  const id = document.getElementById('pac-select').value;
+  if (!id) { document.getElementById('pac-info').classList.remove('visible'); return; }
+  pacienteActual = pacientes.find(p => p.id === id);
+  if (pacienteActual) {
+    actualizarInfoPaciente(pacienteActual);
+    document.getElementById('pi-ultimo').textContent = '--';
+    document.getElementById('pac-info').classList.add('visible');
+    if (document.getElementById('panel-hist').classList.contains('active')) cargarHistorial();
+  }
+}
+
+function cambiarTab(tab) {
+  ['eco','cat','gam','pfp','cpet','tac','rmc','hist'].forEach(t => {
+    const btn = document.getElementById('tab-'+t);
+    const panel = document.getElementById('panel-'+t);
+    if (btn) btn.classList.toggle('active', t===tab);
+    if (panel) panel.classList.toggle('active', t===tab);
+  });
+  if (tab === 'hist' && pacienteActual) cargarHistorial();
+}
+
+function verificarPMAP(val) {
+  const alerta = document.getElementById('alerta-pmap');
+  alerta.classList.toggle('visible', parseFloat(val) >= 20);
+}
+
+async function cargarHistorial() {
+  if (!pacienteActual) return;
+  const cont = document.getElementById('hist-content');
+  cont.innerHTML = '<div class="hist-empty">Cargando...</div>';
+  try {
+    // Cargar eco + cateterismo Y exámenes adicionales en paralelo
+    const [r1, r2] = await Promise.all([
+      fetch(`${API}/api/v1/examenes/${pacienteActual.id}`, { headers:{ Authorization:`Bearer ${token}` } }),
+      fetch(`${API}/api/v1/examenes/adicional/${pacienteActual.id}`, { headers:{ Authorization:`Bearer ${token}` } })
+    ]);
+    const d1 = await r1.json();
+    const d2 = await r2.json();
+
+    const examenes  = d1.examenes || [];
+    const adicionales = (d2.examenes || []).map(e => ({
+      ...e,
+      tipo: e.tipo_examen,
+      datos: typeof e.datos === 'string' ? JSON.parse(e.datos) : (e.datos || {}),
+      esAdicional: true
+    }));
+
+    // Combinar y ordenar por fecha
+    const todos = [...examenes, ...adicionales].sort((a,b) => {
+      const fa = new Date(a.fecha_examen || a.created_at);
+      const fb = new Date(b.fecha_examen || b.created_at);
+      return fb - fa;
+    });
+
+    if (!todos.length) {
+      cont.innerHTML = '<div class="hist-empty">Este paciente no tiene exámenes registrados aún.</div>';
+      return;
+    }
+
+    const TIPO_LABELS = {
+      ecocardiograma:     { icon:'🫀', label:'Ecocardiograma' },
+      cateterismo_derecho:{ icon:'🔬', label:'Cateterismo derecho' },
+      gammagrafia_vq:     { icon:'☢️', label:'Gammagrafía V/Q' },
+      funcion_pulmonar:   { icon:'💨', label:'Función pulmonar + DLCO' },
+      cpet:               { icon:'🚴', label:'CPET' },
+      tac_torax:          { icon:'🩻', label:'TAC Tórax' },
+      resonancia_cardiaca:{ icon:'🧲', label:'Resonancia Cardíaca (RMC)' },
+    };
+
+    cont.innerHTML = todos.map((e, idx) => {
+      const dt = e.datos || {};
+      const esEco = e.tipo === 'ecocardiograma';
+      const esCat = e.tipo === 'cateterismo_derecho';
+      const tipoInfo = TIPO_LABELS[e.tipo] || { icon:'📋', label: e.tipo };
+
+      // ── Resumen según tipo ──────────────────────────────────
+      let resumen = '';
+      if (esEco) {
+        resumen = [
+          dt.fevi_pct != null ? 'FEVI '+dt.fevi_pct+'%' : null,
+          dt.tapse != null ? 'TAPSE '+dt.tapse+'mm' : null,
+          dt.psap_eco != null ? 'PSAP '+dt.psap_eco+'mmHg' : null,
+          dt.vel_regurg_tricusp != null ? 'TRV '+dt.vel_regurg_tricusp+'m/s' : null,
+          dt.probabilidad_hp_ase2025 ? 'HP '+dt.probabilidad_hp_ase2025 : null,
+        ].filter(Boolean).join(' · ');
+      } else if (esCat) {
+        resumen = [
+          dt.pmap != null ? 'PMAP '+dt.pmap+'mmHg' : null,
+          dt.pcap != null ? 'PCAP '+dt.pcap+'mmHg' : null,
+          (dt.rvp_calculada||dt.rvp) != null ? 'RVP '+(dt.rvp_calculada||dt.rvp)+' UW' : null,
+          dt.gasto_cardiaco != null ? 'GC '+dt.gasto_cardiaco+' L/min' : null,
+          dt.diagnostico_hemodinamico ? dt.diagnostico_hemodinamico.split('—')[0].trim() : null,
+        ].filter(Boolean).join(' · ');
+      } else if (e.tipo === 'gammagrafia_vq') {
+        resumen = [
+          dt.resultado || null,
+          dt.compatible_hptec ? 'HPTEC: '+dt.compatible_hptec : null,
+          dt.segmentos_afectados != null ? dt.segmentos_afectados+' segmentos' : null,
+        ].filter(Boolean).join(' · ');
+      } else if (e.tipo === 'funcion_pulmonar') {
+        resumen = [
+          dt.fvc_pct != null ? 'FVC '+dt.fvc_pct+'%' : null,
+          dt.vef1_pct != null ? 'VEF₁ '+dt.vef1_pct+'%' : null,
+          dt.tiffeneau != null ? 'Tiff '+dt.tiffeneau : null,
+          dt.dlco_pct != null ? 'DLCO '+dt.dlco_pct+'%' : null,
+        ].filter(Boolean).join(' · ');
+      } else if (e.tipo === 'cpet') {
+        resumen = [
+          dt.vo2_max != null ? 'VO₂ '+dt.vo2_max+' mL/kg/min' : null,
+          dt.vevco2_slope != null ? 'VE/VCO₂ '+dt.vevco2_slope : null,
+          dt.spo2_esfuerzo != null ? 'SpO₂ '+dt.spo2_esfuerzo+'%' : null,
+        ].filter(Boolean).join(' · ');
+      } else if (e.tipo === 'tac_torax') {
+        resumen = [
+          dt.tipo_estudio || null,
+          dt.ap_diam_tac != null ? 'AP '+dt.ap_diam_tac+'cm' : null,
+          dt.defectos_llenado && dt.defectos_llenado !== 'no' ? 'Defectos: '+dt.defectos_llenado : null,
+          dt.patron_parenc && dt.patron_parenc !== 'normal' ? dt.patron_parenc : null,
+        ].filter(Boolean).join(' · ');
+      } else if (e.tipo === 'resonancia_cardiaca') {
+        resumen = [
+          dt.fevd != null ? 'FEVD '+dt.fevd+'%' : null,
+          dt.vsivd != null ? 'VSIVD '+dt.vsivd+' mL/m²' : null,
+          dt.ratio_vd_vi != null ? 'VD/VI '+dt.ratio_vd_vi : null,
+        ].filter(Boolean).join(' · ');
+      }
+
+      // ── Detalle expandible ──────────────────────────────────
+      const detalleEco = esEco ? `
+        <div class="hist-detalle" id="det-${idx}" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;font-size:12px">
+            ${[
+              ['FEVI', dt.fevi_pct != null ? dt.fevi_pct+'%' : null],
+              ['Clasif. FEVI', dt.clasif_fevi],
+              ['DVI diástole', dt.diam_vi_diastole != null ? dt.diam_vi_diastole+'mm' : null],
+              ['DVI sístole', dt.diam_vi_sistole != null ? dt.diam_vi_sistole+'mm' : null],
+              ['Septum', dt.espesor_septum != null ? dt.espesor_septum+'mm' : null],
+              ['Pared posterior', dt.espesor_pared_posterior != null ? dt.espesor_pared_posterior+'mm' : null],
+              ['Masa VI', dt.masa_ventricular != null ? dt.masa_ventricular+'g' : null],
+              ['Masa VI idx', dt.masa_ventricular_indexada != null ? dt.masa_ventricular_indexada+'g/m²' : null],
+              ['E/e prima', dt.relacion_e_e != null ? dt.relacion_e_e : null],
+              ['Func. diastólica', dt.funcion_diastolica],
+              ['VD basal', dt.diam_vd_basal != null ? dt.diam_vd_basal+'mm' : null],
+              ['VD medio', dt.diam_vd_medio != null ? dt.diam_vd_medio+'mm' : null],
+              ['VD long.', dt.diam_vd_long != null ? dt.diam_vd_long+'mm' : null],
+              ['RVWT', dt.grosor_pared_vd != null ? dt.grosor_pared_vd+'mm' : null],
+              ['TAPSE', dt.tapse != null ? dt.tapse+'mm' : null],
+              ['TAPSE/PSAP', dt.tapse_psap != null ? dt.tapse_psap+' mm/mmHg' : null],
+              ['FAC VD', dt.fac_vd != null ? dt.fac_vd+'%' : null],
+              ['TDI S prima', dt.tdi_s_prime != null ? dt.tdi_s_prime+'cm/s' : null],
+              ['AccT/TAP', dt.tiempo_aceleracion_pulmonar != null ? dt.tiempo_aceleracion_pulmonar+'ms' : null],
+              ['LVEI', dt.indice_excentricidad != null ? dt.indice_excentricidad : null],
+              ['RV Strain', dt.rv_strain != null ? dt.rv_strain+'%' : null],
+              ['Área AD', dt.area_auricula_der != null ? dt.area_auricula_der+'cm²' : null],
+              ['RAVi', dt.ravi != null ? dt.ravi+'mL/m²' : null],
+              ['RAP', dt.rap_estimada != null ? dt.rap_estimada+'mmHg' : null],
+              ['TRV', dt.vel_regurg_tricusp != null ? dt.vel_regurg_tricusp+'m/s' : null],
+              ['PSAP', dt.psap_eco != null ? dt.psap_eco+'mmHg' : null],
+              ['AP diám.', dt.diam_arteria_pulmonar != null ? dt.diam_arteria_pulmonar+'cm' : null],
+              ['AP/Ao', dt.razon_ap_ao != null ? dt.razon_ap_ao : null],
+              ['Prob. HP ASE 2025', dt.probabilidad_hp_ase2025],
+              ['IT', dt.insuf_tricuspide],
+              ['Valv. aórtica', dt.valvulopatia_aortica],
+              ['Valv. mitral', dt.valvulopatia_mitral],
+              ['Derrame pericárd.', dt.derrame_pericardico ? 'Sí' : (dt.derrame_pericardico === false ? 'No' : null)],
+            ].filter(([,v]) => v != null && v !== '' && v !== false)
+             .map(([k,v]) => '<div style="background:var(--warm);border-radius:7px;padding:6px 10px"><span style="font-size:10px;color:var(--text-3);display:block">'+k+'</span><strong style="color:var(--text-1)">'+v+'</strong></div>')
+             .join('')}
+            ${dt.observaciones ? '<div style="grid-column:1/-1;background:var(--teal-pale);border-radius:7px;padding:8px 12px"><span style="font-size:10px;color:var(--text-3);display:block">Observaciones</span><span style="font-size:12px;color:var(--text-1)">'+dt.observaciones+'</span></div>' : ''}
+          </div>
+        </div>` : '';
+
+      const detalleCat = esCat ? `
+        <div class="hist-detalle" id="det-${idx}" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+          ${dt.diagnostico_hemodinamico ? '<div style="background:var(--teal-pale);border:1.5px solid rgba(0,107,143,0.2);border-radius:10px;padding:12px 16px;margin-bottom:12px"><span style="font-size:10px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px">Diagnóstico hemodinámico</span><strong style="font-size:14px;color:var(--teal-dk)">'+dt.diagnostico_hemodinamico+'</strong></div>' : ''}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;font-size:12px">
+            ${[
+              ['PMAP', dt.pmap != null ? dt.pmap+' mmHg' : null],
+              ['PSAP', dt.psap_cateterismo != null ? dt.psap_cateterismo+' mmHg' : null],
+              ['PDAP', dt.pdap != null ? dt.pdap+' mmHg' : null],
+              ['PCAP (cuña)', dt.pcap != null ? dt.pcap+' mmHg' : null],
+              ['PAD', dt.presion_auricula_der != null ? dt.presion_auricula_der+' mmHg' : null],
+              ['GC', dt.gasto_cardiaco != null ? dt.gasto_cardiaco+' L/min' : null],
+              ['IC', dt.indice_cardiaco != null ? dt.indice_cardiaco+' L/min/m²' : null],
+              ['RVP medida', dt.rvp != null ? dt.rvp+' UW' : null],
+              ['RVP calculada', dt.rvp_calculada != null ? dt.rvp_calculada+' UW' : null],
+              ['GTP', dt.gtp != null ? dt.gtp+' mmHg' : null],
+              ['GDP', dt.gdp != null ? dt.gdp+' mmHg' : null],
+              ['QP/QS', dt.qp_qs != null ? dt.qp_qs : null],
+              ['SaO₂ AP', dt.sat_arteria_pulmonar != null ? dt.sat_arteria_pulmonar+'%' : null],
+              ['SaO₂ VP/AI', dt.sat_auricula_izq != null ? dt.sat_auricula_izq+'%' : null],
+              ['Test vasoreact.', dt.vaso_realizado === 'si' ? (dt.vaso_resultado === 'positivo' ? '✅ Positivo' : dt.vaso_resultado === 'negativo' ? '❌ Negativo' : 'Realizado') : dt.vaso_realizado === 'no' ? 'No realizado' : null],
+              ['Carga volumen', dt.carga_vol_realizada === 'si' ? (dt.carga_vol_pcap_post != null ? 'PCAP post: '+dt.carga_vol_pcap_post+' mmHg' : 'Realizada') : dt.carga_vol_realizada === 'no' ? 'No realizada' : null],
+              ['Grupo HP', dt.grupo_hp != null ? 'Grupo '+dt.grupo_hp : null],
+              ['Riesgo', dt.clasificacion_riesgo],
+            ].filter(([,v]) => v != null && v !== '')
+             .map(([k,v]) => '<div style="background:var(--warm);border-radius:7px;padding:6px 10px"><span style="font-size:10px;color:var(--text-3);display:block">'+k+'</span><strong style="color:var(--text-1)">'+v+'</strong></div>')
+             .join('')}
+            ${(dt.observaciones_cat||dt.observaciones) ? '<div style="grid-column:1/-1;background:#FEF5E4;border-radius:7px;padding:8px 12px"><span style="font-size:10px;color:var(--text-3);display:block">Observaciones</span><span style="font-size:12px;color:var(--text-1)">'+(dt.observaciones_cat||dt.observaciones)+'</span></div>' : ''}
+          </div>
+        </div>` : '';
+
+      // Detalle genérico para exámenes adicionales
+      const detalleAdicional = e.esAdicional ? `
+        <div class="hist-detalle" id="det-${idx}" style="display:none;margin-top:12px;border-top:1px solid var(--border);padding-top:12px">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;font-size:12px">
+            ${Object.entries(dt)
+              .filter(([k,v]) => v != null && v !== '' && k !== 'fecha_examen' && k !== 'observaciones')
+              .map(([k,v]) => {
+                const label = k.replace(/_/g,' ').replace(/\w/g, l=>l.toUpperCase());
+                return '<div style="background:var(--warm);border-radius:7px;padding:6px 10px"><span style="font-size:10px;color:var(--text-3);display:block">'+label+'</span><strong style="color:var(--text-1)">'+v+'</strong></div>';
+              }).join('')}
+            ${dt.observaciones ? '<div style="grid-column:1/-1;background:var(--teal-pale);border-radius:7px;padding:8px 12px"><span style="font-size:10px;color:var(--text-3);display:block">Observaciones</span><span style="font-size:12px;color:var(--text-1)">'+dt.observaciones+'</span></div>' : ''}
+          </div>
+        </div>` : '';
+
+      const detalle = esEco ? detalleEco : esCat ? detalleCat : detalleAdicional;
+
+      return `
+        <div class="historial-item" style="flex-direction:column;align-items:flex-start;cursor:pointer" onclick="toggleDetalle(${idx})">
+          <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
+            <div>
+              <div class="hist-tipo">${tipoInfo.icon} ${tipoInfo.label}</div>
+              <div class="hist-vals">${resumen || 'Sin datos resumibles'}</div>
+              <div class="hist-fecha">${fechaCorta(e.fecha_examen || e.created_at)}</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              ${esEco ? '<button onclick="event.stopPropagation();cargarEnFormulario('+idx+')" style="padding:6px 12px;background:var(--teal);color:white;border:none;border-radius:8px;font-family:Nunito,sans-serif;font-size:11px;font-weight:700;cursor:pointer">📋 Cargar datos</button>' : ''}
+              <span style="font-size:18px;color:var(--text-3)" id="arrow-${idx}">▼</span>
+            </div>
+          </div>
+          ${detalle}
+        </div>`;
+    }).join('');
+
+    window._histExamenes = todos;
+  } catch(e) {
+    console.error(e);
+    cont.innerHTML = '<div class="hist-empty">Error al cargar historial.</div>';
+  }
+}
+
+function toggleDetalle(idx) {
+  const det = document.getElementById('det-'+idx);
+  const arrow = document.getElementById('arrow-'+idx);
+  if (!det) return;
+  const visible = det.style.display !== 'none';
+  det.style.display = visible ? 'none' : 'block';
+  if (arrow) arrow.textContent = visible ? '▼' : '▲';
+}
+
+function cargarEnFormulario(idx) {
+  const e = window._histExamenes?.[idx];
+  if (!e || e.tipo !== 'ecocardiograma') return;
+  const dt = e.datos || {};
+  // Cambiar a pestaña eco
+  cambiarTab('eco');
+  // Rellenar campos
+  const setVal = (id, v) => { const el = document.getElementById(id); if (el && v != null && v !== '') el.value = v; };
+  const setChk = (id, v) => { const el = document.getElementById(id); if (el) el.checked = !!v; };
+  setVal('eco-fecha',       e.fecha_examen ? e.fecha_examen.split('T')[0] : '');
+  setVal('eco-clasif-fevi', dt.clasif_fevi);
+  setVal('eco-fevi',        dt.fevi_pct);
+  setVal('eco-diam-vi-d',   dt.diam_vi_diastole);
+  setVal('eco-diam-vi-s',   dt.diam_vi_sistole);
+  setVal('eco-septum',      dt.espesor_septum);
+  setVal('eco-pared-post',  dt.espesor_pared_posterior);
+  setVal('eco-masa-vi',     dt.masa_ventricular);
+  setVal('eco-masa-vi-idx', dt.masa_ventricular_indexada);
+  setVal('eco-vol-ai',      dt.vol_auricula_izq);
+  setVal('eco-diast',       dt.funcion_diastolica);
+  setVal('eco-e-e',         dt.relacion_e_e);
+  setVal('eco-valv-ao',     dt.valvulopatia_aortica);
+  setVal('eco-valv-mi',     dt.valvulopatia_mitral);
+  setVal('eco-diam-vd-b',   dt.diam_vd_basal);
+  setVal('eco-diam-vd-m',   dt.diam_vd_medio);
+  setVal('eco-diam-vd-l',   dt.diam_vd_long);
+  setVal('eco-rvwt',        dt.grosor_pared_vd);
+  setVal('eco-tapse',       dt.tapse);
+  setVal('eco-tapse-psap',  dt.tapse_psap);
+  setVal('eco-fac',         dt.fac_vd);
+  setVal('eco-tdi-s',       dt.tdi_s_prime);
+  setVal('eco-rvot-vti',    dt.rvot_vti);
+  setVal('eco-tap',         dt.tiempo_aceleracion_pulmonar);
+  setVal('eco-iex',         dt.indice_excentricidad);
+  setVal('eco-rv-strain',   dt.rv_strain);
+  setVal('eco-area-ad',     dt.area_auricula_der);
+  setVal('eco-ravi',        dt.ravi);
+  setVal('eco-rap',         dt.rap_estimada);
+  setVal('eco-vel-tri',     dt.vel_regurg_tricusp);
+  setVal('eco-psap',        dt.psap_eco);
+  setVal('eco-prob-hp',     dt.probabilidad_hp_ase2025);
+  setVal('eco-diam-ap',     dt.diam_arteria_pulmonar);
+  setVal('eco-ap-ao',       dt.razon_ap_ao);
+  setVal('eco-insuf-tri',   dt.insuf_tricuspide);
+  setChk('eco-derp',        dt.derrame_pericardico);
+  setChk('eco-dia',         dt.defecto_interauricular);
+  setChk('eco-div',         dt.defecto_interventricular);
+  setVal('eco-otros',       dt.otros_defectos_congen);
+  setVal('eco-obs',         dt.observaciones);
+  gradASE2025();
+  showToast('Datos del estudio cargados en el formulario', '📋');
+}
+
+// ── Gradación automática ASE 2025 ────────────────────────────
+function gradASE2025() {
+  function setBadge(id, text, clase) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    el.className = 'grad-badge ' + (text ? clase : '');
+  }
+  function grade(val, ranges) {
+    // ranges: [{max, label, clase}] ordenado de normal a severo
+    if (val === null || val === '' || isNaN(val)) return setBadge(ranges._id, '', '');
+    for (const r of ranges) {
+      if (r.fn(val)) return setBadge(r.id, r.label, r.clase);
+    }
+  }
+
+  const vdB  = parseFloat(document.getElementById('eco-diam-vd-b')?.value);
+  const rvwt = parseFloat(document.getElementById('eco-rvwt')?.value);
+  const tapse= parseFloat(document.getElementById('eco-tapse')?.value);
+  const fac  = parseFloat(document.getElementById('eco-fac')?.value);
+  const tdiS = parseFloat(document.getElementById('eco-tdi-s')?.value);
+  const tap  = parseFloat(document.getElementById('eco-tap')?.value);
+  const iex  = parseFloat(document.getElementById('eco-iex')?.value);
+  const areaAD = parseFloat(document.getElementById('eco-area-ad')?.value);
+  const trv  = parseFloat(document.getElementById('eco-vel-tri')?.value);
+  const psap = parseFloat(document.getElementById('eco-psap')?.value);
+  const ap   = parseFloat(document.getElementById('eco-diam-ap')?.value);
+
+  // VD basal (mm)
+  if (!isNaN(vdB)) {
+    if (vdB < 41)       setBadge('grad-vd-basal', 'Normal', 'gb-normal');
+    else if (vdB <= 44) setBadge('grad-vd-basal', 'Leve', 'gb-leve');
+    else if (vdB <= 49) setBadge('grad-vd-basal', 'Moderado', 'gb-moderado');
+    else                setBadge('grad-vd-basal', 'Severo', 'gb-severo');
+  } else setBadge('grad-vd-basal','','');
+
+  // RVWT (mm)
+  if (!isNaN(rvwt)) {
+    if (rvwt < 5)       setBadge('grad-rvwt', 'Normal', 'gb-normal');
+    else if (rvwt <= 7) setBadge('grad-rvwt', 'Leve', 'gb-leve');
+    else if (rvwt <= 9) setBadge('grad-rvwt', 'Moderado', 'gb-moderado');
+    else                setBadge('grad-rvwt', 'Severo', 'gb-severo');
+  } else setBadge('grad-rvwt','','');
+
+  // TAPSE (mm)
+  if (!isNaN(tapse)) {
+    if (tapse > 17)      setBadge('grad-tapse', 'Normal', 'gb-normal');
+    else if (tapse >= 13)setBadge('grad-tapse', 'Leve', 'gb-leve');
+    else if (tapse >= 10)setBadge('grad-tapse', 'Moderado', 'gb-moderado');
+    else                 setBadge('grad-tapse', 'Severo', 'gb-severo');
+  } else setBadge('grad-tapse','','');
+
+  // FAC (%)
+  if (!isNaN(fac)) {
+    if (fac > 35)      setBadge('grad-fac', 'Normal', 'gb-normal');
+    else if (fac >= 29)setBadge('grad-fac', 'Leve', 'gb-leve');
+    else if (fac >= 22)setBadge('grad-fac', 'Moderado', 'gb-moderado');
+    else               setBadge('grad-fac', 'Severo', 'gb-severo');
+  } else setBadge('grad-fac','','');
+
+  // TDI S' (cm/s)
+  if (!isNaN(tdiS)) {
+    if (tdiS > 9.5)      setBadge('grad-tdi-s', 'Normal', 'gb-normal');
+    else if (tdiS >= 7.2)setBadge('grad-tdi-s', 'Leve', 'gb-leve');
+    else if (tdiS >= 5)  setBadge('grad-tdi-s', 'Moderado', 'gb-moderado');
+    else                 setBadge('grad-tdi-s', 'Severo', 'gb-severo');
+  } else setBadge('grad-tdi-s','','');
+
+  // AccT/TAP (ms)
+  if (!isNaN(tap)) {
+    if (tap > 105) setBadge('grad-tap', 'Normal', 'gb-normal');
+    else           setBadge('grad-tap', 'Anormal', 'gb-severo');
+  } else setBadge('grad-tap','','');
+
+  // LVEI
+  if (!isNaN(iex)) {
+    if (iex < 1)  setBadge('grad-iex', 'Normal', 'gb-normal');
+    else          setBadge('grad-iex', 'Anormal — sobrecarga VD', 'gb-severo');
+  } else setBadge('grad-iex','','');
+
+  // Área AD (cm²)
+  if (!isNaN(areaAD)) {
+    if (areaAD < 19)       setBadge('grad-area-ad', 'Normal', 'gb-normal');
+    else if (areaAD <= 22) setBadge('grad-area-ad', 'Leve', 'gb-leve');
+    else if (areaAD <= 24) setBadge('grad-area-ad', 'Moderado', 'gb-moderado');
+    else                   setBadge('grad-area-ad', 'Severo', 'gb-severo');
+  } else setBadge('grad-area-ad','','');
+
+  // TRV (m/s)
+  if (!isNaN(trv)) {
+    if (trv < 2.8)      setBadge('grad-trv', 'Normal', 'gb-normal');
+    else if (trv <= 3.1)setBadge('grad-trv', 'Leve', 'gb-leve');
+    else if (trv <= 3.5)setBadge('grad-trv', 'Moderado', 'gb-moderado');
+    else                setBadge('grad-trv', 'Severo', 'gb-severo');
+  } else setBadge('grad-trv','','');
+
+  // PSAP (mmHg)
+  if (!isNaN(psap)) {
+    if (psap < 34)       setBadge('grad-psap', 'Normal', 'gb-normal');
+    else if (psap <= 49) setBadge('grad-psap', 'Leve', 'gb-leve');
+    else if (psap <= 69) setBadge('grad-psap', 'Moderado', 'gb-moderado');
+    else                 setBadge('grad-psap', 'Severo', 'gb-severo');
+  } else setBadge('grad-psap','','');
+
+  // AP diámetro (cm)
+  if (!isNaN(ap)) {
+    if (ap < 2.5)      setBadge('grad-ap', 'Normal', 'gb-normal');
+    else if (ap <= 3.0)setBadge('grad-ap', 'Leve', 'gb-leve');
+    else if (ap <= 3.5)setBadge('grad-ap', 'Moderado', 'gb-moderado');
+    else               setBadge('grad-ap', 'Severo', 'gb-severo');
+  } else setBadge('grad-ap','','');
+}
+
+async function guardarEco() {
+  if (!pacienteActual) return mostrarMsg('msg-eco', 'Selecciona un paciente primero.', 'error');
+  const btn = document.getElementById('btn-eco');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Guardando...';
+
+  const body = {
+    fecha_examen:                val('eco-fecha') || null,
+    // VI
+    clasif_fevi:                 val('eco-clasif-fevi') || null,
+    fevi_pct:                    num('eco-fevi'),
+    diam_vi_diastole:            num('eco-diam-vi-d'),
+    diam_vi_sistole:             num('eco-diam-vi-s'),
+    espesor_septum:              num('eco-septum'),
+    espesor_pared_posterior:     num('eco-pared-post'),
+    masa_ventricular:            num('eco-masa-vi'),
+    masa_ventricular_indexada:   num('eco-masa-vi-idx'),
+    vol_auricula_izq:            num('eco-vol-ai'),
+    funcion_diastolica:          val('eco-diast') || null,
+    relacion_e_e:                num('eco-e-e'),
+    valvulopatia_aortica:        val('eco-valv-ao') || null,
+    valvulopatia_mitral:         val('eco-valv-mi') || null,
+    // VD — ASE 2025
+    diam_vd_basal:               num('eco-diam-vd-b'),
+    diam_vd_medio:               num('eco-diam-vd-m'),
+    diam_vd_long:                num('eco-diam-vd-l'),
+    grosor_pared_vd:             num('eco-rvwt'),
+    tapse:                       num('eco-tapse'),
+    tapse_psap:                  num('eco-tapse-psap'),
+    fac_vd:                      num('eco-fac'),
+    tdi_s_prime:                 num('eco-tdi-s'),
+    rvot_vti:                    num('eco-rvot-vti'),
+    tiempo_aceleracion_pulmonar: num('eco-tap'),
+    indice_excentricidad:        num('eco-iex'),
+    rv_strain:                   num('eco-rv-strain'),
+    // AD — ASE 2025
+    area_auricula_der:           num('eco-area-ad'),
+    ravi:                        num('eco-ravi'),
+    rap_estimada:                num('eco-rap'),
+    // Hemodinámica — ASE 2025
+    vel_regurg_tricusp:          num('eco-vel-tri'),
+    psap_eco:                    num('eco-psap'),
+    probabilidad_hp_ase2025:     val('eco-prob-hp') || null,
+    diam_arteria_pulmonar:       num('eco-diam-ap'),
+    razon_ap_ao:                 num('eco-ap-ao'),
+    insuf_tricuspide:            val('eco-insuf-tri') || null,
+    // Otros
+    derrame_pericardico:         document.getElementById('eco-derp')?.checked || false,
+    defecto_interauricular:      document.getElementById('eco-dia')?.checked || false,
+    defecto_interventricular:    document.getElementById('eco-div')?.checked || false,
+    otros_defectos_congen:       val('eco-otros') || null,
+    observaciones:               val('eco-obs') || null,
+  };
+
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/ecocardiograma/${pacienteActual.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (r.ok) {
+      mostrarMsg('msg-eco', '', '');
+      showToast('Ecocardiograma guardado correctamente', '✓');
+    } else {
+      const detMsg = d.detalle ? ' — ' + d.detalle.join(', ') : '';
+      mostrarMsg('msg-eco', (d.error || 'Error al guardar.') + detMsg, 'error');
+    }
+  } catch(e) {
+    mostrarMsg('msg-eco', 'Error de conexión.', 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar ecocardiograma';
+}
+
+// ── Vasoreactividad y carga de volumen ───────────────────────
+function toggleVaso() {
+  const v = document.getElementById('cat-vaso-realizado').value === 'si';
+  ['vaso-agente-field','vaso-resultado-field','vaso-pmap-pre-field',
+   'vaso-pmap-post-field','vaso-gc-post-field','vaso-interp-field','vaso-obs-field']
+    .forEach(id => document.getElementById(id).style.display = v ? '' : 'none');
+}
+
+function interpretarVaso() {
+  const pre  = parseFloat(document.getElementById('cat-vaso-pmap-pre')?.value);
+  const post = parseFloat(document.getElementById('cat-vaso-pmap-post')?.value);
+  const res  = document.getElementById('cat-vaso-resultado')?.value;
+  const el   = document.getElementById('vaso-interpretacion');
+  const fld  = document.getElementById('vaso-interp-field');
+  if (!el) return;
+
+  let txt = '', bg = '', col = '';
+  if (res === 'positivo' || (!isNaN(pre) && !isNaN(post) && (pre - post) >= 10 && post <= 40)) {
+    txt = '✅ Test POSITIVO — Respondedor agudo. Candidato a terapia con bloqueadores de canales de calcio (BCC). Seguimiento estrecho recomendado.';
+    bg = 'var(--green-lt)'; col = 'var(--green)';
+    if (document.getElementById('cat-vaso-resultado').value === '') document.getElementById('cat-vaso-resultado').value = 'positivo';
+  } else if (res === 'negativo' || (!isNaN(pre) && !isNaN(post) && ((pre - post) < 10 || post > 40))) {
+    txt = '❌ Test NEGATIVO — No respondedor. No indicar BCC. Iniciar terapia específica HP según guías ESC/ERS 2022.';
+    bg = 'var(--red-lt)'; col = 'var(--red)';
+  } else if (res === 'indeterminado') {
+    txt = '⚠️ Resultado indeterminado. Repetir si es posible con diferente agente vasodilatador.';
+    bg = 'var(--amber-lt)'; col = 'var(--amber)';
+  } else { fld.style.display = 'none'; return; }
+
+  fld.style.display = '';
+  el.style.background = bg;
+  el.style.color = col;
+  el.style.border = '1.5px solid ' + col;
+  el.textContent = txt;
+}
+
+function toggleCarga() {
+  const v = document.getElementById('cat-carga-realizada').value === 'si';
+  ['carga-vol-field','carga-pcap-pre-field','carga-pcap-post-field',
+   'carga-pmap-post-field','carga-interp-field','carga-obs-field']
+    .forEach(id => document.getElementById(id).style.display = v ? '' : 'none');
+}
+
+function interpretarCarga() {
+  const post = parseFloat(document.getElementById('cat-carga-pcap-post')?.value);
+  const el   = document.getElementById('carga-interpretacion');
+  const fld  = document.getElementById('carga-interp-field');
+  if (!el || isNaN(post)) { fld.style.display = 'none'; return; }
+
+  let txt = '', bg = '', col = '';
+  if (post > 18) {
+    txt = '⚠️ Maniobra POSITIVA — PCAP post-carga > 18 mmHg. Sugiere HP postcapilar oculta (disfunción diastólica enmascarada). Reclasificar como Grupo 2.';
+    bg = 'var(--amber-lt)'; col = 'var(--amber)';
+  } else {
+    txt = '✅ Maniobra NEGATIVA — PCAP post-carga ≤ 18 mmHg. No evidencia de HP postcapilar oculta. Mantener clasificación precapilar.';
+    bg = 'var(--green-lt)'; col = 'var(--green)';
+  }
+  fld.style.display = '';
+  el.style.background = bg; el.style.color = col;
+  el.style.border = '1.5px solid ' + col;
+  el.textContent = txt;
+}
+
+// ── Cálculo automático cateterismo ───────────────────────────
+function calcularCat() {
+  const pmap = parseFloat(document.getElementById('cat-pmap')?.value);
+  const pcap = parseFloat(document.getElementById('cat-pcap')?.value);
+  const gc   = parseFloat(document.getElementById('cat-gc')?.value);
+
+  // GTP y GDP
+  const gtp = (!isNaN(pmap) && !isNaN(pcap)) ? (pmap - pcap) : null;
+  const pdap = parseFloat(document.getElementById('cat-pdap')?.value);
+  const gdp = (!isNaN(pdap) && !isNaN(pcap)) ? (pdap - pcap) : null;
+
+  // RVP = (PMAP - PCAP) / GC
+  const rvpCalc = (gtp !== null && !isNaN(gc) && gc > 0) ? (gtp / gc) : null;
+
+  const resDiv = document.getElementById('cat-calc-resultado');
+  if (gtp !== null || rvpCalc !== null) {
+    resDiv.style.display = 'block';
+    document.getElementById('res-rvp').textContent = rvpCalc !== null ? rvpCalc.toFixed(2) + ' UW' : '-- UW';
+    document.getElementById('res-gtp').textContent = gtp !== null ? gtp.toFixed(1) + ' mmHg' : '-- mmHg';
+    document.getElementById('res-gdp').textContent = gdp !== null ? gdp.toFixed(1) + ' mmHg' : '-- mmHg';
+    // Color RVP
+    const rvpEl = document.getElementById('res-rvp');
+    if (rvpCalc !== null) {
+      rvpEl.style.color = rvpCalc >= 3 ? 'var(--red)' : rvpCalc >= 2 ? 'var(--amber)' : 'var(--green)';
+    }
+  } else {
+    resDiv.style.display = 'none';
+  }
+
+  // Diagnóstico hemodinámico (ESC/ERS 2022)
+  diagnosticoHemodinamico(pmap, pcap, rvpCalc, gtp, gdp);
+}
+
+function diagnosticoHemodinamico(pmap, pcap, rvp, gtp, gdp) {
+  const diagDiv  = document.getElementById('cat-diag-hemo');
+  const diagText = document.getElementById('cat-diag-hemo-texto');
+
+  if (isNaN(pmap) || isNaN(pcap)) {
+    diagDiv.innerHTML = '<span style="color:var(--text-3);font-size:13px">Complete PMAP y PCAP para obtener el diagnóstico hemodinámico</span>';
+    diagDiv.style.background = 'var(--warm)';
+    diagDiv.style.borderColor = 'var(--border)';
+    return;
+  }
+
+  let diag = '', color = '', bg = '', detalle = '';
+
+  if (pmap >= 20) {
+    if (pcap <= 15) {
+      // Precapilar
+      if (rvp !== null && rvp >= 3) {
+        diag = 'HP PRECAPILAR';
+        detalle = 'PMAP ≥ 20 mmHg · PCAP ≤ 15 mmHg · RVP ≥ 3 UW — Compatible con HAP, HP-EPOC, HPTEC o HP multifactorial';
+        color = 'var(--red)'; bg = 'var(--red-lt)';
+      } else if (rvp !== null && rvp < 3) {
+        diag = 'HP PRECAPILAR — RVP límite';
+        detalle = 'PMAP ≥ 20 mmHg · PCAP ≤ 15 mmHg · RVP < 3 UW — Evaluar volumen, anemia o cortocircuito';
+        color = 'var(--amber)'; bg = 'var(--amber-lt)';
+      } else {
+        diag = 'HP PRECAPILAR (probable)';
+        detalle = 'PMAP ≥ 20 mmHg · PCAP ≤ 15 mmHg — Completar GC para calcular RVP';
+        color = 'var(--amber)'; bg = 'var(--amber-lt)';
+      }
+    } else if (pcap > 15) {
+      // Postcapilar
+      if (gdp !== null && gtp !== null) {
+        if (gdp >= 7 || gtp > 12) {
+          diag = 'HP POSTCAPILAR COMBINADA';
+          detalle = 'PMAP ≥ 20 mmHg · PCAP > 15 mmHg · GDP ≥ 7 mmHg o GTP > 12 mmHg — Componente precapilar añadido';
+          color = '#5B3FAA'; bg = '#EDE8FE';
+        } else {
+          diag = 'HP POSTCAPILAR AISLADA';
+          detalle = 'PMAP ≥ 20 mmHg · PCAP > 15 mmHg · GDP < 7 mmHg · GTP ≤ 12 mmHg — HP por cardiopatía izquierda (Grupo 2)';
+          color = 'var(--navy, #1A5A82)'; bg = '#E0F0FF';
+        }
+      } else {
+        diag = 'HP POSTCAPILAR';
+        detalle = 'PMAP ≥ 20 mmHg · PCAP > 15 mmHg — Completar PDAP y GC para subclasificar';
+        color = '#1A5A82'; bg = '#E0F0FF';
+      }
+    }
+  } else {
+    diag = 'SIN HP hemodinámica';
+    detalle = 'PMAP < 20 mmHg — No cumple criterio hemodinámico de HP (ESC/ERS 2022)';
+    color = 'var(--green)'; bg = 'var(--green-lt)';
+  }
+
+  diagDiv.style.background = bg;
+  diagDiv.style.borderColor = color;
+  diagDiv.innerHTML = `
+    <div>
+      <div style="font-size:16px;font-weight:800;color:${color};margin-bottom:6px">${diag}</div>
+      <div style="font-size:12px;color:var(--text-2);line-height:1.6">${detalle}</div>
+    </div>`;
+
+  if (diagText && !diagText.value) diagText.value = diag + ' — ' + detalle;
+}
+
+function calcularQpQs() {
+  const svcs = parseFloat(document.getElementById('cat-sat-vcs')?.value);
+  const svci = parseFloat(document.getElementById('cat-sat-vci')?.value);
+  const sap  = parseFloat(document.getElementById('cat-sat-ap')?.value);
+  const sai  = parseFloat(document.getElementById('cat-sat-ai')?.value);
+  const sao  = parseFloat(document.getElementById('cat-sat-ao')?.value);
+
+  const resDiv = document.getElementById('cat-qpqs-resultado');
+
+  // SvO2 mixta por fórmula de Flamm: (3×VCS + VCI) / 4
+  let svm = (!isNaN(svcs) && !isNaN(svci)) ? (3*svcs + svci) / 4 : NaN;
+
+  // QP/QS = (SaO2_Ao - SvO2_mixta) / (SaO2_VP - SaO2_AP)
+  if (!isNaN(sao) && !isNaN(svm) && !isNaN(sai) && !isNaN(sap)) {
+    const num = sao - svm;
+    const den = sai - sap;
+    if (den > 0 && num > 0) {
+      const qpqs = num / den;
+      resDiv.style.display = 'block';
+      const el = document.getElementById('res-qpqs');
+      el.textContent = qpqs.toFixed(2);
+      el.style.color = qpqs > 1.5 ? 'var(--red)' : qpqs > 1.2 ? 'var(--amber)' : '#5B3FAA';
+
+      let interp = '';
+      if (qpqs < 0.9)       interp = 'Cortocircuito D→I (inverso)';
+      else if (qpqs <= 1.1) interp = 'Sin cortocircuito significativo';
+      else if (qpqs <= 1.5) interp = 'Cortocircuito I→D leve';
+      else if (qpqs <= 2.0) interp = 'Cortocircuito I→D moderado';
+      else                  interp = 'Cortocircuito I→D severo';
+
+      document.getElementById('res-qpqs-interp').textContent = interp;
+      document.getElementById('res-qpqs-interp').style.color = qpqs > 1.5 ? 'var(--red)' : 'var(--text-1)';
+    }
+  } else {
+    resDiv.style.display = 'none';
+  }
+}
+
+async function guardarCat() {
+  if (!pacienteActual) return mostrarMsg('msg-cat', 'Selecciona un paciente primero.', 'error');
+  const btn = document.getElementById('btn-cat');
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner"></div> Guardando...';
+
+  // Calcular RVP automática
+  const pmapV = num('cat-pmap'), pcapV = num('cat-pcap'), gcV = num('cat-gc');
+  const rvpCalcV = (pmapV && pcapV && gcV) ? parseFloat(((pmapV-pcapV)/gcV).toFixed(2)) : null;
+  const gtpV = (pmapV && pcapV) ? pmapV-pcapV : null;
+  const gdpV = (() => { const pd=num('cat-pdap'); return (pd && pcapV) ? pd-pcapV : null; })();
+  const diagHemo = document.getElementById('cat-diag-hemo-texto')?.value || null;
+
+  // QP/QS por Fick
+  const svcs=num('cat-sat-vcs'), svci=num('cat-sat-vci'), satAP=num('cat-sat-ap'), satAI=num('cat-sat-ai'), satAo=num('cat-sat-ao');
+  let qpqs = null;
+  if (svcs && svci && satAP && satAI && satAo) {
+    const svm = (3*svcs+svci)/4;
+    const den = satAI - satAP;
+    if (den > 0) qpqs = parseFloat(((satAo-svm)/den).toFixed(2));
+  }
+
+  const body = {
+    fecha_examen:           val('cat-fecha') || null,
+    presion_auricula_der:   num('cat-pad'),
+    psap_cateterismo:       num('cat-psap'),
+    pdap:                   num('cat-pdap'),
+    pmap:                   pmapV,
+    pcap:                   pcapV,
+    pfdvd:                  num('cat-pfdvd'),
+    sat_vena_cava_sup:      svcs,
+    sat_vena_cava_inf:      svci,
+    sat_arteria_pulmonar:   satAP,
+    sat_auricula_izq:       satAI,
+    sat_aorta:              satAo,
+    sat_venosa_mixta:       num('cat-sat-vm'),
+    gasto_cardiaco:         gcV,
+    indice_cardiaco:        num('cat-ic'),
+    rvp:                    num('cat-rvp') || rvpCalcV,
+    rvp_calculada:          rvpCalcV,
+    gtp:                    gtpV,
+    gdp:                    gdpV,
+    qp_qs:                  qpqs,
+    pa_sistolica_sist:      num('cat-pa-s'),
+    pa_diastolica_sist:     num('cat-pa-d'),
+    pa_media_sist:          num('cat-pa-m'),
+    grupo_hp:               val('cat-grupo') || null,
+    clasificacion_riesgo:   val('cat-riesgo') || null,
+    diagnostico_hemodinamico: diagHemo,
+    observaciones_cat:      val('cat-obs') || null,
+    // Vasoreactividad
+    vaso_realizado:         val('cat-vaso-realizado') || null,
+    vaso_agente:            val('cat-vaso-agente') || null,
+    vaso_resultado:         val('cat-vaso-resultado') || null,
+    vaso_pmap_pre:          num('cat-vaso-pmap-pre'),
+    vaso_pmap_post:         num('cat-vaso-pmap-post'),
+    vaso_gc_post:           num('cat-vaso-gc-post'),
+    vaso_observaciones:     val('cat-vaso-obs') || null,
+    // Carga de volumen
+    carga_vol_realizada:    val('cat-carga-realizada') || null,
+    carga_vol_volumen:      val('cat-carga-vol') || null,
+    carga_vol_pcap_pre:     num('cat-carga-pcap-pre'),
+    carga_vol_pcap_post:    num('cat-carga-pcap-post'),
+    carga_vol_pmap_post:    num('cat-carga-pmap-post'),
+    carga_vol_observaciones:val('cat-carga-obs') || null,
+  };
+
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/cateterismo/${pacienteActual.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (r.ok) {
+      mostrarMsg('msg-cat', '', '');
+      showToast('Cateterismo guardado correctamente', '✓');
+    } else {
+      mostrarMsg('msg-cat', d.error || 'Error al guardar.', 'error');
+    }
+  } catch(e) {
+    mostrarMsg('msg-cat', 'Error de conexión.', 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar cateterismo';
+}
+
+function val(id) { return document.getElementById(id)?.value?.trim() || null; }
+function num(id) { const v = document.getElementById(id)?.value; return v !== '' && v != null ? parseFloat(v) : null; }
+function mostrarMsg(id, txt, tipo) { const el=document.getElementById(id); if(!el) return; el.textContent=txt; el.className='msg-box'+(tipo?(' '+tipo):''); }
+function etarioLabel(g) { return {pediatrico:'Pediátrico',adolescente:'Adolescente',adulto:'Adulto',adulto_mayor:'Adulto mayor'}[g]||g||'--'; }
+// ═══ INTERPRETACIONES AUTOMÁTICAS ════════════════════════════
+
+function setInterp(id, txt, tipo) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const cols = { ok:['var(--green-lt)','var(--green)'], warn:['var(--amber-lt)','var(--amber)'],
+                 mal:['var(--red-lt)','var(--red)'], info:['var(--teal-pale)','var(--teal)'] };
+  const [bg, col] = cols[tipo] || cols.info;
+  el.style.display = txt ? 'block' : 'none';
+  el.style.background = bg; el.style.color = col; el.style.borderColor = col;
+  el.textContent = txt;
+}
+
+function setBadge(id, txt, tipo) {
+  const el = document.getElementById(id); if (!el) return;
+  const cls = { ok:'gb-normal', warn:'gb-moderado', mal:'gb-severo', info:'gb-leve' };
+  el.textContent = txt; el.className = 'grad-badge ' + (cls[tipo]||'');
+}
+
+// Gammagrafía V/Q
+function interpretarGam() {
+  const res = document.getElementById('gam-resultado')?.value;
+  const hptec = document.getElementById('gam-hptec')?.value;
+  let txt = '', tipo = 'info';
+  if (hptec === 'no' || res === 'normal') {
+    txt = '✅ Gammagrafía V/Q normal o sin patrón sugestivo de HPTEC. Prácticamente descarta HP Grupo 4 (HPTEC). Continuar estudio diagnóstico de otras causas.';
+    tipo = 'ok';
+  } else if (hptec === 'si' || res === 'probabilidad_alta' || res === 'defectos_no_concordantes') {
+    txt = '⚠️ Patrón sugestivo de HPTEC (Grupo 4). Defectos de perfusión no concordantes con ventilación. Indicada angioTAC pulmonar y/o arteriografía pulmonar para confirmación y evaluación de endarterectomía o angioplastia.';
+    tipo = 'mal';
+  } else if (res === 'probabilidad_intermedia') {
+    txt = '⚠️ Probabilidad intermedia. Complementar con angioTAC pulmonar para descartar HPTEC.';
+    tipo = 'warn';
+  }
+  setInterp('gam-interpretacion', txt, tipo);
+}
+
+// Función pulmonar
+function interpretarPFP() {
+  const tiff = parseFloat(document.getElementById('pfp-tiffeneau')?.value);
+  const fvcP = parseFloat(document.getElementById('pfp-fvc-pct')?.value);
+  const vef1P = parseFloat(document.getElementById('pfp-vef1-pct')?.value);
+
+  // Tiffeneau
+  if (!isNaN(tiff)) {
+    if (tiff < 0.7) setBadge('grad-tiff', 'Obstructivo', 'mal');
+    else setBadge('grad-tiff', 'Normal', 'ok');
+  }
+  // FVC
+  if (!isNaN(fvcP)) {
+    if (fvcP >= 80) setBadge('grad-fvc', 'Normal', 'ok');
+    else if (fvcP >= 60) setBadge('grad-fvc', 'Leve', 'warn');
+    else if (fvcP >= 40) setBadge('grad-fvc', 'Moderado', 'mal');
+    else setBadge('grad-fvc', 'Severo', 'mal');
+  }
+  // VEF1
+  if (!isNaN(vef1P)) {
+    if (vef1P >= 80) setBadge('grad-vef1', 'Normal', 'ok');
+    else if (vef1P >= 60) setBadge('grad-vef1', 'Leve', 'warn');
+    else if (vef1P >= 40) setBadge('grad-vef1', 'Moderado', 'mal');
+    else setBadge('grad-vef1', 'Severo', 'mal');
+  }
+
+  // Patrón
+  let txt = '', tipo = 'info';
+  if (!isNaN(tiff) && !isNaN(fvcP)) {
+    if (tiff < 0.7 && fvcP >= 70) { txt = '⚠️ Patrón obstructivo. Compatible con HP Grupo 3 (EPOC/Enfisema). Correlacionar con TAC de tórax.'; tipo = 'warn'; }
+    else if (tiff >= 0.7 && fvcP < 80) { txt = '⚠️ Patrón restrictivo. Compatible con EPID o HP Grupo 3. Correlacionar con DLCO y TAC de alta resolución.'; tipo = 'warn'; }
+    else if (tiff < 0.7 && fvcP < 70) { txt = '⚠️ Patrón mixto (obstructivo + restrictivo). Evaluar HP Grupo 3 por compromiso parenquimatoso combinado.'; tipo = 'warn'; }
+    else if (tiff >= 0.7 && fvcP >= 80) { txt = '✅ Función pulmonar dentro de límites normales. No sugiere compromiso parenquimatoso significativo como causa de HP.'; tipo = 'ok'; }
+  }
+  setInterp('pfp-interpretacion', txt, tipo);
+}
+
+// DLCO
+function interpretarDLCO() {
+  const pct = parseFloat(document.getElementById('dlco-pct')?.value);
+  if (isNaN(pct)) { setInterp('dlco-interpretacion','',null); return; }
+  let txt = '', tipo = 'info';
+  if (pct >= 80) { setBadge('grad-dlco','Normal','ok'); txt = '✅ DLCO normal. No sugiere compromiso vascular o parenquimatoso severo.'; tipo = 'ok'; }
+  else if (pct >= 60) { setBadge('grad-dlco','Leve','warn'); txt = '⚠️ DLCO levemente reducida. Posible compromiso vascular incipiente o parenquimatoso leve.'; tipo = 'warn'; }
+  else if (pct >= 45) { setBadge('grad-dlco','Moderada','mal'); txt = '⚠️ DLCO moderadamente reducida. Sugiere compromiso vascular (HAP) o parenquimatoso (EPID). Correlacionar con clínica.'; tipo = 'warn'; }
+  else { setBadge('grad-dlco','Severa','mal'); txt = '🔴 DLCO < 45% predicho — Marcador de MAL PRONÓSTICO en HAP (ESC/ERS 2022). Sugiere compromiso vascular o parenquimatoso severo. Considerar escalar tratamiento.'; tipo = 'mal'; }
+  setInterp('dlco-interpretacion', txt, tipo);
+}
+
+// CPET
+function interpretarCPET() {
+  const vo2 = parseFloat(document.getElementById('cpet-vo2max')?.value);
+  const vo2p = parseFloat(document.getElementById('cpet-vo2-pct')?.value);
+  const vevco2 = parseFloat(document.getElementById('cpet-vevco2')?.value);
+  const spo2 = parseFloat(document.getElementById('cpet-spo2-max')?.value);
+
+  if (!isNaN(vo2)) {
+    setBadge('grad-vo2', vo2 < 12 ? 'Mal pronóstico' : vo2 < 16 ? 'Reducido' : 'Normal', vo2 < 12 ? 'mal' : vo2 < 16 ? 'warn' : 'ok');
+  }
+  if (!isNaN(vo2p)) {
+    setBadge('grad-vo2pct', vo2p < 50 ? 'Severo' : vo2p < 65 ? 'Moderado' : vo2p < 80 ? 'Leve' : 'Normal', vo2p < 50 ? 'mal' : vo2p < 65 ? 'mal' : vo2p < 80 ? 'warn' : 'ok');
+  }
+  if (!isNaN(vevco2)) {
+    setBadge('grad-vevco2', vevco2 > 45 ? 'Mal pronóstico' : vevco2 > 36 ? 'Elevado' : 'Normal', vevco2 > 45 ? 'mal' : vevco2 > 36 ? 'warn' : 'ok');
+  }
+  if (!isNaN(spo2)) {
+    setBadge('grad-spo2', spo2 < 88 ? 'Desaturación severa' : spo2 < 92 ? 'Desaturación' : 'Normal', spo2 < 88 ? 'mal' : spo2 < 92 ? 'warn' : 'ok');
+  }
+
+  const malPron = (!isNaN(vo2) && vo2 < 12) || (!isNaN(vevco2) && vevco2 > 45);
+  const reducido = (!isNaN(vo2) && vo2 >= 12 && vo2 < 16) || (!isNaN(vevco2) && vevco2 > 36 && vevco2 <= 45);
+  let txt = '', tipo = 'info';
+  if (malPron) {
+    txt = '🔴 CPET con criterios de MAL PRONÓSTICO en HP (ESC/ERS 2022): VO₂ máx < 12 mL/kg/min y/o VE/VCO₂ > 45. Considerar escalada terapéutica o evaluación para trasplante pulmonar.';
+    tipo = 'mal';
+  } else if (reducido) {
+    txt = '⚠️ Capacidad funcional reducida. Patrón cardiovascular con respuesta ventilatoria ineficiente. Monitorizar evolución con tratamiento.';
+    tipo = 'warn';
+  } else if (!isNaN(vo2) && vo2 >= 16) {
+    txt = '✅ Capacidad aeróbica preservada. Buena respuesta funcional.';
+    tipo = 'ok';
+  }
+  setInterp('cpet-interpretacion', txt, tipo);
+}
+
+// TAC
+function interpretarTAC() {
+  const ap = parseFloat(document.getElementById('tac-ap-diam')?.value);
+  const ao = parseFloat(document.getElementById('tac-ap-ao')?.value);
+  const def = document.getElementById('tac-defectos')?.value;
+
+  if (!isNaN(ap)) setBadge('grad-tac-ap', ap > 3.2 ? 'Dilatada severa' : ap > 2.9 ? 'Dilatada' : 'Normal', ap > 2.9 ? 'mal' : 'ok');
+  if (!isNaN(ao)) setBadge('grad-tac-ao', ao >= 1.0 ? 'Anormal ≥1.0' : 'Normal', ao >= 1.0 ? 'warn' : 'ok');
+
+  let txt = '', tipo = 'info';
+  if (def === 'cronicos' || def === 'mixtos') {
+    txt = '⚠️ Defectos de llenado crónicos — patrón compatible con HPTEC (Grupo 4). Correlacionar con gammagrafía V/Q y considerar arteriografía pulmonar para evaluación de endarterectomía.';
+    tipo = 'mal';
+  } else if (def === 'agudos') {
+    txt = '🔴 Defectos de llenado agudos — TEP agudo. Manejo urgente con anticoagulación. Evaluar trombólisis según escala PESI.';
+    tipo = 'mal';
+  } else if (!isNaN(ap) && ap > 2.9) {
+    txt = '⚠️ Arteria pulmonar dilatada (>2.9 cm) — signo indirecto de HP. Correlacionar con ecocardiograma y cateterismo.';
+    tipo = 'warn';
+  }
+  setInterp('tac-interpretacion', txt, tipo);
+}
+
+// RMC
+function interpretarRMC() {
+  const fevd = parseFloat(document.getElementById('rmc-fevd')?.value);
+  const vsivd = parseFloat(document.getElementById('rmc-vsivd')?.value);
+  const ratio = parseFloat(document.getElementById('rmc-vd-vi')?.value);
+  const rtg = document.getElementById('rmc-rtg')?.value;
+
+  if (!isNaN(fevd)) setBadge('grad-fevd', fevd < 35 ? 'Mal pronóstico' : fevd < 45 ? 'Reducida' : 'Normal', fevd < 35 ? 'mal' : fevd < 45 ? 'warn' : 'ok');
+  if (!isNaN(vsivd)) setBadge('grad-vsivd', vsivd < 25 ? 'Mal pronóstico' : vsivd < 35 ? 'Reducido' : 'Normal', vsivd < 25 ? 'mal' : vsivd < 35 ? 'warn' : 'ok');
+  if (!isNaN(ratio)) setBadge('grad-vdvi', ratio > 0.4 ? 'Anormal >0.4' : 'Normal', ratio > 0.4 ? 'warn' : 'ok');
+
+  const malPron = (!isNaN(fevd) && fevd < 35) || (!isNaN(vsivd) && vsivd < 25) || (!isNaN(ratio) && ratio > 0.4);
+  let txt = '', tipo = 'info';
+  if (malPron) {
+    const crit = [
+      (!isNaN(fevd) && fevd < 35) ? 'FEVD < 35%' : null,
+      (!isNaN(vsivd) && vsivd < 25) ? 'VSIVD < 25 mL/m²' : null,
+      (!isNaN(ratio) && ratio > 0.4) ? 'Masa VD/VI > 0.4' : null,
+    ].filter(Boolean).join(' · ');
+    txt = '🔴 RMC con criterios de MAL PRONÓSTICO en HP (ESC/ERS 2022): ' + crit + '. Asociado a mayor mortalidad. Evaluar escalada terapéutica.';
+    tipo = 'mal';
+  } else if (rtg && rtg !== 'no') {
+    txt = '⚠️ Realce tardío presente — indica fibrosis miocárdica en puntos de inserción VD. Factor de peor pronóstico independiente.';
+    tipo = 'warn';
+  } else if (!isNaN(fevd) && fevd >= 45) {
+    txt = '✅ Función VD preservada. Sin criterios de mal pronóstico por RMC.';
+    tipo = 'ok';
+  }
+  setInterp('rmc-interpretacion', txt, tipo);
+}
+
+// Guardar exámenes adicionales
+async function guardarExamenAdicional(prefix, tipo) {
+  if (!pacienteActual) return mostrarMsg('msg-'+prefix, 'Selecciona un paciente primero.', 'error');
+  const btn = event.target.closest('button');
+  const origText = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Guardando...';
+
+  const get = id => document.getElementById(prefix+'-'+id)?.value?.trim() || null;
+  const getNum = id => { const v = parseFloat(document.getElementById(prefix+'-'+id)?.value); return isNaN(v) ? null : v; };
+
+  const campos = {
+    gam: { fecha_examen:get('fecha'), resultado:get('resultado'), segmentos_afectados:getNum('segmentos'), distribucion:get('distribucion'), compatible_hptec:get('hptec'), observaciones:get('obs') },
+    pfp: { fecha_examen:get('fecha'), fvc:getNum('fvc'), fvc_pct:getNum('fvc-pct'), vef1:getNum('vef1'), vef1_pct:getNum('vef1-pct'), tiffeneau:getNum('tiffeneau'), cpt:getNum('cpt'), cpt_pct:getNum('cpt-pct'), vr:getNum('vr'), vr_pct:getNum('vr-pct'), dlco_abs:parseFloat(document.getElementById('dlco-abs')?.value)||null, dlco_pct:parseFloat(document.getElementById('dlco-pct')?.value)||null, kco:parseFloat(document.getElementById('dlco-kco')?.value)||null, kco_pct:parseFloat(document.getElementById('dlco-kco-pct')?.value)||null, observaciones:get('obs') },
+    cpet: { fecha_examen:get('fecha'), vo2_max:getNum('vo2max'), vo2_pct:getNum('vo2-pct'), vevco2_slope:getNum('vevco2'), umbral_anaerobico:getNum('at'), pulso_o2:getNum('pulso-o2'), fc_max:getNum('fc-max'), fc_max_pct:getNum('fc-pct'), spo2_reposo:getNum('spo2-rep'), spo2_esfuerzo:getNum('spo2-max'), patron_limitacion:get('patron'), observaciones:get('obs') },
+    tac: { fecha_examen:get('fecha'), tipo_estudio:get('tipo'), ap_diam_tac:getNum('ap-diam'), ap_ao_tac:getNum('ap-ao'), defectos_llenado:get('defectos'), patron_parenc:get('parenc'), cavidades_derechas:get('cavidades'), derrame_pericardico_tac:get('derrame'), observaciones:get('obs') },
+    rmc: { fecha_examen:get('fecha'), fevd:getNum('fevd'), vsivd:getNum('vsivd'), vtd_vd:getNum('vtdvd'), vts_vd:getNum('vtsvd'), fevi_rmc:getNum('fevi'), masa_vd:getNum('masa-vd'), ratio_vd_vi:getNum('vd-vi'), rtg:get('rtg'), septo_paradojico:get('septo'), observaciones:get('obs') },
+  };
+
+  const body = campos[prefix] || {};
+
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/adicional/${pacienteActual.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify({ tipo_examen: tipo, datos: body })
+    });
+    const d = await r.json();
+    if (r.ok) {
+      mostrarMsg('msg-'+prefix, '', '');
+      showToast('Examen guardado correctamente', '✓');
+    } else {
+      mostrarMsg('msg-'+prefix, d.error || 'Error al guardar.', 'error');
+    }
+  } catch(e) { mostrarMsg('msg-'+prefix, 'Error de conexión.', 'error'); }
+  btn.disabled = false; btn.innerHTML = origText;
+}
+
+function fechaCorta(iso) { if(!iso) return '--'; return new Date(iso).toLocaleDateString('es-CO',{day:'numeric',month:'short',year:'numeric'}); }
+function actualizarCheck(el) {}
+
+let toastTimer;
+function showToast(msg, icon='✓') {
+  clearTimeout(toastTimer);
+  document.getElementById('toast-msg').textContent = msg;
+  document.getElementById('toast-icon').textContent = icon;
+  document.getElementById('toast').classList.add('show');
+  toastTimer = setTimeout(() => document.getElementById('toast').classList.remove('show'), 3500);
+}
+</script>
+<script src="/paciente-search.js"></script>
+</body>
+</html>
