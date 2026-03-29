@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Gestión de Pacientes</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--purple:#5B3FAA;--purple-lt:#EDE8FE;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white;flex:1}
+.container{max-width:1000px;margin:0 auto;padding:24px 20px 60px}
+.tabs{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap}
+.tab{padding:10px 16px;border:1.5px solid var(--border);border-radius:12px;background:var(--white);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer;transition:all 0.15s}
+.tab.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.panel{display:none}.panel.active{display:block}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px 16px;text-align:center}
+.stat-num{font-size:28px;font-weight:800;color:var(--teal-dk)}
+.stat-label{font-size:11px;color:var(--text-3);margin-top:2px}
+
+/* TABLA */
+.pac-table{width:100%;border-collapse:collapse;font-size:13px}
+.pac-table th{font-size:10px;font-weight:700;color:var(--text-3);padding:8px 12px;text-align:left;border-bottom:2px solid var(--border);text-transform:uppercase;letter-spacing:0.5px}
+.pac-table td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:middle}
+.pac-table tr:last-child td{border-bottom:none}
+.pac-table tr:hover td{background:var(--teal-pale)}
+.estado-badge{display:inline-block;padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700}
+.eb-activo{background:var(--green-lt);color:var(--green)}
+.eb-inactivo{background:var(--red-lt);color:var(--red)}
+.riesgo-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:4px}
+.rd-bajo{background:var(--green)}
+.rd-intermedio{background:var(--amber)}
+.rd-alto{background:var(--red)}
+.btn-accion{padding:5px 10px;border-radius:7px;font-family:"Nunito",sans-serif;font-size:11px;font-weight:600;cursor:pointer;border:none;margin:2px}
+.ba-ver{background:var(--teal-pale);color:var(--teal-dk)}
+.ba-egreso{background:var(--red-lt);color:var(--red)}
+.ba-reactivar{background:var(--green-lt);color:var(--green)}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.45);z-index:200;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.visible{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:24px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(0,0,0,0.2)}
+.modal-title{font-size:16px;font-weight:700;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-size:11px;font-weight:600;color:var(--text-2)}
+.field input,.field select,.field textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}
+.field-full{grid-column:1/-1}
+.modal-actions{display:flex;gap:10px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)}
+.btn-primary{padding:10px 22px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.btn-danger{padding:10px 22px;background:var(--red);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+.btn-secondary{padding:10px 18px;background:var(--warm);color:var(--text-2);border:1px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.spinner{width:14px;height:14px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--teal-dk);color:white;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;display:none;align-items:center;gap:8px;z-index:1000}
+.toast.show{display:flex}
+.info-egreso{background:var(--red-lt);border:1px solid rgba(214,62,62,0.2);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--red);margin-bottom:14px;line-height:1.6}
+.msg{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}.msg.error{background:var(--red-lt);color:var(--red);display:block}.msg.ok{background:var(--green-lt);color:var(--green);display:block}.field{display:flex;flex-direction:column;gap:4px}.field label{font-size:11px;font-weight:600;color:var(--text-2)}.field input,.field select,.field textarea{padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none;width:100%}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}.field-full{grid-column:1/-1}.btn-primary{padding:10px 22px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:13px;font-weight:700;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/dashboard'">← Dashboard</button>
+  <div class="topbar-title">Gestión de Pacientes — Programa HP INO</div>
+</div>
+
+<div class="container">
+
+  <div class="stats-grid">
+    <div class="stat-card"><div class="stat-num" id="st-activos">--</div><div class="stat-label">Pacientes activos</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--red)" id="st-inactivos">--</div><div class="stat-label">Egresados</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--amber)" id="st-riesgo-alto">--</div><div class="stat-label">Riesgo alto</div></div>
+    <div class="stat-card"><div class="stat-num" id="st-total">--</div><div class="stat-label">Total histórico</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-activos" onclick="cambiarTab('activos')">✅ Pacientes activos</button>
+    <button class="tab" id="tab-egresados" onclick="cambiarTab('egresados')">📁 Egresados / Inactivos</button>
+    <button class="tab" id="tab-nuevo" onclick="cambiarTab('nuevo')" style="margin-left:auto;background:var(--teal);color:white;border-color:var(--teal)">＋ Nuevo paciente</button>
+  </div>
+
+  <!-- ACTIVOS -->
+  <div class="panel active" id="panel-activos">
+    <div class="card">
+      <div class="card-title">Pacientes activos en el programa</div>
+      <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <input type="text" id="buscar-pac" placeholder="Buscar por nombre o documento..." style="flex:1;min-width:200px;padding:9px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:Nunito,sans-serif;font-size:13px;outline:none" oninput="filtrarPacientes()">
+        <select id="filtro-riesgo" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:Nunito,sans-serif;font-size:13px;outline:none" onchange="filtrarPacientes()">
+          <option value="">Todos los riesgos</option>
+          <option value="bajo">Riesgo Bajo</option>
+          <option value="intermedio">Riesgo Intermedio</option>
+          <option value="alto">Riesgo Alto</option>
+        </select>
+        <select id="filtro-grupo" style="padding:9px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:Nunito,sans-serif;font-size:13px;outline:none" onchange="filtrarPacientes()">
+          <option value="">Todos los grupos HP</option>
+          <option value="1">Grupo 1 (HAP)</option>
+          <option value="2">Grupo 2</option>
+          <option value="3">Grupo 3</option>
+          <option value="4">Grupo 4</option>
+          <option value="5">Grupo 5</option>
+        </select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="pac-table">
+          <thead><tr>
+            <th>Paciente</th><th>Documento</th><th>EPS</th>
+            <th>Grupo HP</th><th>Riesgo</th><th>CF</th><th>Estado</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="tbody-activos">
+            <tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- EGRESADOS -->
+  <div class="panel" id="panel-egresados">
+    <div class="card">
+      <div class="card-title">Pacientes egresados — datos conservados para análisis</div>
+      <div style="overflow-x:auto">
+        <table class="pac-table">
+          <thead><tr>
+            <th>Paciente</th><th>Documento</th><th>Grupo HP</th>
+            <th>Motivo de egreso</th><th>Fecha egreso</th><th>Acciones</th>
+          </tr></thead>
+          <tbody id="tbody-egresados">
+            <tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- MODAL EGRESO -->
+
+  <!-- NUEVO PACIENTE -->
+  <div class="panel" id="panel-nuevo">
+    <div class="card">
+      <div class="card-title">Datos demográficos</div>
+      <div class="form-grid">
+        <div class="field"><label>Primer nombre *</label><input type="text" id="np-nombre" placeholder="ej. María"></div>
+        <div class="field"><label>Segundo nombre</label><input type="text" id="np-nombre2" placeholder="ej. Fernanda"></div>
+        <div class="field"><label>Primer apellido *</label><input type="text" id="np-apellido" placeholder="ej. López"></div>
+        <div class="field"><label>Segundo apellido</label><input type="text" id="np-apellido2" placeholder="ej. Velasco"></div>
+        <div class="field"><label>Tipo de documento</label>
+          <select id="np-tipo-doc">
+            <option value="CC">Cédula de ciudadanía</option>
+            <option value="CE">Cédula de extranjería</option>
+            <option value="PA">Pasaporte</option>
+            <option value="TI">Tarjeta de identidad</option>
+            <option value="RC">Registro civil</option>
+          </select>
+        </div>
+        <div class="field"><label>Número de documento *</label><input type="text" id="np-doc" placeholder="ej. 1098678933"></div>
+        <div class="field"><label>Fecha de nacimiento *</label><input type="date" id="np-fnac"></div>
+        <div class="field"><label>Sexo</label>
+          <select id="np-sexo">
+            <option value="femenino">Femenino</option>
+            <option value="masculino">Masculino</option>
+            <option value="otro">Otro</option>
+          </select>
+        </div>
+        <div class="field"><label>Teléfono / Celular</label><input type="tel" id="np-tel" placeholder="ej. 3001234567"></div>
+        <div class="field"><label>Email</label><input type="email" id="np-email" placeholder="ej. paciente@correo.com"></div>
+        <div class="field field-full"><label>Dirección de residencia</label><input type="text" id="np-direccion" placeholder="ej. Calle 45 # 12-34, Bucaramanga"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Datos del asegurador</div>
+      <div class="form-grid">
+        <div class="field"><label>EPS / Asegurador *</label>
+          <input type="text" id="np-eps" placeholder="ej. Sanitas EPS, Nueva EPS..." list="eps-list">
+          <datalist id="eps-list">
+            <option>Sanitas EPS</option><option>Nueva EPS</option><option>Sura EPS</option>
+            <option>Compensar EPS</option><option>Famisanar EPS</option><option>Coosalud EPS</option>
+            <option>Medimás EPS</option><option>Coomeva EPS</option><option>Salud Total EPS</option>
+            <option>Aliansalud EPS</option><option>Particular</option>
+          </datalist>
+        </div>
+        <div class="field"><label>Régimen</label>
+          <select id="np-regimen">
+            <option value="contributivo">Contributivo</option>
+            <option value="subsidiado">Subsidiado</option>
+            <option value="particular">Particular</option>
+            <option value="especial">Especial (FFMM/Policía)</option>
+          </select>
+        </div>
+        <div class="field"><label>Número de afiliación</label><input type="text" id="np-afiliacion" placeholder="Número de póliza o afiliación"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Datos clínicos iniciales</div>
+      <div class="form-grid">
+        <div class="field"><label>Diagnóstico principal (CIE-10)</label>
+          <input type="text" id="np-diag" placeholder="ej. I27.0 — Hipertensión pulmonar primaria" list="diag-list">
+          <datalist id="diag-list">
+            <option>I27.0 — Hipertensión pulmonar primaria</option>
+            <option>I27.2 — Hipertensión pulmonar secundaria</option>
+            <option>I27.8 — Otras enfermedades pulmonares del corazón</option>
+            <option>I27.9 — Enfermedad pulmonar del corazón no especificada</option>
+          </datalist>
+        </div>
+        <div class="field"><label>Grupo HP (OMS)</label>
+          <select id="np-grupo">
+            <option value="">Sin clasificar</option>
+            <option value="1">Grupo 1 — HAP</option>
+            <option value="2">Grupo 2 — HP por cardiopatía izquierda</option>
+            <option value="3">Grupo 3 — HP por enfermedad pulmonar</option>
+            <option value="4">Grupo 4 — HP tromboembólica crónica</option>
+            <option value="5">Grupo 5 — HP de mecanismo incierto</option>
+          </select>
+        </div>
+        <div class="field"><label>Clase funcional OMS</label>
+          <select id="np-cf">
+            <option value="">Sin clasificar</option>
+            <option value="1">Clase I</option>
+            <option value="2">Clase II</option>
+            <option value="3">Clase III</option>
+            <option value="4">Clase IV</option>
+          </select>
+        </div>
+        <div class="field"><label>Fecha primera consulta en el programa</label><input type="date" id="np-f-ingreso"></div>
+        <div class="field"><label>Médico tratante</label><input type="text" id="np-medico" placeholder="ej. Dr. Juan Fernando Carvajal"></div>
+        <div class="field"><label>Sede de atención</label>
+          <select id="np-sede">
+            <option value="principal">Principal (sede central)</option>
+            <option value="prado">Prado</option>
+            <option value="cabecera">Cabecera</option>
+            <option value="machado">Machado</option>
+            <option value="otra">Otra sede</option>
+          </select>
+        </div>
+        <div class="field field-full"><label>Antecedentes relevantes</label>
+          <textarea id="np-antecedentes" rows="2" placeholder="Comorbilidades, cirugías previas, antecedentes familiares relevantes..."></textarea>
+        </div>
+        <div class="field field-full"><label>Observaciones iniciales</label>
+          <textarea id="np-obs" rows="2" placeholder="Motivo de consulta, condición al ingreso, notas relevantes..."></textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="msg" id="msg-nuevo-pac"></div>
+    <div style="display:flex;gap:10px;padding-top:8px;flex-wrap:wrap">
+      <button class="btn-primary" id="btn-crear-pac" onclick="crearPaciente()">Crear paciente</button>
+      <button style="padding:10px 20px;background:var(--warm);color:var(--text-2);border:1px solid var(--border);border-radius:10px;font-family:Nunito,sans-serif;font-size:13px;font-weight:600;cursor:pointer" onclick="cambiarTab('activos')">Cancelar</button>
+    </div>
+  </div>
+
+<div class="modal-overlay" id="modal-egreso">
+  <div class="modal">
+    <div class="modal-title">Registrar egreso del programa</div>
+    <input type="hidden" id="egreso-id">
+    <div class="info-egreso">Los datos del paciente <strong>no se eliminarán</strong>. Quedan disponibles para análisis e investigación. Solo cambia su estado a inactivo.</div>
+    <div class="form-grid">
+      <div class="field field-full">
+        <label>Motivo de egreso</label>
+        <select id="egreso-motivo">
+          <option value="alta_medica">Alta médica — mejoría clínica</option>
+          <option value="fallecimiento">Fallecimiento</option>
+          <option value="traslado">Traslado a otra institución</option>
+          <option value="cambio_eps">Cambio de EPS / aseguradora</option>
+          <option value="voluntario">Retiro voluntario del programa</option>
+          <option value="perdida_seguimiento">Pérdida de seguimiento</option>
+          <option value="trasplante">Trasplante pulmonar realizado</option>
+          <option value="otro">Otro motivo</option>
+        </select>
+      </div>
+      <div class="field"><label>Fecha de egreso</label><input type="date" id="egreso-fecha"></div>
+      <div class="field field-full"><label>Observaciones</label>
+        <textarea id="egreso-obs" rows="3" placeholder="Información adicional relevante para el registro histórico..."></textarea>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-danger" onclick="confirmarEgreso()">Confirmar egreso</button>
+      <button class="btn-secondary" onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><span id="toast-icon">✓</span> <span id="toast-msg">Listo</span></div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+let pacientesActivos = [];
+let pacientesEgresados = [];
+
+if (!token) window.location.href = '/login';
+
+window.addEventListener('DOMContentLoaded', () => {
+  // Si viene con ?nuevo=1 abrir directamente el panel de nuevo paciente
+  if (new URLSearchParams(window.location.search).get('nuevo') === '1') {
+    cambiarTab('nuevo');
+  }
+  document.getElementById('egreso-fecha').value = new Date().toISOString().split('T')[0];
+  cargarPacientes();
+});
+
+async function cargarPacientes() {
+  try {
+    // Activos
+    const r1 = await fetch(`${API}/api/v1/examenes/pacientes-lista`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (r1.status === 401) { window.location.href = '/login'; return; }
+    const d1 = await r1.json();
+    pacientesActivos = d1.pacientes || [];
+
+    // Egresados
+    const r2 = await fetch(`${API}/api/v1/pacientes/egresados`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    const d2 = await r2.json();
+    pacientesEgresados = d2.pacientes || [];
+
+    actualizarStats();
+    renderActivos(pacientesActivos);
+    renderEgresados(pacientesEgresados);
+  } catch(e) { console.error(e); }
+}
+
+function actualizarStats() {
+  const riesgoAlto = pacientesActivos.filter(p => p.clasificacion_riesgo === 'alto').length;
+  document.getElementById('st-activos').textContent = pacientesActivos.length;
+  document.getElementById('st-inactivos').textContent = pacientesEgresados.length;
+  document.getElementById('st-riesgo-alto').textContent = riesgoAlto;
+  document.getElementById('st-total').textContent = pacientesActivos.length + pacientesEgresados.length;
+}
+
+function filtrarPacientes() {
+  const buscar = document.getElementById('buscar-pac').value.toLowerCase();
+  const riesgo = document.getElementById('filtro-riesgo').value;
+  const grupo = document.getElementById('filtro-grupo').value;
+  let lista = pacientesActivos;
+  if (buscar) lista = lista.filter(p => (p.nombre+' '+p.apellido+' '+p.numero_documento).toLowerCase().includes(buscar));
+  if (riesgo) lista = lista.filter(p => p.clasificacion_riesgo === riesgo);
+  if (grupo) lista = lista.filter(p => String(p.grupo_hp_oms) === grupo);
+  renderActivos(lista);
+}
+
+const RIESGO_LABELS = { bajo:'Bajo', intermedio:'Intermedio', alto:'Alto' };
+const MOTIVO_LABELS = {
+  alta_medica:'Alta médica', fallecimiento:'Fallecimiento', traslado:'Traslado',
+  cambio_eps:'Cambio EPS', voluntario:'Retiro voluntario',
+  perdida_seguimiento:'Pérdida de seguimiento', trasplante:'Trasplante', otro:'Otro'
+};
+
+function renderActivos(lista) {
+  const tbody = document.getElementById('tbody-activos');
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-3)">No se encontraron pacientes.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(p => {
+    const riesgo = p.clasificacion_riesgo;
+    const dotClass = riesgo === 'bajo' ? 'rd-bajo' : riesgo === 'intermedio' ? 'rd-intermedio' : riesgo === 'alto' ? 'rd-alto' : '';
+    return `<tr>
+      <td><strong>${p.nombre} ${p.apellido}</strong></td>
+      <td style="font-size:12px;color:var(--text-3)">${p.numero_documento||'--'}</td>
+      <td style="font-size:12px">${p.eps||'--'}</td>
+      <td style="font-size:12px">${p.grupo_hp_oms?'Grupo '+p.grupo_hp_oms:'--'}</td>
+      <td>${riesgo ? `<span class="riesgo-dot ${dotClass}"></span>${RIESGO_LABELS[riesgo]}` : '--'}</td>
+      <td style="font-size:12px">${p.clase_funcional_oms?'CF '+['I','II','III','IV'][p.clase_funcional_oms-1]:'--'}</td>
+      <td><span class="estado-badge eb-activo">Activo</span></td>
+      <td>
+        <button class="btn-accion ba-ver" onclick="verPaciente('${p.id}')">Ver ruta</button>
+        <button class="btn-accion ba-egreso" onclick="abrirEgreso('${p.id}')">Egresar</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderEgresados(lista) {
+  const tbody = document.getElementById('tbody-egresados');
+  if (!lista.length) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:var(--text-3)">Sin pacientes egresados.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = lista.map(p => `<tr>
+    <td><strong>${p.nombre} ${p.apellido}</strong></td>
+    <td style="font-size:12px;color:var(--text-3)">${p.numero_documento||'--'}</td>
+    <td style="font-size:12px">${p.grupo_hp_oms?'Grupo '+p.grupo_hp_oms:'--'}</td>
+    <td><span class="estado-badge eb-inactivo">${MOTIVO_LABELS[p.motivo_egreso]||p.motivo_egreso||'--'}</span></td>
+    <td style="font-size:12px">${fechaCorta(p.fecha_egreso)}</td>
+    <td>
+      <button class="btn-accion ba-reactivar" onclick="reactivar('${p.id}')">Reactivar</button>
+    </td>
+  </tr>`).join('');
+}
+
+function cambiarTab(tab) {
+  ['activos','egresados','nuevo'].forEach(t => {
+    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
+    document.getElementById(`panel-${t}`).classList.toggle('active', t === tab);
+  });
+}
+
+function verPaciente(id) { window.location.href = `/ruta?pac=${id}`; }
+
+function abrirEgreso(id) {
+  document.getElementById('egreso-id').value = id;
+  document.getElementById('egreso-obs').value = '';
+  document.getElementById('modal-egreso').classList.add('visible');
+}
+
+async function confirmarEgreso() {
+  const id = document.getElementById('egreso-id').value;
+  const body = {
+    motivo_egreso: document.getElementById('egreso-motivo').value,
+    fecha_egreso: document.getElementById('egreso-fecha').value,
+    observaciones_egreso: document.getElementById('egreso-obs').value,
+  };
+  try {
+    const r = await fetch(`${API}/api/v1/pacientes/${id}/egreso`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (r.ok) {
+      showToast('Paciente egresado correctamente', '✓');
+      cerrarModal();
+      cargarPacientes();
+    } else { alert(d.error || 'Error al procesar el egreso.'); }
+  } catch(e) { alert('Error de conexión.'); }
+}
+
+async function reactivar(id) {
+  if (!confirm('¿Reactivar este paciente en el programa?')) return;
+  try {
+    const r = await fetch(`${API}/api/v1/pacientes/${id}/reactivar`, {
+      method: 'PUT',
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (r.ok) { showToast('Paciente reactivado', '✓'); cargarPacientes(); }
+  } catch(e) { alert('Error de conexión.'); }
+}
+
+function val(id){return document.getElementById(id)?.value?.trim()||null;}
+
+async function crearPaciente() {
+  const nombre = val('np-nombre'), apellido = val('np-apellido'), doc = val('np-doc');
+  if (!nombre || !apellido || !doc) return mostrarMsgPac('Nombre, apellido y documento son obligatorios.', 'error');
+  const btn = document.getElementById('btn-crear-pac');
+  btn.disabled = true; btn.textContent = 'Creando...';
+  const body = {
+    nombre: nombre + (val('np-nombre2') ? ' '+val('np-nombre2') : ''),
+    apellido: apellido + (val('np-apellido2') ? ' '+val('np-apellido2') : ''),
+    tipo_documento: val('np-tipo-doc') || 'CC',
+    numero_documento: doc,
+    fecha_nacimiento: val('np-fnac'),
+    sexo: val('np-sexo'),
+    telefono: val('np-tel'),
+    email: val('np-email') || doc+'@pulmolink.ino',
+    direccion: val('np-direccion'),
+    eps: val('np-eps'),
+    regimen: val('np-regimen'),
+    numero_afiliacion: val('np-afiliacion'),
+    diagnostico_hp: val('np-diag'),
+    grupo_hp_oms: val('np-grupo') ? parseInt(val('np-grupo')) : null,
+    clase_funcional_oms: val('np-cf') ? parseInt(val('np-cf')) : null,
+    fecha_ingreso_programa: val('np-f-ingreso'),
+    medico_tratante: val('np-medico'),
+    sede: val('np-sede'),
+    antecedentes: val('np-antecedentes'),
+    observaciones_iniciales: val('np-obs'),
+    password: doc, // contraseña inicial = número de documento
+    canal_preferido: 'web',
+  };
+  try {
+    const r = await fetch(`${API}/api/v1/pacientes/crear`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    if (r.ok) {
+      mostrarMsgPac('✓ Paciente creado correctamente. Contraseña inicial: número de documento.', 'ok');
+      showToast('Paciente creado correctamente', '✓');
+      setTimeout(() => { cambiarTab('activos'); cargarPacientes(); }, 2000);
+    } else {
+      mostrarMsgPac(d.error || 'Error al crear el paciente.', 'error');
+    }
+  } catch(e) { mostrarMsgPac('Error de conexión.', 'error'); }
+  btn.disabled = false; btn.textContent = 'Crear paciente';
+}
+
+function mostrarMsgPac(txt, tipo) {
+  const el = document.getElementById('msg-nuevo-pac');
+  el.textContent = txt;
+  el.className = 'msg ' + tipo;
+  el.style.display = 'block';
+}
+
+function cerrarModal() { document.getElementById('modal-egreso').classList.remove('visible'); }
+function fechaCorta(iso) { if (!iso) return '--'; return new Date(iso).toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'}); }
+let toastTimer;
+function showToast(msg, icon='✓') { clearTimeout(toastTimer); document.getElementById('toast-msg').textContent=msg; document.getElementById('toast-icon').textContent=icon; document.getElementById('toast').classList.add('show'); toastTimer=setTimeout(()=>document.getElementById('toast').classList.remove('show'),3500); }
+</script>
+</body>
+</html>
