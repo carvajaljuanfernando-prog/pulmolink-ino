@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink INO — Ruta de Atención HP</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white;flex:1}
+.container{max-width:960px;margin:0 auto;padding:24px 20px 60px}
+.pac-box{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pac-label{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px;white-space:nowrap}
+.pac-select{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);letter-spacing:0.8px;text-transform:uppercase;margin-bottom:14px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+
+/* RIESGO BANNER */
+.riesgo-banner{border-radius:14px;padding:20px 24px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.rb-bajo{background:var(--green-lt);border:2px solid rgba(26,122,74,0.3)}
+.rb-intermedio{background:var(--amber-lt);border:2px solid rgba(192,122,0,0.3)}
+.rb-alto{background:var(--red-lt);border:2px solid rgba(214,62,62,0.4)}
+.rb-sin{background:var(--teal-pale);border:2px solid rgba(0,107,143,0.2)}
+.riesgo-dot{width:48px;height:48px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:20px}
+.rd-bajo{background:var(--green)}
+.rd-inter{background:var(--amber)}
+.rd-alto{background:var(--red)}
+.rd-sin{background:var(--teal)}
+.riesgo-info{flex:1}
+.riesgo-titulo{font-size:18px;font-weight:800}
+.rb-bajo .riesgo-titulo{color:var(--green)}
+.rb-intermedio .riesgo-titulo{color:var(--amber)}
+.rb-alto .riesgo-titulo{color:var(--red)}
+.rb-sin .riesgo-titulo{color:var(--teal-dk)}
+.riesgo-sub{font-size:12px;color:var(--text-2);margin-top:3px}
+.riesgo-meta{font-size:12px;font-weight:700;padding:4px 14px;border-radius:10px;white-space:nowrap}
+.rm-bajo{background:var(--green);color:white}
+.rm-inter{background:var(--amber);color:white}
+.rm-alto{background:var(--red);color:white}
+
+/* HITOS TIMELINE */
+.hitos{display:flex;flex-direction:column;gap:0}
+.hito-item{display:flex;gap:0;position:relative}
+.hito-left{width:110px;text-align:right;padding:0 14px 0 0;flex-shrink:0;padding-top:10px}
+.hito-fecha{font-size:11px;font-weight:700;color:var(--text-2)}
+.hito-dias{font-size:10px;color:var(--text-3)}
+.hito-center{display:flex;flex-direction:column;align-items:center;width:20px;flex-shrink:0}
+.hito-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0;margin-top:12px;z-index:1;border:2.5px solid}
+.hd-ok{background:var(--green);border-color:var(--green)}
+.hd-proximo{background:var(--amber);border-color:var(--amber)}
+.hd-vencido{background:var(--red);border-color:var(--red)}
+.hd-futuro{background:var(--white);border-color:var(--border)}
+.hito-line{width:2px;flex:1;min-height:16px}
+.hl-ok{background:var(--green)}
+.hl-proximo{background:var(--amber)}
+.hl-vencido{background:var(--red)}
+.hl-futuro{background:var(--border)}
+.hito-right{flex:1;padding:6px 0 18px 14px}
+.hito-card{border-radius:10px;padding:12px 16px;border:1.5px solid}
+.hc-ok{background:var(--green-lt);border-color:rgba(26,122,74,0.25)}
+.hc-proximo{background:var(--amber-lt);border-color:rgba(192,122,0,0.3)}
+.hc-vencido{background:var(--red-lt);border-color:rgba(214,62,62,0.35)}
+.hc-futuro{background:var(--warm);border-color:var(--border)}
+.hito-nombre{font-size:13px;font-weight:700;margin-bottom:3px}
+.hc-ok .hito-nombre{color:var(--green)}
+.hc-proximo .hito-nombre{color:var(--amber)}
+.hc-vencido .hito-nombre{color:var(--red)}
+.hc-futuro .hito-nombre{color:var(--text-2)}
+.hito-desc{font-size:12px;color:var(--text-2);line-height:1.5}
+.hito-estado{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-top:4px}
+.he-ok{background:var(--green);color:white}
+.he-proximo{background:var(--amber);color:white}
+.he-vencido{background:var(--red);color:white}
+.he-futuro{background:var(--border);color:var(--text-3)}
+
+/* ALERTAS */
+.alerta-item{display:flex;align-items:flex-start;gap:10px;padding:12px 16px;border-radius:10px;margin-bottom:8px}
+.ai-vencido{background:var(--red-lt);border:1px solid rgba(214,62,62,0.3)}
+.ai-proximo{background:var(--amber-lt);border:1px solid rgba(192,122,0,0.2)}
+.alerta-txt{font-size:13px;line-height:1.5;flex:1}
+.ai-vencido .alerta-txt{color:var(--red)}
+.ai-proximo .alerta-txt{color:var(--amber)}
+
+/* EXÁMENES PENDIENTES */
+.examen-chip{display:inline-block;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;margin:3px;background:var(--teal-pale);color:var(--teal-dk)}
+.examen-chip.vencido{background:var(--red-lt);color:var(--red)}
+.examen-chip.proximo{background:var(--amber-lt);color:var(--amber)}
+
+/* STATS */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px}
+.stat{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center}
+.stat-n{font-size:22px;font-weight:800;color:var(--teal-dk)}
+.stat-l{font-size:10px;color:var(--text-3);margin-top:2px}
+
+.info-box{border-radius:10px;padding:12px 16px;font-size:12px;line-height:1.6;margin-bottom:14px}
+.ib-teal{background:var(--teal-pale);color:var(--teal-dk);border:1px solid rgba(0,107,143,0.15)}
+.sin-paciente{text-align:center;padding:48px 20px;color:var(--text-3);font-size:14px}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/dashboard-profesional'">← Dashboard</button>
+  <div class="topbar-title">Ruta de Atención HP — Instituto Neumológico del Oriente</div>
+</div>
+
+<div class="container">
+
+  <div class="pac-box">
+    <div class="pac-label">Paciente</div>
+    <select class="pac-select" id="pac-select" onchange="cargarRuta()">
+      <option value="">Selecciona un paciente...</option>
+    </select>
+  </div>
+
+  <div id="ruta-content">
+    <div class="sin-paciente">Selecciona un paciente para ver su ruta de atención personalizada.</div>
+  </div>
+
+</div>
+
+<script>
+const API = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+let pacientes = [];
+let pacienteActual = null;
+
+if (!token) window.location.href = '/login';
+
+window.addEventListener('DOMContentLoaded', cargarPacientes);
+
+async function cargarPacientes() {
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/pacientes-lista`, { headers:{'Authorization':`Bearer ${token}`} });
+    if (r.status===401){window.location.href='/login';return;}
+    const d = await r.json();
+    pacientes = d.pacientes||[];
+    const sel = document.getElementById('pac-select');
+    pacientes.forEach(p => {
+      const o = document.createElement('option');
+      o.value = p.id; o.textContent = `${p.nombre} ${p.apellido}`;
+      sel.appendChild(o);
+    });
+  } catch(e){console.error(e);}
+}
+
+async function cargarRuta() {
+  const id = document.getElementById('pac-select').value;
+  if (!id) { document.getElementById('ruta-content').innerHTML = '<div class="sin-paciente">Selecciona un paciente.</div>'; return; }
+  pacienteActual = pacientes.find(p => p.id === id);
+  document.getElementById('ruta-content').innerHTML = '<div class="sin-paciente">Cargando ruta...</div>';
+
+  // Cargar datos clínicos del paciente
+  let riesgo = null, fechaIngreso = null, grupo = null, cf = null;
+  let ultimoEco = null, ultimaBNP = null, ultimaTC6M = null, ultimoCCD = null;
+
+  try {
+    // Estratificación más reciente
+    const rs = await fetch(`${API}/api/v1/examenes/estratificacion/${id}`, {headers:{'Authorization':`Bearer ${token}`}});
+    const ds = await rs.json();
+    const est = ds.estratificaciones?.[0];
+    if (est) {
+      riesgo = est.clasificacion_riesgo;
+      fechaIngreso = est.fecha || est.created_at;
+    }
+  } catch(e){}
+
+  // Datos del paciente
+  riesgo = riesgo || pacienteActual?.clasificacion_riesgo || null;
+  grupo = pacienteActual?.grupo_hp_oms || null;
+  cf = pacienteActual?.clase_funcional_oms || null;
+  fechaIngreso = fechaIngreso || pacienteActual?.fecha_ingreso_programa || null;
+
+  renderRuta(riesgo, grupo, cf, fechaIngreso);
+}
+
+function renderRuta(riesgo, grupo, cf, fechaIngreso) {
+  const hoy = new Date();
+  const fIngreso = fechaIngreso ? new Date(fechaIngreso) : null;
+  const diasEnPrograma = fIngreso ? Math.floor((hoy - fIngreso) / (1000*60*60*24)) : null;
+
+  const riesgoInfo = {
+    bajo:       { label:'Riesgo Bajo', dotClass:'rd-bajo', bannerClass:'rb-bajo', metaClass:'rm-bajo',
+                  control:'Cada 3 meses', ccd:'Anual', emoji:'🟢',
+                  desc:'Ámbito ambulatorio · CF I-II · TC6M >440m · BNP <50 · Sin síncope' },
+    intermedio: { label:'Riesgo Intermedio', dotClass:'rd-inter', bannerClass:'rb-intermedio', metaClass:'rm-inter',
+                  control:'Cada 1-2 meses', ccd:'Cada 6 meses', emoji:'🟡',
+                  desc:'Ámbito ambulatorio · CF III · TC6M 165-440m · BNP 50-300 · Síncope ocasional' },
+    alto:       { label:'Riesgo Alto', dotClass:'rd-alto', bannerClass:'rb-alto', metaClass:'rm-alto',
+                  control:'Cada 3 meses (supervisión intensiva)', ccd:'Cada 3 meses', emoji:'🔴',
+                  desc:'Supervisión especializada · CF III-IV · TC6M <165m · BNP >300 · Síncope repetido' },
+  };
+
+  const ri = riesgoInfo[riesgo] || null;
+
+  // Calcular hitos según riesgo
+  const EXAMENES_BASICOS = ['BNP / NT-proBNP','PT · PTT · INR','Fosfatasa alcalina · TGO · TGP','Ecocardiograma','DLCO','Caminata 6 minutos','Consumo O₂'];
+  const frecControl = riesgo==='bajo'?90:riesgo==='intermedio'?60:90;
+  const frecCCD = riesgo==='bajo'?365:riesgo==='intermedio'?180:90;
+  const frecExamBasicos = riesgo==='bajo'?90:riesgo==='intermedio'?60:90;
+
+  // Generar hitos cronológicos desde el ingreso
+  const hitos = [];
+  if (fIngreso) {
+    // Hito 1: Ingreso al programa
+    hitos.push({ nombre:'Ingreso al programa HP', fecha:fIngreso, tipo:'ingreso',
+      desc:'Valoración inicial por Neumología/Cardiología · Junta médica · Exámenes de screening · Clasificación HP' });
+
+    // Hito 2: Primera junta médica (1 mes)
+    const fJunta1 = addDias(fIngreso, 30);
+    hitos.push({ nombre:'Primera junta médica', fecha:fJunta1, tipo:'junta',
+      desc:'Revisión clasificación · Definición esquema terapéutico · Estratificación de riesgo inicial' });
+
+    // Hito 3: Control al mes si inicia terapia (intermedio/alto)
+    if (riesgo !== 'bajo') {
+      const fCtrl1 = addDias(fIngreso, 30);
+      hitos.push({ nombre:'Control post-inicio de terapia', fecha:fCtrl1, tipo:'control',
+        desc:'Control al mes de inicio de terapia específica · Evaluación de tolerancia · Ajuste de dosis' });
+    }
+
+    // Hitos de control periódico — próximos 12 meses
+    let fControl = addDias(fIngreso, frecControl);
+    let n = 1;
+    while (fControl <= addDias(hoy, 365) && n <= 6) {
+      hitos.push({ nombre:`Control periódico #${n}`, fecha:fControl, tipo:'control',
+        desc:`Control medicina especializada · ${EXAMENES_BASICOS.slice(0,4).join(' · ')}` });
+      fControl = addDias(fControl, frecControl); n++;
+    }
+
+    // Hito CCD
+    const fCCD = addDias(fIngreso, frecCCD);
+    hitos.push({ nombre:'Cateterismo cardíaco derecho (CCD)', fecha:fCCD, tipo:'ccd',
+      desc:`CCD de seguimiento · Frecuencia: ${riesgo==='bajo'?'Anual':riesgo==='intermedio'?'Cada 6 meses':'Cada 3 meses'} · Reclasificación de riesgo` });
+
+    // Hito rehabilitación
+    const fRhb = addDias(fIngreso, 14);
+    hitos.push({ nombre:'Ingreso Rehabilitación Pulmonar', fecha:fRhb, tipo:'rhb',
+      desc:'Inicio programa de rehabilitación pulmonar · 48 sesiones · Evaluación funcional basal' });
+
+    // Trasplante si riesgo alto
+    if (riesgo === 'alto') {
+      const fTrasplante = addDias(fIngreso, 30);
+      hitos.push({ nombre:'Evaluación por grupo de trasplante', fecha:fTrasplante, tipo:'trasplante',
+        desc:'Derivación urgente al grupo de trasplante pulmonar · Criterios: riesgo alto persistente' });
+    }
+
+    // Ordenar por fecha
+    hitos.sort((a,b) => a.fecha - b.fecha);
+  }
+
+  // Contar alertas
+  const hitosVencidos = hitos.filter(h => getEstadoHito(h.fecha, hoy) === 'vencido');
+  const hitosProximos = hitos.filter(h => getEstadoHito(h.fecha, hoy) === 'proximo');
+
+  let html = '';
+
+  // BANNER DE RIESGO
+  if (ri) {
+    html += `<div class="riesgo-banner ${ri.bannerClass}">
+      <div class="riesgo-dot ${ri.dotClass}">${ri.emoji}</div>
+      <div class="riesgo-info">
+        <div class="riesgo-titulo">${ri.label}</div>
+        <div class="riesgo-sub">${ri.desc}</div>
+      </div>
+      <span class="riesgo-meta ${ri.metaClass}">Control: ${ri.control}</span>
+    </div>`;
+  } else {
+    html += `<div class="riesgo-banner rb-sin">
+      <div class="riesgo-dot rd-sin">❓</div>
+      <div class="riesgo-info">
+        <div class="riesgo-titulo">Sin estratificación registrada</div>
+        <div class="riesgo-sub">Ingresa al módulo de Estratificación de Riesgo para clasificar al paciente.</div>
+      </div>
+    </div>`;
+  }
+
+  // STATS
+  html += `<div class="stats-row">
+    <div class="stat"><div class="stat-n">${diasEnPrograma !== null ? diasEnPrograma : '--'}</div><div class="stat-l">Días en programa</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--red)">${hitosVencidos.length}</div><div class="stat-l">Hitos vencidos</div></div>
+    <div class="stat"><div class="stat-n" style="color:var(--amber)">${hitosProximos.length}</div><div class="stat-l">Próximos 30 días</div></div>
+    <div class="stat"><div class="stat-n">${hitos.length}</div><div class="stat-l">Total hitos</div></div>
+  </div>`;
+
+  // ALERTAS
+  if (hitosVencidos.length || hitosProximos.length) {
+    html += '<div class="card"><div class="card-title">⚠ Alertas de la ruta de atención</div>';
+    hitosVencidos.forEach(h => {
+      const diasVencido = Math.floor((hoy - h.fecha) / (1000*60*60*24));
+      html += `<div class="alerta-item ai-vencido"><span style="font-size:18px">🚨</span>
+        <div class="alerta-txt"><strong>${h.nombre}</strong> — Vencido hace ${diasVencido} día(s) (${fechaCorta(h.fecha)})</div></div>`;
+    });
+    hitosProximos.forEach(h => {
+      const diasRestantes = Math.floor((h.fecha - hoy) / (1000*60*60*24));
+      html += `<div class="alerta-item ai-proximo"><span style="font-size:18px">⏰</span>
+        <div class="alerta-txt"><strong>${h.nombre}</strong> — En ${diasRestantes} día(s) (${fechaCorta(h.fecha)})</div></div>`;
+    });
+    html += '</div>';
+  }
+
+  // EXÁMENES PENDIENTES
+  if (ri) {
+    html += `<div class="card"><div class="card-title">Exámenes de seguimiento (protocolo ${ri.label})</div>
+      <div class="info-box ib-teal">Frecuencia CCD: ${ri.ccd} · Exámenes básicos: cada ${frecExamBasicos} días</div>
+      <div style="margin-top:4px">`;
+    EXAMENES_BASICOS.forEach(ex => {
+      html += `<span class="examen-chip">${ex}</span>`;
+    });
+    html += `<span class="examen-chip">Cateterismo (CCD) — ${ri.ccd}</span>`;
+    if (riesgo !== 'bajo') html += `<span class="examen-chip">Análogos prostaglandinas — seguimiento</span>`;
+    if (riesgo === 'alto') html += `<span class="examen-chip vencido">Evaluación trasplante pulmonar</span>`;
+    html += '</div></div>';
+  }
+
+  // TIMELINE
+  if (hitos.length) {
+    html += '<div class="card"><div class="card-title">Línea de tiempo — Hitos del programa</div><div class="hitos">';
+    hitos.forEach((h, i) => {
+      const estado = fIngreso ? getEstadoHito(h.fecha, hoy) : 'futuro';
+      const isLast = i === hitos.length - 1;
+      html += `<div class="hito-item">
+        <div class="hito-left">
+          <div class="hito-fecha">${fechaCorta(h.fecha)}</div>
+          <div class="hito-dias">${diasDesde(h.fecha, hoy)}</div>
+        </div>
+        <div class="hito-center">
+          <div class="hito-dot hd-${estado}"></div>
+          ${!isLast ? `<div class="hito-line hl-${estado}"></div>` : ''}
+        </div>
+        <div class="hito-right">
+          <div class="hito-card hc-${estado}">
+            <div class="hito-nombre">${h.nombre}</div>
+            <div class="hito-desc">${h.desc}</div>
+            <span class="hito-estado he-${estado}">${estadoLabel(estado)}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += '</div></div>';
+  } else {
+    html += `<div class="card"><div class="info-box ib-teal">
+      Para generar la línea de tiempo personalizada, registra la <strong>fecha de ingreso al programa</strong> y completa la <strong>estratificación de riesgo</strong> en el módulo correspondiente.
+    </div></div>`;
+  }
+
+  // PROTOCOLO DE MANEJO
+  if (ri) {
+    html += `<div class="card"><div class="card-title">Protocolo de manejo — ${ri.label}</div>`;
+    if (riesgo === 'bajo') {
+      html += `<div style="font-size:13px;line-height:1.8;color:var(--text-2)">
+        <strong>Ámbito:</strong> Ambulatorio<br>
+        <strong>Control médico:</strong> Cada 3 meses<br>
+        <strong>Rehabilitación Pulmonar:</strong> Ingreso al programa (48 sesiones)<br>
+        <strong>CCD seguimiento:</strong> Anual o según detección<br>
+        <strong>Tratamiento:</strong> Inicio terapia farmacológica según etiología y grupo · Monoterapia o doble terapia<br>
+        <strong>Reclasificación:</strong> En cada control — protocolo ESC/ERS 2022 + REVEAL 2.0
+      </div>`;
+    } else if (riesgo === 'intermedio') {
+      html += `<div style="font-size:13px;line-height:1.8;color:var(--text-2)">
+        <strong>Ámbito:</strong> Ambulatorio<br>
+        <strong>Control post-inicio terapia:</strong> Al mes · Luego cada 2 meses<br>
+        <strong>Rehabilitación Pulmonar:</strong> Ingreso inmediato al programa<br>
+        <strong>Análogos de prostaglandinas:</strong><br>
+        &nbsp;&nbsp;• Inicio hospitalario: Titulación 48-72h · Control semanal · Control mensual<br>
+        &nbsp;&nbsp;• Inicio ambulatorio (SC): Titulación 7 días · Control semanal · Control mensual<br>
+        <strong>CCD seguimiento:</strong> Cada 6 meses o según evolución clínica<br>
+        <strong>Reclasificación:</strong> En cada control — objetivo bajar a Riesgo Bajo
+      </div>`;
+    } else if (riesgo === 'alto') {
+      html += `<div style="font-size:13px;line-height:1.8;color:var(--text-2)">
+        <strong>Ámbito:</strong> Ambulatorio con supervisión intensiva especializada<br>
+        <strong>Control médico:</strong> Cada 3 meses (mínimo)<br>
+        <strong>Derivación:</strong> Evaluación urgente por grupo de trasplante pulmonar<br>
+        <strong>Rehabilitación Pulmonar:</strong> Ingreso inmediato al programa<br>
+        <strong>Análogos de prostaglandinas:</strong> Inicio hospitalario · Titulación 48-72h · Control semanal<br>
+        <strong>CCD seguimiento:</strong> Cada 3 meses<br>
+        <strong>Objetivo:</strong> Reclasificación a riesgo intermedio o bajo como meta terapéutica
+      </div>`;
+    }
+    html += '</div>';
+  }
+
+  document.getElementById('ruta-content').innerHTML = html;
+}
+
+// ══ UTILIDADES ════════════════════════════════════════════════
+function addDias(fecha, dias) {
+  const d = new Date(fecha);
+  d.setDate(d.getDate() + dias);
+  return d;
+}
+
+function getEstadoHito(fecha, hoy) {
+  const diff = (fecha - hoy) / (1000*60*60*24);
+  if (diff < -1) return 'vencido';
+  if (diff <= 30) return 'proximo';
+  return 'futuro';
+}
+
+function estadoLabel(estado) {
+  return { ok:'Completado', proximo:'Próximo', vencido:'Vencido', futuro:'Programado' }[estado] || estado;
+}
+
+function fechaCorta(d) {
+  if (!d) return '--';
+  return new Date(d).toLocaleDateString('es-CO', {day:'numeric', month:'short', year:'numeric'});
+}
+
+function diasDesde(fecha, hoy) {
+  const diff = Math.round((fecha - hoy) / (1000*60*60*24));
+  if (diff === 0) return 'Hoy';
+  if (diff > 0) return `En ${diff} días`;
+  return `Hace ${Math.abs(diff)} días`;
+}
+</script>
+<script src="/paciente-search.js">
+// ── Control de acceso por rol ─────────────────────────────
+function aplicarControlAcceso() {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    const rol = (payload.rol || '').toLowerCase().trim();
+    const ROLES_ESCRITURA = ['cardiólogo','neumólogo','medico','coordinador','enfermeria','cardiologo','neumologo'];
+    const puedeEscribir = ROLES_ESCRITURA.includes(rol);
+
+    if (puedeEscribir) return; // tiene acceso completo
+
+    // Ocultar botones de guardar
+    document.querySelectorAll('button.btn-primary, button.btn-save').forEach(btn => {
+      if (btn.textContent.toLowerCase().includes('guardar') ||
+          btn.textContent.toLowerCase().includes('calcular') ||
+          btn.textContent.toLowerCase().includes('registrar')) {
+        btn.style.display = 'none';
+      }
+    });
+
+    // Ocultar form-actions completos
+    document.querySelectorAll('.form-actions, .actions-row').forEach(el => el.style.display = 'none');
+
+    // Ocultar campos de formulario (inputs, selects, textareas) - solo lectura
+    document.querySelectorAll('input:not([type=hidden]), select, textarea').forEach(el => {
+      el.disabled = true;
+      el.style.background = '#F2F7FA';
+      el.style.color = '#7A9AAA';
+      el.style.cursor = 'not-allowed';
+    });
+
+    // En examenes: ocultar tabs de registro, dejar solo historial
+    ['tab-eco','tab-cat','tab-gam','tab-pfp','tab-cpet','tab-tac','tab-rmc'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+    const tabHist = document.getElementById('tab-hist');
+    if (tabHist) tabHist.click();
+
+    // Aviso modo consulta
+    if (!document.getElementById('aviso-modo-consulta')) {
+      const aviso = document.createElement('div');
+      aviso.id = 'aviso-modo-consulta';
+      aviso.style.cssText = 'background:#E0F5FB;border-left:4px solid #006B8F;border-radius:10px;padding:12px 16px;font-size:13px;color:#00425A;margin-bottom:16px;font-family:Nunito,sans-serif;font-weight:600';
+      aviso.innerHTML = 'ℹ️ Modo consulta — Puede ver el historial completo del paciente. El registro de nuevos datos es exclusivo del equipo médico.';
+      const contenedor = document.querySelector('.container, main.main, .main');
+      if (contenedor) contenedor.insertBefore(aviso, contenedor.firstChild);
+    }
+  } catch(e) { console.warn('Control acceso:', e); }
+}
+
+// Aplicar en DOMContentLoaded y también cuando se selecciona un paciente
+document.addEventListener('DOMContentLoaded', aplicarControlAcceso);
+// Re-aplicar por si el DOM cambia dinámicamente
+setTimeout(aplicarControlAcceso, 500);
+setTimeout(aplicarControlAcceso, 1500);
+</script>
+</body>
+</html>
