@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink — Contacto Enfermería HP</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white}
+.topbar-sub{font-size:12px;color:rgba(255,255,255,0.6);margin-left:auto}
+.container{max-width:820px;margin:0 auto;padding:24px 20px}
+.pac-box{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pac-label{font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px}
+.pac-select{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}
+.field-full{grid-column:1/-1}
+/* CF-OMS selector */
+.cf-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:6px}
+.cf-btn{border:2px solid var(--border);border-radius:10px;padding:10px 8px;text-align:center;cursor:pointer;transition:all 0.15s;background:var(--warm)}
+.cf-btn:hover{border-color:var(--teal-lt)}
+.cf-btn.selected{border-color:var(--teal);background:var(--teal-pale)}
+.cf-btn.cf-iv.selected{border-color:var(--red);background:var(--red-lt)}
+.cf-num{font-size:20px;font-weight:800;color:var(--teal-dk)}
+.cf-btn.cf-iv .cf-num{color:var(--red)}
+.cf-desc{font-size:10px;color:var(--text-3);margin-top:3px;line-height:1.3}
+/* Signos alarma */
+.alarma-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-top:6px}
+.alarma-item{display:flex;align-items:center;gap:8px;padding:10px 12px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:all 0.15s;background:var(--warm)}
+.alarma-item:hover{border-color:var(--amber)}
+.alarma-item.selected{border-color:var(--red);background:var(--red-lt)}
+.alarma-item input[type=checkbox]{accent-color:var(--red);width:15px;height:15px;flex-shrink:0}
+.alarma-label{font-size:12px;font-weight:600;color:var(--text-2)}
+.alarma-item.selected .alarma-label{color:var(--red)}
+/* Morisky */
+.morisky-item{border:1.5px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px;background:var(--warm)}
+.morisky-q{font-size:13px;color:var(--text-1);margin-bottom:8px;font-weight:600}
+.morisky-opts{display:flex;gap:8px}
+.morisky-opt{flex:1;padding:8px;text-align:center;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;transition:all 0.15s;background:white}
+.morisky-opt:hover{border-color:var(--teal-lt)}
+.morisky-opt.sel-si{border-color:var(--red);background:var(--red-lt);color:var(--red)}
+.morisky-opt.sel-no{border-color:var(--green);background:var(--green-lt);color:var(--green)}
+/* Resultado Morisky */
+.morisky-resultado{border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;margin-top:10px;display:none}
+/* Historial */
+.hist-item{border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px;background:var(--white);cursor:pointer}
+.hist-item:hover{border-color:var(--teal-lt)}
+.hist-fecha{font-size:11px;color:var(--text-3)}
+.hist-resumen{font-size:13px;font-weight:700;color:var(--text-1);margin:4px 0}
+.hist-detalle{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text-2)}
+/* Alert banner */
+.alerta-banner{display:none;background:var(--red-lt);border:1.5px solid var(--red);border-radius:12px;padding:12px 16px;margin-bottom:14px;font-size:13px;color:var(--red);font-weight:700}
+/* Botones */
+.btn-primary{padding:12px 24px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.btn-primary:hover{background:var(--teal-dk)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.msg-box{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.msg-box.ok{background:var(--green-lt);color:var(--green);border:1px solid rgba(26,122,74,0.2);display:block}
+.msg-box.error{background:var(--red-lt);color:var(--red);border:1px solid rgba(214,62,62,0.2);display:block}
+.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.tab-btns{display:flex;gap:8px;margin-bottom:20px}
+.tab-btn{padding:9px 18px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer}
+.tab-btn.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/dashboard-profesional'">← Dashboard</button>
+  <div class="topbar-title">💉 Contacto Mensual de Enfermería HP</div>
+  <div class="topbar-sub" id="topbar-fecha"></div>
+</div>
+
+<div class="container">
+
+  <!-- Selector paciente -->
+  <div class="pac-box">
+    <div class="pac-label">Paciente</div>
+    <select class="pac-select" id="pac-select" onchange="seleccionarPaciente()">
+      <option value="">Selecciona un paciente...</option>
+    </select>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-btns">
+    <button class="tab-btn active" onclick="cambiarTab('nuevo')">📋 Nuevo contacto</button>
+    <button class="tab-btn" onclick="cambiarTab('historial')">🕐 Historial</button>
+  </div>
+
+  <!-- TAB: NUEVO CONTACTO -->
+  <div class="tab-panel active" id="tab-nuevo">
+
+    <!-- Banner alerta crítica -->
+    <div class="alerta-banner" id="alerta-banner">
+      🚨 Se generará una alerta clínica automática al médico tratante por los hallazgos críticos detectados.
+    </div>
+
+    <!-- Datos generales -->
+    <div class="card">
+      <div class="card-title">📅 Datos del contacto</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Fecha del contacto</label>
+          <input type="date" id="c-fecha">
+        </div>
+        <div class="field">
+          <label>Tipo de contacto</label>
+          <select id="c-tipo">
+            <option value="llamada">Llamada telefónica</option>
+            <option value="presencial">Consulta presencial</option>
+            <option value="videollamada">Videollamada</option>
+            <option value="whatsapp">WhatsApp</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>¿El paciente contestó / asistió?</label>
+          <select id="c-contacto-exitoso">
+            <option value="si">Sí</option>
+            <option value="no">No — sin respuesta</option>
+            <option value="parcial">Parcial — se dejó mensaje</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Enfermera que realiza el contacto</label>
+          <input type="text" id="c-enfermera" placeholder="Nombre de la enfermera">
+        </div>
+      </div>
+    </div>
+
+    <!-- Clase Funcional OMS -->
+    <div class="card">
+      <div class="card-title">🫁 Clase funcional OMS — ¿Cómo está su disnea?</div>
+      <div style="background:var(--teal-pale);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--teal-dk);margin-bottom:12px">
+        Preguntar al paciente según la escala CF-OMS adaptada. Seleccionar la clase que mejor describe su situación actual.
+      </div>
+      <div class="cf-grid">
+        <div class="cf-btn" onclick="selCF(1)" id="cf-1">
+          <div class="cf-num">I</div>
+          <div class="cf-desc">Actividad normal sin limitación. Sin disnea con actividad ordinaria.</div>
+        </div>
+        <div class="cf-btn" onclick="selCF(2)" id="cf-2">
+          <div class="cf-num">II</div>
+          <div class="cf-desc">Leve limitación. Disnea con actividad ordinaria, cómodo en reposo.</div>
+        </div>
+        <div class="cf-btn cf-iii" onclick="selCF(3)" id="cf-3">
+          <div class="cf-num">III</div>
+          <div class="cf-desc">Marcada limitación. Disnea con mínima actividad, cómodo en reposo.</div>
+        </div>
+        <div class="cf-btn cf-iv" onclick="selCF(4)" id="cf-4">
+          <div class="cf-num">IV</div>
+          <div class="cf-desc">Disnea en reposo. No puede hacer ninguna actividad sin síntomas.</div>
+        </div>
+      </div>
+      <input type="hidden" id="c-cf-oms" value="">
+    </div>
+
+    <!-- Signos vitales -->
+    <div class="card">
+      <div class="card-title">💓 Signos vitales reportados</div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Frecuencia cardíaca</label>
+          <input type="number" id="c-fc" min="30" max="250" placeholder="ej. 82">
+          <span style="font-size:11px;color:var(--text-3)">lpm</span>
+        </div>
+        <div class="field">
+          <label>SpO₂</label>
+          <input type="number" id="c-spo2" min="50" max="100" placeholder="ej. 92" oninput="verificarAlarmas()">
+          <span style="font-size:11px;color:var(--text-3)">% — alerta si &lt;90%</span>
+        </div>
+        <div class="field">
+          <label>Tensión arterial</label>
+          <input type="text" id="c-ta" placeholder="ej. 120/80">
+          <span style="font-size:11px;color:var(--text-3)">mmHg</span>
+        </div>
+        <div class="field">
+          <label>Peso actual</label>
+          <input type="number" id="c-peso" step="0.1" min="20" max="200" placeholder="ej. 62.5" oninput="verificarAlarmas()">
+          <span style="font-size:11px;color:var(--text-3)">kg</span>
+        </div>
+        <div class="field">
+          <label>Peso previo (referencia)</label>
+          <input type="number" id="c-peso-prev" step="0.1" min="20" max="200" placeholder="ej. 61.0">
+          <span style="font-size:11px;color:var(--text-3)">kg</span>
+        </div>
+        <div class="field">
+          <label>Frecuencia respiratoria</label>
+          <input type="number" id="c-fr" min="8" max="60" placeholder="ej. 18">
+          <span style="font-size:11px;color:var(--text-3)">rpm</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Signos de alarma -->
+    <div class="card">
+      <div class="card-title">🚨 Signos de alarma</div>
+      <div style="font-size:12px;color:var(--text-2);margin-bottom:10px">Seleccionar todos los que el paciente refiera o se detecten durante el contacto:</div>
+      <div class="alarma-grid" id="alarma-grid">
+        <!-- generado por JS -->
+      </div>
+    </div>
+
+    <!-- Morisky-8 -->
+    <div class="card">
+      <div class="card-title">💊 Adherencia al tratamiento — Morisky-8</div>
+      <div style="font-size:12px;color:var(--text-2);margin-bottom:14px">Aplicar las 8 preguntas al paciente. Responder Sí o No según lo que refiera.</div>
+      <div id="morisky-preguntas"></div>
+      <div class="morisky-resultado" id="morisky-resultado"></div>
+    </div>
+
+    <!-- Observaciones -->
+    <div class="card">
+      <div class="card-title">📝 Observaciones y plan</div>
+      <div class="form-grid">
+        <div class="field field-full">
+          <label>Observaciones del contacto</label>
+          <textarea id="c-obs" rows="3" placeholder="Estado general del paciente, preocupaciones referidas, situación social, adherencia al tratamiento, etc."></textarea>
+        </div>
+        <div class="field field-full">
+          <label>Plan o acciones tomadas</label>
+          <textarea id="c-plan" rows="2" placeholder="Ej: Se educó sobre signos de alarma, se recordó tomar medicamentos, se coordinó cita con médico, se remitió a urgencias..."></textarea>
+        </div>
+        <div class="field">
+          <label>¿Requiere cita médica?</label>
+          <select id="c-cita">
+            <option value="no">No — control habitual</option>
+            <option value="urgente">Sí — urgente (esta semana)</option>
+            <option value="programada">Sí — programar en próximas 2 semanas</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Próximo contacto programado</label>
+          <input type="date" id="c-prox-contacto">
+        </div>
+      </div>
+    </div>
+
+    <div class="msg-box" id="msg-contacto"></div>
+    <div style="margin-top:6px">
+      <button class="btn-primary" id="btn-guardar" onclick="guardarContacto()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar contacto
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB: HISTORIAL -->
+  <div class="tab-panel" id="tab-historial">
+    <div id="hist-contactos">
+      <div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Selecciona un paciente para ver el historial de contactos.</div>
+    </div>
+  </div>
+
+</div>
+
+<script src="/paciente-search.js"></script>
+<script>
+const API   = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+if (!token) window.location.href = '/login';
+
+let pacientes = [], pacienteActual = null, cfActual = null;
+let morRespuestas = {};
+
+// Fecha actual
+document.getElementById('topbar-fecha').textContent = new Date().toLocaleDateString('es-CO',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('c-fecha').value = new Date().toISOString().split('T')[0];
+
+// Próximo contacto: +1 mes
+const prox = new Date(); prox.setMonth(prox.getMonth()+1);
+document.getElementById('c-prox-contacto').value = prox.toISOString().split('T')[0];
+
+// ── Cargar pacientes ────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', cargarPacientes);
+async function cargarPacientes() {
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/pacientes-lista`, { headers:{ Authorization:`Bearer ${token}` } });
+    if (r.status === 401) { window.location.href = '/login'; return; }
+    const d = await r.json();
+    pacientes = d.pacientes || [];
+    const sel = document.getElementById('pac-select');
+    pacientes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id;
+      opt.textContent = `${p.nombre} ${p.apellido}`;
+      sel.appendChild(opt);
+    });
+  } catch(e) { console.error(e); }
+}
+
+function seleccionarPaciente() {
+  const id = document.getElementById('pac-select').value;
+  pacienteActual = pacientes.find(p => p.id === id) || null;
+  if (pacienteActual) {
+    // Pre-llenar CF con último registro
+    if (pacienteActual.clase_funcional_oms) selCF(pacienteActual.clase_funcional_oms);
+    // Pre-llenar nombre enfermera desde JWT
+    try {
+      const u = JSON.parse(atob(token.split('.')[1]));
+      document.getElementById('c-enfermera').value = (u.nombre||'') + ' ' + (u.apellido||'');
+    } catch(e){}
+    cargarHistorialContactos();
+  }
+}
+
+// ── CF-OMS ──────────────────────────────────────────────────
+function selCF(n) {
+  cfActual = n;
+  document.getElementById('c-cf-oms').value = n;
+  [1,2,3,4].forEach(i => {
+    document.getElementById('cf-'+i).classList.toggle('selected', i === n);
+  });
+  verificarAlarmas();
+}
+
+// ── Signos de alarma ────────────────────────────────────────
+const ALARMAS = [
+  { id:'sincope',      label:'Síncope / desmayo',         critico:true  },
+  { id:'hemoptisis',   label:'Hemoptisis',                critico:true  },
+  { id:'edema_prog',   label:'Edema que aumenta',         critico:false },
+  { id:'disnea_rep',   label:'Disnea en reposo',          critico:true  },
+  { id:'dolor_torax',  label:'Dolor torácico',            critico:true  },
+  { id:'ascitis',      label:'Abdomen distendido',        critico:false },
+  { id:'ictericia',    label:'Coloración amarilla piel',  critico:false },
+  { id:'cianosis',     label:'Coloración azul labios',    critico:true  },
+  { id:'fatiga_grave', label:'Fatiga extrema repentina',  critico:false },
+  { id:'palpitaciones',label:'Palpitaciones persistentes',critico:false },
+];
+
+(function renderAlarmas() {
+  const grid = document.getElementById('alarma-grid');
+  grid.innerHTML = ALARMAS.map(a => `
+    <div class="alarma-item" id="al-${a.id}" onclick="toggleAlarma('${a.id}')">
+      <input type="checkbox" id="chk-${a.id}">
+      <span class="alarma-label">${a.critico ? '🔴' : '⚠️'} ${a.label}</span>
+    </div>`).join('');
+})();
+
+function toggleAlarma(id) {
+  const item = document.getElementById('al-'+id);
+  const chk  = document.getElementById('chk-'+id);
+  chk.checked = !chk.checked;
+  item.classList.toggle('selected', chk.checked);
+  verificarAlarmas();
+}
+
+function getAlarmasSeleccionadas() {
+  return ALARMAS.filter(a => document.getElementById('chk-'+a.id)?.checked);
+}
+
+function verificarAlarmas() {
+  const alarmas  = getAlarmasSeleccionadas();
+  const criticas = alarmas.filter(a => a.critico);
+  const spo2     = parseFloat(document.getElementById('c-spo2').value);
+  const cf       = cfActual;
+  const esCritico = criticas.length > 0 || spo2 < 90 || cf === 4;
+  document.getElementById('alerta-banner').style.display = esCritico ? 'block' : 'none';
+}
+
+// ── Morisky-8 ───────────────────────────────────────────────
+const MORISKY_Q = [
+  '¿Alguna vez olvida tomar sus medicamentos para la hipertensión pulmonar?',
+  '¿Toma los medicamentos a la hora indicada?',
+  '¿Deja de tomar los medicamentos cuando se siente bien?',
+  '¿Deja de tomar los medicamentos cuando se siente mal o tiene efectos secundarios?',
+  '¿Ha tomado medicamentos ayer?',
+  '¿Necesita que alguien le recuerde tomar sus medicamentos?',
+  '¿Ha tenido alguna vez dificultad para recordar tomar todos sus medicamentos?',
+  '¿Con qué frecuencia tiene dificultades para recordar tomar sus medicamentos?',
+];
+// Preguntas 1,3,4,6,7,8: NO = adherente (puntuación 0) | preguntas 2,5: SÍ = adherente
+const ADHERENTE_SI = [1, 4]; // índices 0-base donde SÍ = adherente
+
+(function renderMorisky() {
+  const cont = document.getElementById('morisky-preguntas');
+  cont.innerHTML = MORISKY_Q.map((q, i) => `
+    <div class="morisky-item">
+      <div class="morisky-q">${i+1}. ${q}</div>
+      <div class="morisky-opts">
+        <div class="morisky-opt" id="mor-${i}-si" onclick="resMorisky(${i},'si')">Sí</div>
+        <div class="morisky-opt" id="mor-${i}-no" onclick="resMorisky(${i},'no')">No</div>
+      </div>
+    </div>`).join('');
+})();
+
+function resMorisky(i, val) {
+  morRespuestas[i] = val;
+  ['si','no'].forEach(v => {
+    const el = document.getElementById(`mor-${i}-${v}`);
+    el.className = 'morisky-opt' + (v === val ? (v==='si'?' sel-si':' sel-no') : '');
+  });
+  // Calcular si todas respondidas
+  if (Object.keys(morRespuestas).length === MORISKY_Q.length) calcularMorisky();
+}
+
+function calcularMorisky() {
+  let score = 0;
+  MORISKY_Q.forEach((_, i) => {
+    const resp = morRespuestas[i];
+    const noAdherente = ADHERENTE_SI.includes(i) ? resp === 'no' : resp === 'si';
+    if (noAdherente) score++;
+  });
+  const el = document.getElementById('morisky-resultado');
+  el.style.display = 'block';
+  let txt, bg, col;
+  if (score === 0) {
+    txt = `✅ Puntuación ${score}/8 — Alta adherencia`; bg = 'var(--green-lt)'; col = 'var(--green)';
+  } else if (score <= 2) {
+    txt = `⚠️ Puntuación ${score}/8 — Adherencia media`; bg = 'var(--amber-lt)'; col = 'var(--amber)';
+  } else {
+    txt = `🔴 Puntuación ${score}/8 — Baja adherencia — Reforzar educación`; bg = 'var(--red-lt)'; col = 'var(--red)';
+  }
+  el.style.background = bg; el.style.color = col;
+  el.style.border = '1.5px solid ' + col;
+  el.textContent = txt;
+  return score;
+}
+
+function getMorScore() {
+  if (Object.keys(morRespuestas).length < MORISKY_Q.length) return null;
+  return calcularMorisky();
+}
+
+// ── Tabs ────────────────────────────────────────────────────
+function cambiarTab(tab) {
+  ['nuevo','historial'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    document.querySelector(`.tab-btn:nth-child(${t==='nuevo'?1:2})`).classList.toggle('active', t===tab);
+  });
+  if (tab === 'historial') cargarHistorialContactos();
+}
+
+// ── Guardar contacto ────────────────────────────────────────
+async function guardarContacto() {
+  if (!pacienteActual) { mostrarMsg('Selecciona un paciente primero.','error'); return; }
+  const btn = document.getElementById('btn-guardar');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Guardando...';
+
+  const alarmas = getAlarmasSeleccionadas().map(a => a.id);
+  const spo2    = parseFloat(document.getElementById('c-spo2').value) || null;
+  const cf      = parseInt(document.getElementById('c-cf-oms').value) || null;
+  const critico = alarmas.some(a => ALARMAS.find(x=>x.id===a)?.critico) || spo2 < 90 || cf === 4;
+  const morScore = getMorScore();
+
+  const datos = {
+    paciente_id:       pacienteActual.id,
+    fecha_contacto:    document.getElementById('c-fecha').value,
+    tipo_contacto:     document.getElementById('c-tipo').value,
+    contacto_exitoso:  document.getElementById('c-contacto-exitoso').value,
+    enfermera:         document.getElementById('c-enfermera').value,
+    cf_oms:            cf,
+    fc:                parseFloat(document.getElementById('c-fc').value)||null,
+    spo2:              spo2,
+    ta:                document.getElementById('c-ta').value||null,
+    peso:              parseFloat(document.getElementById('c-peso').value)||null,
+    peso_previo:       parseFloat(document.getElementById('c-peso-prev').value)||null,
+    fr:                parseFloat(document.getElementById('c-fr').value)||null,
+    signos_alarma:     alarmas,
+    morisky_score:     morScore,
+    morisky_respuestas: morRespuestas,
+    observaciones:     document.getElementById('c-obs').value||null,
+    plan:              document.getElementById('c-plan').value||null,
+    requiere_cita:     document.getElementById('c-cita').value,
+    prox_contacto:     document.getElementById('c-prox-contacto').value||null,
+    alerta_generada:   critico,
+  };
+
+  try {
+    const r = await fetch(`${API}/api/v1/contacto-enfermeria`, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}` },
+      body: JSON.stringify(datos)
+    });
+    const d = await r.json();
+    if (r.ok) {
+      mostrarMsg('Contacto guardado correctamente.' + (critico ? ' ⚠️ Alerta clínica generada al médico tratante.' : ''), 'ok');
+      cargarHistorialContactos();
+    } else {
+      mostrarMsg(d.error || 'Error al guardar.', 'error');
+    }
+  } catch(e) { mostrarMsg('Error de conexión.','error'); }
+
+  btn.disabled = false;
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Guardar contacto';
+}
+
+// ── Historial ───────────────────────────────────────────────
+async function cargarHistorialContactos() {
+  if (!pacienteActual) return;
+  const cont = document.getElementById('hist-contactos');
+  cont.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--text-3)">Cargando...</div>';
+  try {
+    const r = await fetch(`${API}/api/v1/contacto-enfermeria/${pacienteActual.id}`, {
+      headers: { Authorization:`Bearer ${token}` }
+    });
+    const d = await r.json();
+    const items = d.contactos || [];
+    if (!items.length) {
+      cont.innerHTML = '<div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Sin contactos registrados para este paciente.</div>';
+      return;
+    }
+    cont.innerHTML = items.map((c, i) => {
+      const alarmas = c.signos_alarma?.length ? `⚠️ ${c.signos_alarma.join(', ')}` : '✅ Sin signos de alarma';
+      const mor = c.morisky_score != null ? `Morisky: ${c.morisky_score}/8` : '';
+      const cf  = c.cf_oms ? `CF-OMS ${['I','II','III','IV'][c.cf_oms-1]}` : '';
+      return `
+        <div class="hist-item" onclick="toggleHistDetalle(${i})">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div class="hist-fecha">${new Date(c.fecha_contacto||c.created_at).toLocaleDateString('es-CO')} · ${c.tipo_contacto||'contacto'} · ${c.enfermera||''}</div>
+              <div class="hist-resumen">${cf}${cf&&mor?' · ':''}${mor} ${c.alerta_generada?'🚨 Alerta generada':''}</div>
+              <div style="font-size:12px;color:var(--text-3)">${alarmas}</div>
+            </div>
+            <span style="color:var(--text-3)" id="harrow-${i}">▼</span>
+          </div>
+          <div class="hist-detalle" id="hdet-${i}">
+            ${c.spo2 != null ? `<div>SpO₂: <strong>${c.spo2}%</strong></div>` : ''}
+            ${c.peso != null ? `<div>Peso: <strong>${c.peso} kg</strong>${c.peso_previo?` (previo: ${c.peso_previo} kg)`:''}</div>` : ''}
+            ${c.ta ? `<div>TA: <strong>${c.ta} mmHg</strong></div>` : ''}
+            ${c.observaciones ? `<div style="margin-top:8px"><strong>Obs:</strong> ${c.observaciones}</div>` : ''}
+            ${c.plan ? `<div style="margin-top:4px"><strong>Plan:</strong> ${c.plan}</div>` : ''}
+            ${c.prox_contacto ? `<div style="margin-top:4px">Próximo contacto: <strong>${new Date(c.prox_contacto).toLocaleDateString('es-CO')}</strong></div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    cont.innerHTML = '<div style="font-size:13px;color:var(--text-3);padding:12px">Error al cargar historial.</div>';
+  }
+}
+
+function toggleHistDetalle(i) {
+  const det   = document.getElementById('hdet-'+i);
+  const arrow = document.getElementById('harrow-'+i);
+  const vis   = det.style.display === 'block';
+  det.style.display = vis ? 'none' : 'block';
+  if (arrow) arrow.textContent = vis ? '▼' : '▲';
+}
+
+function mostrarMsg(txt, tipo) {
+  const el = document.getElementById('msg-contacto');
+  el.textContent = txt;
+  el.className = 'msg-box ' + tipo;
+  setTimeout(() => { el.className = 'msg-box'; }, 5000);
+}
+</script>
+</body>
+</html>
