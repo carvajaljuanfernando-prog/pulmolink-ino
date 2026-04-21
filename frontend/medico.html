@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PulmoLink — Médico · Ingreso/Egreso Programa HP</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--teal:#006B8F;--teal-dk:#00425A;--teal-lt:#00A3C4;--teal-pale:#E0F5FB;--warm:#F2F7FA;--white:#FFFFFF;--text-1:#0A2330;--text-2:#3A5566;--text-3:#7A9AAA;--red:#D63E3E;--red-lt:#FDF0F0;--amber:#C07A00;--amber-lt:#FEF5E4;--green:#1A7A4A;--green-lt:#E8F7EF;--border:rgba(0,107,143,0.12);--shadow:0 2px 12px rgba(0,66,90,0.08)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Nunito",sans-serif;background:var(--warm);color:var(--text-1);min-height:100vh}
+.topbar{background:var(--teal-dk);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.btn-back{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:6px 14px;color:white;font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;cursor:pointer}
+.topbar-title{font-size:16px;font-weight:700;color:white}
+.container{max-width:820px;margin:0 auto;padding:24px 20px}
+.pac-box{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow);display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.pac-select{flex:1;min-width:200px;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;color:var(--text-1);background:var(--white);outline:none;cursor:pointer}
+.card{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:20px 24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.card-title{font-size:12px;font-weight:700;color:var(--teal);text-transform:uppercase;letter-spacing:0.7px;margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-2);margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1.5px solid var(--border);border-radius:8px;font-family:"Nunito",sans-serif;font-size:13px;color:var(--text-1);background:var(--warm);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--teal-lt);background:white}
+.field-full{grid-column:1/-1}
+.tab-btns{display:flex;gap:8px;margin-bottom:20px}
+.tab-btn{padding:9px 18px;border:1.5px solid var(--border);border-radius:10px;background:var(--white);font-family:"Nunito",sans-serif;font-size:13px;font-weight:600;color:var(--text-2);cursor:pointer}
+.tab-btn.active{border-color:var(--teal);background:var(--teal-pale);color:var(--teal-dk)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.btn-primary{padding:12px 24px;background:var(--teal);color:white;border:none;border-radius:10px;font-family:"Nunito",sans-serif;font-size:14px;font-weight:700;cursor:pointer}
+.btn-primary:hover{background:var(--teal-dk)}
+.btn-primary:disabled{opacity:0.6;cursor:not-allowed}
+.msg-box{padding:10px 14px;border-radius:8px;font-size:13px;margin-top:10px;display:none}
+.msg-box.ok{background:var(--green-lt);color:var(--green);border:1px solid rgba(26,122,74,0.2);display:block}
+.msg-box.error{background:var(--red-lt);color:var(--red);border:1px solid rgba(214,62,62,0.2);display:block}
+.spinner{width:16px;height:16px;border:2.5px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin 0.7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.info-banner{background:var(--teal-pale);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--teal-dk);margin-bottom:16px}
+.deterioro-box{border-radius:10px;padding:12px 16px;font-size:13px;font-weight:600;margin-top:12px;display:none}
+.det-mejoria{background:var(--green-lt);color:var(--green);border:1.5px solid rgba(26,122,74,0.3)}
+.det-estable{background:var(--teal-pale);color:var(--teal);border:1.5px solid var(--border)}
+.det-deterioro{background:var(--red-lt);color:var(--red);border:1.5px solid rgba(214,62,62,0.3)}
+.hist-item{border:1px solid var(--border);border-radius:12px;padding:14px 18px;margin-bottom:10px;background:var(--white);cursor:pointer}
+.hist-item:hover{border-color:var(--teal-lt)}
+.hist-detalle{display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);font-size:12px;color:var(--text-2)}
+.ref-card{background:var(--amber-lt);border:1px solid rgba(192,122,0,0.2);border-radius:10px;padding:12px 16px;margin-bottom:14px}
+.ref-card-title{font-size:11px;font-weight:700;color:var(--amber);text-transform:uppercase;margin-bottom:6px}
+.ref-val{font-size:12px;color:var(--text-2)}
+.acceso-restringido{text-align:center;padding:60px 20px;font-size:15px;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <button class="btn-back" onclick="window.location.href='/dashboard-profesional'">← Dashboard</button>
+  <div class="topbar-title">🩺 Médico — Ingreso / Egreso Programa HP</div>
+</div>
+
+<div class="container" id="main-content">
+
+  <!-- Acceso restringido -->
+  <div id="acceso-restringido" class="acceso-restringido" style="display:none">
+    🔒 Este módulo está disponible solo para médicos, cardiólogos y neumólogos del programa.
+  </div>
+
+  <div id="contenido-medico">
+
+    <!-- Selector paciente -->
+    <div class="pac-box">
+      <span style="font-size:12px;font-weight:700;color:var(--text-3);text-transform:uppercase;letter-spacing:0.6px">Paciente</span>
+      <select class="pac-select" id="pac-select" onchange="seleccionarPaciente()">
+        <option value="">Selecciona un paciente...</option>
+      </select>
+    </div>
+
+    <div class="info-banner">
+      ℹ️ <strong>Nota:</strong> Verifique que el paciente haya sido previamente activado por la enfermera coordinadora antes de registrar el ingreso médico al programa.
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-btns">
+      <button class="tab-btn active" onclick="cambiarTab('ingreso')">📝 Ingreso al programa</button>
+      <button class="tab-btn" onclick="cambiarTab('egreso')">📤 Egreso del programa</button>
+      <button class="tab-btn" onclick="cambiarTab('historial')">📅 Historial</button>
+    </div>
+
+    <!-- ═══ TAB INGRESO ════════════════════════════════════════ -->
+    <div class="tab-panel active" id="tab-ingreso">
+      <div class="card">
+        <div class="card-title">📋 Datos generales del ingreso</div>
+        <div class="form-grid">
+          <div class="field"><label>Fecha de ingreso al programa</label><input type="date" id="ing-fecha"></div>
+          <div class="field"><label>Médico tratante</label><input type="text" id="ing-medico" placeholder="Dr./Dra."></div>
+          <div class="field"><label>Especialidad</label>
+            <select id="ing-especialidad">
+              <option value="cardiologia">Cardiología</option>
+              <option value="neumologia">Neumología</option>
+              <option value="medicina_interna">Medicina interna</option>
+            </select>
+          </div>
+          <div class="field"><label>Sede</label><input type="text" id="ing-sede" value="INO Principal"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📑 Antecedentes</div>
+        <div class="form-grid">
+          <div class="field field-full"><label>Personales</label><textarea id="ing-ant-personales" rows="2" placeholder="HTA, DM, hipotiroidismo..."></textarea></div>
+          <div class="field field-full"><label>Familiares</label><textarea id="ing-ant-familiares" rows="2" placeholder="HP familiar, cardiopatías..."></textarea></div>
+          <div class="field"><label>Quirúrgicos</label><textarea id="ing-ant-quirurgicos" rows="2" placeholder="Cirugías previas..."></textarea></div>
+          <div class="field"><label>Alérgicos</label><textarea id="ing-ant-alergicos" rows="2" placeholder="Medicamentos, alimentos..."></textarea></div>
+          <div class="field"><label>Tabaquismo</label><textarea id="ing-ant-tabaquismo" rows="2" placeholder="Paquetes/año, estado..."></textarea></div>
+          <div class="field"><label>Ginecoobstétricos</label><textarea id="ing-ant-gineco" rows="2" placeholder="G_P_A_, menopausia..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🫀 Diagnóstico de hipertensión pulmonar</div>
+        <div class="form-grid">
+          <div class="field"><label>Clasificación OMS</label>
+            <select id="ing-grupo-oms"><option value="">Seleccionar...</option>
+              <option value="1">Grupo 1 — HAP</option><option value="2">Grupo 2 — Cardiopatía izquierda</option>
+              <option value="3">Grupo 3 — Enfermedad pulmonar</option><option value="4">Grupo 4 — HPTEC</option>
+              <option value="5">Grupo 5 — Mecanismo no claro</option>
+            </select></div>
+          <div class="field"><label>Subtipo/Etiología</label><input type="text" id="ing-etiologia" placeholder="Idiopática, asociada a ETC..."></div>
+          <div class="field"><label>Fecha del diagnóstico</label><input type="date" id="ing-fecha-dx"></div>
+          <div class="field"><label>Diagnóstico descriptivo</label><input type="text" id="ing-dx-descriptivo" placeholder="HAP idiopática, HPTEC..."></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📊 Evaluación basal al ingreso</div>
+        <div class="form-grid">
+          <div class="field"><label>Clase funcional OMS</label>
+            <select id="ing-cf-oms"><option value="">Seleccionar...</option>
+              <option value="I">CF I — Sin limitación</option><option value="II">CF II — Leve limitación</option>
+              <option value="III">CF III — Marcada limitación</option><option value="IV">CF IV — Síntomas en reposo</option>
+            </select></div>
+          <div class="field"><label>TC6M basal (metros)</label><input type="number" id="ing-t6mc" min="0" max="800" placeholder="ej. 380"></div>
+          <div class="field"><label>SpO₂ basal (%)</label><input type="number" id="ing-spo2-basal" min="50" max="100" placeholder="ej. 92"></div>
+          <div class="field"><label>SpO₂ post-esfuerzo (%)</label><input type="number" id="ing-spo2-post" min="50" max="100" placeholder="ej. 84"></div>
+          <div class="field"><label>PSAP ecocardiograma (mmHg)</label><input type="number" id="ing-psap" min="0" max="200" placeholder="ej. 65"></div>
+          <div class="field"><label>NT-proBNP (pg/mL)</label><input type="number" id="ing-ntprobnp" min="0" max="50000" placeholder="ej. 1200"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">🔬 Cateterismo derecho (si disponible)</div>
+        <div class="form-grid">
+          <div class="field"><label>¿Realizado?</label>
+            <select id="ing-cat-realizado" onchange="toggleCat()"><option value="no">No</option><option value="si">Sí</option></select></div>
+          <div id="cat-campos" style="display:none;grid-column:1/-1">
+            <div class="form-grid">
+              <div class="field"><label>mPAP (mmHg)</label><input type="number" id="ing-mpap" placeholder="ej. 45"></div>
+              <div class="field"><label>PCWP (mmHg)</label><input type="number" id="ing-pcwp" placeholder="ej. 10"></div>
+              <div class="field"><label>RVP (UW)</label><input type="number" id="ing-rvp" step="0.1" placeholder="ej. 6.2"></div>
+              <div class="field"><label>GC (L/min)</label><input type="number" id="ing-gc" step="0.1" placeholder="ej. 4.2"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">💊 Tratamiento y plan</div>
+        <div class="form-grid">
+          <div class="field field-full"><label>Comorbilidades relevantes</label><textarea id="ing-comorbilidades" rows="2" placeholder="HTA, DM, hipotiroidismo, ERC..."></textarea></div>
+          <div class="field field-full"><label>Tratamiento actual de HP</label><textarea id="ing-tratamiento" rows="2" placeholder="Sildenafil 20mg c/8h, Bosentan 125mg c/12h..."></textarea></div>
+          <div class="field field-full"><label>Objetivos terapéuticos</label><textarea id="ing-objetivos" rows="2" placeholder="Mejorar CF a II, TC6M >330m, reducir NT-proBNP..."></textarea></div>
+          <div class="field field-full"><label>Plan de seguimiento</label><textarea id="ing-plan" rows="2" placeholder="Control mensual primeros 3 meses, eco cada 6 meses..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="msg-box" id="msg-ingreso"></div>
+      <button class="btn-primary" id="btn-ingreso" onclick="guardarIngreso()">💾 Guardar ingreso al programa</button>
+    </div>
+
+    <!-- ═══ TAB EGRESO ═════════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-egreso">
+
+      <div class="ref-card" id="ref-ingreso" style="display:none">
+        <div class="ref-card-title">📌 Datos del ingreso (referencia)</div>
+        <div class="ref-val" id="ref-ingreso-datos"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">📤 Datos del egreso</div>
+        <div class="form-grid">
+          <div class="field"><label>Fecha de egreso</label><input type="date" id="egr-fecha"></div>
+          <div class="field"><label>Motivo de egreso</label>
+            <select id="egr-motivo" onchange="evaluarDeterioro()">
+              <option value="">Seleccionar...</option>
+              <option value="mejoria">Mejoría clínica / Cumplimiento de objetivos</option>
+              <option value="estable">Estable — Continúa seguimiento ambulatorio</option>
+              <option value="traslado">Traslado a otra institución</option>
+              <option value="trasplante">Remisión a programa de trasplante</option>
+              <option value="abandono">Abandono del programa</option>
+              <option value="evento_adverso_grave">Evento adverso grave</option>
+              <option value="fallecimiento">Fallecimiento</option>
+            </select></div>
+          <div class="field"><label>CF-OMS al egreso</label>
+            <select id="egr-cf-oms" onchange="evaluarDeterioro()">
+              <option value="">Seleccionar...</option>
+              <option value="I">CF I</option><option value="II">CF II</option>
+              <option value="III">CF III</option><option value="IV">CF IV</option>
+            </select></div>
+          <div class="field"><label>TC6M al egreso (metros)</label>
+            <input type="number" id="egr-t6mc" min="0" max="800" placeholder="ej. 420" oninput="evaluarDeterioro()"></div>
+          <div class="field"><label>NT-proBNP al egreso</label>
+            <input type="number" id="egr-ntprobnp" min="0" max="50000" placeholder="ej. 800"></div>
+          <div class="field"><label>Tiempo en programa (meses)</label>
+            <input type="number" id="egr-meses" min="0" max="120" placeholder="ej. 12"></div>
+        </div>
+      </div>
+
+      <div class="deterioro-box" id="deterioro-box"></div>
+
+      <div class="card">
+        <div class="card-title">📝 Resumen de evolución y recomendaciones</div>
+        <div class="form-grid">
+          <div class="field field-full"><label>Resumen de la evolución en el programa</label>
+            <textarea id="egr-resumen" rows="3" placeholder="Evolución clínica, eventos relevantes, hospitalizaciones..."></textarea></div>
+          <div class="field field-full"><label>Eventos adversos durante seguimiento</label>
+            <textarea id="egr-eventos" rows="2" placeholder="Hospitalizaciones, efectos adversos medicamentos..."></textarea></div>
+          <div class="field field-full"><label>Tratamiento al egreso</label>
+            <textarea id="egr-tratamiento" rows="2" placeholder="Medicamentos actuales con dosis..."></textarea></div>
+          <div class="field field-full"><label>Recomendaciones para médico tratante</label>
+            <textarea id="egr-recom-medico" rows="2" placeholder="Continuar seguimiento cada 3 meses, controles eco/cateterismo..."></textarea></div>
+          <div class="field field-full"><label>Recomendaciones para paciente/familia</label>
+            <textarea id="egr-recom-paciente" rows="2" placeholder="Adherencia al tratamiento, signos de alarma..."></textarea></div>
+          <div class="field field-full"><label>Banderas rojas — cuándo consultar urgencias</label>
+            <textarea id="egr-banderas" rows="2" placeholder="Disnea en reposo, síncope, hemoptisis, edema progresivo..."></textarea></div>
+        </div>
+      </div>
+
+      <div class="msg-box" id="msg-egreso"></div>
+      <button class="btn-primary" id="btn-egreso" onclick="guardarEgreso()">💾 Guardar egreso del programa</button>
+    </div>
+
+    <!-- ═══ TAB HISTORIAL ══════════════════════════════════════ -->
+    <div class="tab-panel" id="tab-historial">
+      <div id="hist-medico">
+        <div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Selecciona un paciente para ver el historial médico.</div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script src="/paciente-search.js"></script>
+<script>
+const API   = 'https://pulmolink-ino-production.up.railway.app';
+const token = localStorage.getItem('pulmolink_token');
+if (!token) window.location.href = '/login';
+
+let pacientes = [], pacienteActual = null, ultimoIngreso = null;
+
+// ── Verificar rol ───────────────────────────────────────────
+(function() {
+  try {
+    const u = JSON.parse(atob(token.split('.')[1]));
+    const rolesPermitidos = ['cardiólogo','cardiologo','neumólogo','neumologo','medico','coordinador'];
+    if (!rolesPermitidos.includes((u.rol||'').toLowerCase())) {
+      document.getElementById('contenido-medico').style.display = 'none';
+      document.getElementById('acceso-restringido').style.display = 'block';
+    }
+    // Pre-llenar médico
+    document.getElementById('ing-medico').value = (u.nombre||'')+' '+(u.apellido||'');
+  } catch(e){}
+})();
+
+// ── Cargar pacientes ────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', cargarPacientes);
+async function cargarPacientes() {
+  try {
+    const r = await fetch(`${API}/api/v1/examenes/pacientes-lista`, { headers:{ Authorization:`Bearer ${token}` } });
+    if (r.status === 401) { window.location.href = '/login'; return; }
+    const d = await r.json();
+    pacientes = d.pacientes || [];
+    const sel = document.getElementById('pac-select');
+    pacientes.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p.id; opt.textContent = `${p.nombre} ${p.apellido}`;
+      sel.appendChild(opt);
+    });
+  } catch(e) { console.error(e); }
+}
+
+function seleccionarPaciente() {
+  const id = document.getElementById('pac-select').value;
+  pacienteActual = pacientes.find(p => p.id === id) || null;
+  if (pacienteActual) {
+    // Pre-llenar datos conocidos
+    if (pacienteActual.grupo_hp_oms) document.getElementById('ing-grupo-oms').value = pacienteActual.grupo_hp_oms;
+    if (pacienteActual.diagnostico_hp) document.getElementById('ing-dx-descriptivo').value = pacienteActual.diagnostico_hp;
+    if (pacienteActual.clase_funcional_oms) {
+      const cfMap = {1:'I',2:'II',3:'III',4:'IV'};
+      document.getElementById('ing-cf-oms').value = cfMap[pacienteActual.clase_funcional_oms] || '';
+    }
+    cargarHistorial();
+  }
+}
+
+function toggleCat() {
+  document.getElementById('cat-campos').style.display =
+    document.getElementById('ing-cat-realizado').value === 'si' ? 'block' : 'none';
+}
+
+// ── Tabs ────────────────────────────────────────────────────
+function cambiarTab(tab) {
+  ['ingreso','egreso','historial'].forEach(t => {
+    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
+    const btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(b => b.classList.toggle('active', b.textContent.toLowerCase().includes(t)));
+  });
+  if (tab === 'egreso') cargarDatosIngreso();
+  if (tab === 'historial') cargarHistorial();
+}
+
+// ── Guardar ingreso ─────────────────────────────────────────
+async function guardarIngreso() {
+  if (!pacienteActual) { mostrarMsg('msg-ingreso','Selecciona un paciente.','error'); return; }
+  const btn = document.getElementById('btn-ingreso');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Guardando...';
+  const val = id => document.getElementById(id)?.value?.trim() || null;
+  const num = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v)?null:v; };
+  const cfVal = val('ing-cf-oms');
+  const cfNum = {I:1,II:2,III:3,IV:4}[cfVal] || null;
+
+  const body = {
+    paciente_id: pacienteActual.id,
+    fecha_ingreso_programa: val('ing-fecha'),
+    medico_tratante: val('ing-medico'),
+    especialidad: val('ing-especialidad'),
+    sede: val('ing-sede'),
+    antecedentes: {
+      personales: val('ing-ant-personales'),
+      familiares: val('ing-ant-familiares'),
+      quirurgicos: val('ing-ant-quirurgicos'),
+      alergicos: val('ing-ant-alergicos'),
+      tabaquismo: val('ing-ant-tabaquismo'),
+      gineco: val('ing-ant-gineco'),
+    },
+    grupo_hp_oms: val('ing-grupo-oms'),
+    diagnostico_hp: val('ing-dx-descriptivo'),
+    etiologia: val('ing-etiologia'),
+    fecha_diagnostico: val('ing-fecha-dx'),
+    clase_funcional_oms: cfNum,
+    cf_oms_texto: cfVal,
+    t6mc_metros: num('ing-t6mc'),
+    spo2_basal: num('ing-spo2-basal'),
+    spo2_post_esfuerzo: num('ing-spo2-post'),
+    psap_eco: num('ing-psap'),
+    ntprobnp: num('ing-ntprobnp'),
+    cateterismo: document.getElementById('ing-cat-realizado').value === 'si' ? {
+      mpap: num('ing-mpap'), pcwp: num('ing-pcwp'),
+      rvp: num('ing-rvp'), gc: num('ing-gc')
+    } : null,
+    comorbilidades: val('ing-comorbilidades'),
+    tratamiento_actual: val('ing-tratamiento'),
+    objetivos: val('ing-objetivos'),
+    plan_seguimiento: val('ing-plan'),
+  };
+
+  try {
+    const r = await fetch(`${API}/api/v1/medico/ingreso`, {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify(body)
+    });
+    if (r.ok) {
+      mostrarMsg('msg-ingreso','Ingreso al programa registrado correctamente.','ok');
+      cargarHistorial();
+    } else { const d = await r.json(); mostrarMsg('msg-ingreso',d.error||'Error al guardar.','error'); }
+  } catch(e) { mostrarMsg('msg-ingreso','Error de conexión.','error'); }
+  btn.disabled = false; btn.textContent = '💾 Guardar ingreso al programa';
+}
+
+// ── Cargar datos de ingreso para egreso ─────────────────────
+async function cargarDatosIngreso() {
+  if (!pacienteActual) return;
+  try {
+    const r = await fetch(`${API}/api/v1/medico/historial/${pacienteActual.id}`, { headers:{Authorization:`Bearer ${token}`} });
+    const d = await r.json();
+    const ingresos = (d.registros||[]).filter(r => r.accion === 'INGRESO_MEDICO');
+    if (ingresos.length) {
+      ultimoIngreso = ingresos[0].detalle;
+      const ref = document.getElementById('ref-ingreso');
+      ref.style.display = 'block';
+      document.getElementById('ref-ingreso-datos').innerHTML =
+        `<strong>CF ingreso:</strong> ${ultimoIngreso.cf_oms_texto||ultimoIngreso.clase_funcional_oms||'--'} · 
+         <strong>TC6M:</strong> ${ultimoIngreso.t6mc_metros||'--'} m · 
+         <strong>NT-proBNP:</strong> ${ultimoIngreso.ntprobnp||'--'} pg/mL · 
+         <strong>Fecha:</strong> ${ultimoIngreso.fecha_ingreso_programa||'--'}`;
+    } else {
+      ultimoIngreso = null;
+      document.getElementById('ref-ingreso').style.display = 'none';
+    }
+  } catch(e) { console.error(e); }
+}
+
+// ── Evaluación deterioro en tiempo real ─────────────────────
+function evaluarDeterioro() {
+  const box = document.getElementById('deterioro-box');
+  if (!ultimoIngreso) { box.style.display = 'none'; return; }
+
+  const cfMap = {I:1,II:2,III:3,IV:4};
+  const cfIng = cfMap[ultimoIngreso.cf_oms_texto] || ultimoIngreso.clase_funcional_oms;
+  const cfEgr = cfMap[document.getElementById('egr-cf-oms').value];
+  const t6mcIng = ultimoIngreso.t6mc_metros;
+  const t6mcEgr = parseFloat(document.getElementById('egr-t6mc').value);
+  const motivo = document.getElementById('egr-motivo').value;
+  const criticos = ['abandono','fallecimiento','evento_adverso_grave'];
+  const alertas = [];
+
+  if (cfIng && cfEgr && cfEgr > cfIng) alertas.push(`CF empeoró: ${ultimoIngreso.cf_oms_texto} → ${document.getElementById('egr-cf-oms').value}`);
+  if (cfIng && cfEgr && cfEgr < cfIng) alertas.push(`CF mejoró: ${ultimoIngreso.cf_oms_texto} → ${document.getElementById('egr-cf-oms').value}`);
+  if (t6mcIng && !isNaN(t6mcEgr)) {
+    const pct = ((t6mcIng-t6mcEgr)/t6mcIng*100);
+    if (pct > 15) alertas.push(`TC6M bajó ${pct.toFixed(0)}%: ${t6mcIng}m → ${t6mcEgr}m`);
+    else if (pct < -5) alertas.push(`TC6M mejoró: ${t6mcIng}m → ${t6mcEgr}m`);
+  }
+  if (criticos.includes(motivo)) alertas.push(`Egreso por: ${motivo.replace(/_/g,' ')}`);
+
+  if (!alertas.length) { box.style.display = 'none'; return; }
+
+  const hayDeterioro = alertas.some(a => a.includes('empeoró')||a.includes('bajó')||a.includes('Egreso por'));
+  const hayMejoria = alertas.some(a => a.includes('mejoró'));
+  box.className = 'deterioro-box ' + (hayDeterioro ? 'det-deterioro' : hayMejoria ? 'det-mejoria' : 'det-estable');
+  box.innerHTML = (hayDeterioro ? '🔴 ' : hayMejoria ? '🟢 ' : '🔵 ') + alertas.join(' · ') +
+    (hayDeterioro ? '<br><small>Se generará alerta automática al guardar.</small>' : '');
+  box.style.display = 'block';
+}
+
+// ── Guardar egreso ──────────────────────────────────────────
+async function guardarEgreso() {
+  if (!pacienteActual) { mostrarMsg('msg-egreso','Selecciona un paciente.','error'); return; }
+  const btn = document.getElementById('btn-egreso');
+  btn.disabled = true; btn.innerHTML = '<div class="spinner"></div> Guardando...';
+  const val = id => document.getElementById(id)?.value?.trim() || null;
+  const num = id => { const v = parseFloat(document.getElementById(id)?.value); return isNaN(v)?null:v; };
+
+  const body = {
+    paciente_id: pacienteActual.id,
+    fecha_egreso: val('egr-fecha'),
+    motivo_egreso: val('egr-motivo'),
+    cf_ingreso: ultimoIngreso?.cf_oms_texto || null,
+    cf_egreso: val('egr-cf-oms'),
+    t6mc_ingreso: ultimoIngreso?.t6mc_metros || null,
+    t6mc_egreso: num('egr-t6mc'),
+    ntprobnp_egreso: num('egr-ntprobnp'),
+    meses_programa: num('egr-meses'),
+    resumen_evolucion: val('egr-resumen'),
+    eventos_adversos: val('egr-eventos'),
+    tratamiento_egreso: val('egr-tratamiento'),
+    recom_medico: val('egr-recom-medico'),
+    recom_paciente: val('egr-recom-paciente'),
+    banderas_rojas: val('egr-banderas'),
+  };
+
+  try {
+    const r = await fetch(`${API}/api/v1/medico/egreso`, {
+      method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${token}`},
+      body: JSON.stringify(body)
+    });
+    if (r.ok) {
+      const d = await r.json();
+      const alertasTxt = d.alertas_generadas?.length ? ` ⚠️ Alertas generadas: ${d.alertas_generadas.length}` : '';
+      mostrarMsg('msg-egreso','Egreso registrado correctamente.'+alertasTxt,'ok');
+      cargarHistorial();
+    } else { const d = await r.json(); mostrarMsg('msg-egreso',d.error||'Error al guardar.','error'); }
+  } catch(e) { mostrarMsg('msg-egreso','Error de conexión.','error'); }
+  btn.disabled = false; btn.textContent = '💾 Guardar egreso del programa';
+}
+
+// ── Historial ───────────────────────────────────────────────
+async function cargarHistorial() {
+  if (!pacienteActual) return;
+  const cont = document.getElementById('hist-medico');
+  cont.innerHTML = '<div style="text-align:center;padding:20px;font-size:13px;color:var(--text-3)">Cargando...</div>';
+  try {
+    const r = await fetch(`${API}/api/v1/medico/historial/${pacienteActual.id}`, { headers:{Authorization:`Bearer ${token}`} });
+    const d = await r.json();
+    const items = d.registros || [];
+    if (!items.length) {
+      cont.innerHTML = '<div style="text-align:center;padding:32px;font-size:13px;color:var(--text-3)">Sin registros médicos para este paciente.</div>';
+      return;
+    }
+    cont.innerHTML = items.map((item, i) => {
+      const det = item.detalle || {};
+      const tipo = item.accion === 'INGRESO_MEDICO' ? '📝 Ingreso' : '📤 Egreso';
+      const fecha = item.accion === 'INGRESO_MEDICO' ? det.fecha_ingreso_programa : det.fecha_egreso;
+      const cf = det.cf_oms_texto || det.cf_egreso || '--';
+      return `<div class="hist-item" onclick="toggleHistDet(${i})">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:12px;font-weight:700;color:var(--teal)">${tipo}</div>
+            <div style="font-size:11px;color:var(--text-3)">${fecha ? new Date(fecha).toLocaleDateString('es-CO') : '--'} · ${det.medico_tratante||''}</div>
+          </div>
+          <span style="padding:3px 10px;border-radius:8px;font-size:11px;font-weight:700;
+            background:${{I:'var(--green-lt)',II:'var(--teal-pale)',III:'var(--amber-lt)',IV:'var(--red-lt)'}[cf]||'var(--warm)'};
+            color:${{I:'var(--green)',II:'var(--teal)',III:'var(--amber)',IV:'var(--red)'}[cf]||'var(--text-3)'}">
+            CF ${cf}</span>
+        </div>
+        <div class="hist-detalle" id="hd-${i}">
+          ${det.diagnostico_hp ? `<div>Dx: <strong>${det.diagnostico_hp}</strong></div>` : ''}
+          ${det.t6mc_metros ? `<div>TC6M: <strong>${det.t6mc_metros} m</strong></div>` : ''}
+          ${det.t6mc_egreso ? `<div>TC6M egreso: <strong>${det.t6mc_egreso} m</strong></div>` : ''}
+          ${det.ntprobnp ? `<div>NT-proBNP: <strong>${det.ntprobnp} pg/mL</strong></div>` : ''}
+          ${det.tratamiento_actual || det.tratamiento_egreso ? `<div>Tx: ${det.tratamiento_actual||det.tratamiento_egreso}</div>` : ''}
+          ${det.motivo_egreso ? `<div>Motivo: <strong>${det.motivo_egreso.replace(/_/g,' ')}</strong></div>` : ''}
+          ${det.resumen_evolucion ? `<div style="margin-top:6px">${det.resumen_evolucion}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('');
+  } catch(e) {
+    cont.innerHTML = '<div style="font-size:13px;color:var(--text-3);padding:12px">Error al cargar historial.</div>';
+  }
+}
+
+function toggleHistDet(i) {
+  const det = document.getElementById('hd-'+i);
+  det.style.display = det.style.display === 'block' ? 'none' : 'block';
+}
+
+function mostrarMsg(id, txt, tipo) {
+  const el = document.getElementById(id);
+  el.textContent = txt; el.className = 'msg-box ' + tipo;
+  setTimeout(() => { el.className = 'msg-box'; }, 5000);
+}
+</script>
+</body>
+</html>
